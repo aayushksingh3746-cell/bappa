@@ -3,10 +3,14 @@ import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from
 import { getDatabase, ref, onValue, set, push, remove } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
 const firebaseConfig = {
+  apiKey: "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
+  authDomain: "ganpati-5f24e.firebaseapp.com",
+  databaseURL: "https://ganpati-5f24e-default-rtdb.firebaseio.com",
   projectId: "ganpati-5f24e",
-  appId: "1:512949354669:web:f561488c630203a9ae4624"
-  // Add your Firebase apiKey, authDomain, databaseURL, storageBucket and messagingSenderId
-  // if required by your Firebase web app configuration.
+  storageBucket: "ganpati-5f24e.firebasestorage.app",
+  messagingSenderId: "512949354669",
+  appId: "1:512949354669:web:f561488c630203a9ae4624",
+  measurementId: "G-1J5J8CBVRD"
 };
 
 const app=initializeApp(firebaseConfig);
