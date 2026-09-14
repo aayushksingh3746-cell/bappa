@@ -1,34 +1,33 @@
 // ============================================================
-// GANPATI DIGITAL DARSHAN
-// admin.js
-// Firebase Auth + Broadcast + WebRTC Signaling
+// GANPATI DIGITAL DARSHAN — ADMIN.JS
+// Firebase + WebRTC Broadcaster
+// Automatic reconnection + TURN support
 // ============================================================
 
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 
 import {
   getAuth,
   signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 import {
   getDatabase,
   ref,
   set,
+  update,
   remove,
   push,
   onValue,
-  onChildAdded,
-  off
+  off,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 
 // ============================================================
-// FIREBASE
+// FIREBASE CONFIG
 // ============================================================
 
 const firebaseConfig = {
@@ -41,15 +40,33 @@ const firebaseConfig = {
   appId: "1:512949354669:web:f561488c630203a9ae4624"
 };
 
-const firebaseApp = initializeApp(firebaseConfig);
 
-const auth = getAuth(firebaseApp);
-const db = getDatabase(firebaseApp);
+// ============================================================
+// INITIALIZE FIREBASE
+// ============================================================
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
 
 // ============================================================
-// WEBRTC
+// TURN / STUN CONFIGURATION
 // ============================================================
+//
+// IMPORTANT:
+// Replace the TURN placeholders with REAL TURN credentials.
+//
+// Example:
+//
+// {
+//   urls: "turn:your-server.com:3478",
+//   username: "YOUR_USERNAME",
+//   credential: "YOUR_PASSWORD"
+// }
+//
+// Do NOT put fake credentials here.
+//
 
 const ICE_SERVERS = [
   {
@@ -57,359 +74,252 @@ const ICE_SERVERS = [
       "stun:stun.l.google.com:19302",
       "stun:stun1.l.google.com:19302"
     ]
+  },
+
+  // ==========================================================
+  // TURN SERVER
+  // ==========================================================
+  //
+  // Uncomment and fill this section when you have a TURN server.
+  //
+  /*
+  {
+    urls: [
+      "turn:YOUR_TURN_SERVER:3478",
+      "turn:YOUR_TURN_SERVER:3478?transport=tcp",
+      "turns:YOUR_TURN_SERVER:5349"
+    ],
+    username: "YOUR_TURN_USERNAME",
+    credential: "YOUR_TURN_PASSWORD"
   }
+  */
 ];
+
+
+// ============================================================
+// WEBRTC SETTINGS
+// ============================================================
+
+const RTC_CONFIGURATION = {
+  iceServers: ICE_SERVERS,
+  iceCandidatePoolSize: 10,
+  bundlePolicy: "max-bundle",
+  rtcpMuxPolicy: "require"
+};
 
 
 // ============================================================
 // DOM
 // ============================================================
 
-const preloader =
-  document.getElementById("preloader");
+const loginPanel = document.getElementById("loginPanel");
+const dashboard = document.getElementById("dashboard");
 
-const loginPanel =
-  document.getElementById("loginPanel");
+const loginForm = document.getElementById("loginForm");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const loginStatus = document.getElementById("loginStatus");
 
-const dashboard =
-  document.getElementById("dashboard");
+const logoutBtn = document.getElementById("logoutBtn");
+const connectionState = document.getElementById("connectionState");
 
-const loginForm =
-  document.getElementById("loginForm");
+const broadcastStatus = document.getElementById("broadcastStatus");
+const preview = document.getElementById("preview");
 
-const emailInput =
-  document.getElementById("email");
+const startBroadcastBtn = document.getElementById("startBroadcast");
+const stopBroadcastBtn = document.getElementById("stopBroadcast");
 
-const passwordInput =
-  document.getElementById("password");
+const broadcastMessage = document.getElementById("broadcastMessage");
 
-const loginStatus =
-  document.getElementById("loginStatus");
+const adminPrayers = document.getElementById("adminPrayers");
 
-const logoutBtn =
-  document.getElementById("logoutBtn");
-
-const connectionState =
-  document.getElementById("connectionState");
-
-const broadcastStatus =
-  document.getElementById("broadcastStatus");
-
-const preview =
-  document.getElementById("preview");
-
-const startBroadcastBtn =
-  document.getElementById("startBroadcast");
-
-const stopBroadcastBtn =
-  document.getElementById("stopBroadcast");
-
-const broadcastMessage =
-  document.getElementById("broadcastMessage");
-
-const adminPrayers =
-  document.getElementById("adminPrayers");
-
-const announcementForm =
-  document.getElementById("announcementForm");
-
-const announcementTitle =
-  document.getElementById("announcementTitle");
-
-const announcementText =
-  document.getElementById("announcementText");
-
-const announcementStatus =
-  document.getElementById("announcementStatus");
+const announcementForm = document.getElementById("announcementForm");
+const announcementTitle = document.getElementById("announcementTitle");
+const announcementText = document.getElementById("announcementText");
+const announcementStatus = document.getElementById("announcementStatus");
 
 
 // ============================================================
 // STATE
 // ============================================================
 
-let localStream = null;
+let currentUser = null;
 
-let broadcastId = null;
+let localStream = null;
 
 let broadcasting = false;
 
+let broadcastId = null;
+
 let viewerListener = null;
 
-let broadcastListener = null;
+let broadcastStateListener = null;
 
-const peerConnections = new Map();
+let prayersListener = null;
 
-const viewerAnswerListeners = new Map();
+let peerConnections = new Map();
 
-const viewerCandidateListeners = new Map();
+let viewerCreationLocks = new Map();
 
-const recoveryTimers = new Map();
+let recoveryTimers = new Map();
 
-const viewerCreationLocks = new Set();
+let viewerCandidatesListeners = new Map();
+
+let answerListeners = new Map();
+
+let broadcasterCandidateRefs = new Map();
+
+let visibilityRecoveryTimer = null;
+
+let isCleaningUp = false;
+
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+
+const RECOVERY_DELAY = 1500;
+
+const MAX_RECOVERY_DELAY = 15000;
+
+const VIEWER_STALE_TIME = 30000;
 
 
 // ============================================================
 // HELPERS
 // ============================================================
 
-function createId(prefix = "id") {
-
-  return (
-    prefix +
-    "_" +
-    Date.now().toString(36) +
-    "_" +
-    Math.random()
-      .toString(36)
-      .slice(2, 10)
-  );
-
+function log(...args) {
+  console.log("[Admin]", ...args);
 }
 
 
-function setLoginStatus(
-  message,
-  type = ""
-) {
+function warn(...args) {
+  console.warn("[Admin]", ...args);
+}
 
-  if (!loginStatus) {
-    return;
-  }
+
+function error(...args) {
+  console.error("[Admin]", ...args);
+}
+
+
+function setLoginStatus(message, type = "") {
+  if (!loginStatus) return;
 
   loginStatus.textContent = message;
 
-  loginStatus.className = "";
-
-  if (type) {
-    loginStatus.classList.add(type);
-  }
-
+  loginStatus.className = type;
 }
 
 
-function setAnnouncementStatus(
-  message,
-  type = ""
-) {
+function setBroadcastStatus(message) {
+  if (!broadcastStatus) return;
 
-  if (!announcementStatus) {
-    return;
-  }
-
-  announcementStatus.textContent =
-    message;
-
-  announcementStatus.className = "";
-
-  if (type) {
-    announcementStatus.classList.add(type);
-  }
-
+  broadcastStatus.textContent = message;
 }
 
 
-function setBroadcastStatus(
-  message
-) {
+function setConnectionState(message) {
+  if (!connectionState) return;
 
-  if (broadcastStatus) {
-    broadcastStatus.textContent =
-      message;
-  }
-
+  connectionState.textContent = message;
 }
 
 
-function setConnectionState(
-  message
-) {
-
-  if (connectionState) {
-    connectionState.textContent =
-      message;
-  }
-
+function generateId(prefix = "") {
+  return (
+    prefix +
+    Date.now().toString(36) +
+    Math.random().toString(36).slice(2, 9)
+  );
 }
 
 
-function removePreloader() {
+// ============================================================
+// AUTH
+// ============================================================
 
-  if (!preloader) {
-    return;
-  }
+onAuthStateChanged(auth, user => {
+  currentUser = user;
 
-  preloader.classList.add("done");
+  if (user) {
+    log("Authenticated:", user.email);
 
-  setTimeout(() => {
-
-    if (
-      preloader &&
-      preloader.parentNode
-    ) {
-      preloader.remove();
+    if (loginPanel) {
+      loginPanel.classList.add("hidden");
     }
 
-  }, 700);
+    if (dashboard) {
+      dashboard.classList.remove("hidden");
+    }
 
-}
+    setConnectionState("Connected");
 
+    loadPrayers();
+    startBroadcastStateListener();
 
-function updateBroadcastButtons() {
+  } else {
+    log("No authenticated user.");
 
-  if (startBroadcastBtn) {
-    startBroadcastBtn.disabled =
-      broadcasting;
+    if (loginPanel) {
+      loginPanel.classList.remove("hidden");
+    }
+
+    if (dashboard) {
+      dashboard.classList.add("hidden");
+    }
+
+    stopBroadcast();
   }
+});
 
-  if (stopBroadcastBtn) {
-    stopBroadcastBtn.disabled =
-      !broadcasting;
-  }
-
-}
-
-
-// ============================================================
-// AUTHENTICATION
-// ============================================================
 
 if (loginForm) {
+  loginForm.addEventListener("submit", async event => {
+    event.preventDefault();
 
-  loginForm.addEventListener(
-    "submit",
-    async event => {
+    const email = emailInput?.value.trim();
+    const password = passwordInput?.value;
 
-      event.preventDefault();
+    if (!email || !password) {
+      setLoginStatus("Enter email and password.", "error");
+      return;
+    }
 
-      const email =
-        emailInput?.value.trim();
+    setLoginStatus("Signing in...");
 
-      const password =
-        passwordInput?.value;
-
-      if (!email || !password) {
-
-        setLoginStatus(
-          "Enter your email and password.",
-          "error"
-        );
-
-        return;
-      }
-
-      setLoginStatus(
-        "Signing in..."
+    try {
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
 
-      try {
+      setLoginStatus("Login successful.", "success");
 
-        await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+    } catch (err) {
+      error("Login error:", err);
 
-        setLoginStatus("");
-
-      } catch (error) {
-
-        console.error(
-          "[Auth] Login error:",
-          error
-        );
-
-        setLoginStatus(
-          "Login failed. Check your email and password.",
-          "error"
-        );
-
-      }
-
+      setLoginStatus(
+        err?.message || "Login failed.",
+        "error"
+      );
     }
-  );
-
+  });
 }
 
 
 if (logoutBtn) {
-
-  logoutBtn.addEventListener(
-    "click",
-    async () => {
-
-      try {
-
-        if (broadcasting) {
-          await stopBroadcast();
-        }
-
-        await signOut(auth);
-
-      } catch (error) {
-
-        console.error(
-          "[Auth] Logout error:",
-          error
-        );
-
-      }
-
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await stopBroadcast();
+      await signOut(auth);
+    } catch (err) {
+      error("Logout error:", err);
     }
-  );
-
+  });
 }
-
-
-onAuthStateChanged(
-  auth,
-  user => {
-
-    if (user) {
-
-      if (loginPanel) {
-        loginPanel.classList.add(
-          "hidden"
-        );
-      }
-
-      if (dashboard) {
-        dashboard.classList.remove(
-          "hidden"
-        );
-      }
-
-      setConnectionState(
-        `Signed in as ${
-          user.email || "Admin"
-        }`
-      );
-
-      loadPrayers();
-
-    } else {
-
-      if (dashboard) {
-        dashboard.classList.add(
-          "hidden"
-        );
-      }
-
-      if (loginPanel) {
-        loginPanel.classList.remove(
-          "hidden"
-        );
-      }
-
-      setConnectionState(
-        "Not signed in."
-      );
-
-    }
-
-    removePreloader();
-
-  }
-);
 
 
 // ============================================================
@@ -418,368 +328,446 @@ onAuthStateChanged(
 
 async function getCameraStream() {
 
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error(
+      "Camera access is not supported by this browser."
+    );
+  }
+
   if (localStream) {
     return localStream;
   }
 
-  if (
-    !navigator.mediaDevices ||
-    !navigator.mediaDevices.getUserMedia
-  ) {
+  log("Requesting camera and microphone...");
 
-    throw new Error(
-      "Camera API is not supported by this browser."
-    );
-
-  }
-
-  localStream =
-    await navigator.mediaDevices.getUserMedia(
-      {
-        video: {
-          facingMode: "environment",
-
-          width: {
-            ideal: 1280
-          },
-
-          height: {
-            ideal: 720
-          },
-
-          frameRate: {
-            ideal: 30,
-            max: 30
-          }
-        },
-
-        audio: true
+  localStream = await navigator.mediaDevices.getUserMedia({
+    video: {
+      facingMode: "user",
+      width: {
+        ideal: 1280
+      },
+      height: {
+        ideal: 720
+      },
+      frameRate: {
+        ideal: 30,
+        max: 30
       }
-    );
+    },
+
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true
+    }
+  });
 
   if (preview) {
+    preview.srcObject = localStream;
 
-    preview.srcObject =
-      localStream;
-
-    preview.muted =
-      true;
-
-    preview.autoplay =
-      true;
-
-    preview.playsInline =
-      true;
-
-    preview
-      .play()
-      .catch(() => {});
-
+    try {
+      await preview.play();
+    } catch (_) {}
   }
 
   return localStream;
-
 }
 
 
 // ============================================================
-// SEND BROADCASTER ICE CANDIDATE
+// START BROADCAST
 // ============================================================
 
-async function sendBroadcasterCandidate(
-  viewerId,
-  candidate
-) {
+if (startBroadcastBtn) {
+  startBroadcastBtn.addEventListener(
+    "click",
+    startBroadcast
+  );
+}
 
-  if (
-    !viewerId ||
-    !candidate
-  ) {
+
+async function startBroadcast() {
+
+  if (!currentUser) {
+    setBroadcastStatus(
+      "Please login before starting the broadcast."
+    );
     return;
   }
 
-  const candidateRef =
-    push(
-      ref(
-        db,
-        `pandal/signals/${viewerId}/broadcasterCandidates`
-      )
+  if (broadcasting) {
+    setBroadcastStatus("Broadcast is already live.");
+    return;
+  }
+
+  isCleaningUp = false;
+
+  try {
+
+    setBroadcastStatus(
+      "Starting camera..."
     );
 
-  await set(
-    candidateRef,
-    candidate.toJSON()
+    setConnectionState(
+      "Opening camera..."
+    );
+
+    await getCameraStream();
+
+    broadcastId = generateId("broadcast_");
+
+    broadcasting = true;
+
+    await set(
+      ref(db, "pandal/broadcast"),
+      {
+        active: true,
+        id: broadcastId,
+        startedAt: Date.now(),
+        hostUid: currentUser.uid
+      }
+    );
+
+    setBroadcastStatus(
+      "LIVE — waiting for viewers..."
+    );
+
+    setConnectionState(
+      "Broadcast live"
+    );
+
+    if (startBroadcastBtn) {
+      startBroadcastBtn.disabled = true;
+    }
+
+    if (stopBroadcastBtn) {
+      stopBroadcastBtn.disabled = false;
+    }
+
+    startViewerListener();
+
+    log(
+      "Broadcast started:",
+      broadcastId
+    );
+
+  } catch (err) {
+
+    error("Broadcast start error:", err);
+
+    broadcasting = false;
+
+    setBroadcastStatus(
+      err?.message ||
+      "Unable to start broadcast."
+    );
+
+    setConnectionState(
+      "Broadcast failed"
+    );
+
+    stopLocalCamera();
+  }
+}
+
+
+// ============================================================
+// STOP BROADCAST
+// ============================================================
+
+if (stopBroadcastBtn) {
+  stopBroadcastBtn.addEventListener(
+    "click",
+    stopBroadcast
+  );
+}
+
+
+async function stopBroadcast() {
+
+  if (isCleaningUp) {
+    return;
+  }
+
+  isCleaningUp = true;
+
+  log("Stopping broadcast...");
+
+  broadcasting = false;
+
+  stopViewerListener();
+
+  clearAllRecoveryTimers();
+
+  closeAllViewerPeers();
+
+  clearAllSignalListeners();
+
+  try {
+
+    if (broadcastId) {
+
+      await remove(
+        ref(db, "pandal/broadcast")
+      );
+    }
+
+  } catch (err) {
+    error(
+      "Unable to remove broadcast state:",
+      err
+    );
+  }
+
+  stopLocalCamera();
+
+  broadcastId = null;
+
+  if (startBroadcastBtn) {
+    startBroadcastBtn.disabled = false;
+  }
+
+  if (stopBroadcastBtn) {
+    stopBroadcastBtn.disabled = true;
+  }
+
+  setBroadcastStatus(
+    "Broadcast offline."
   );
 
+  setConnectionState(
+    "Ready"
+  );
+
+  isCleaningUp = false;
 }
 
 
 // ============================================================
-// LISTENER CLEANUP
+// STOP CAMERA
 // ============================================================
 
-function cleanupViewerListeners(
-  viewerId
-) {
+function stopLocalCamera() {
 
-  const answerData =
-    viewerAnswerListeners.get(
-      viewerId
-    );
-
-  if (answerData) {
-
-    off(
-      answerData.ref,
-      "value",
-      answerData.callback
-    );
-
-    viewerAnswerListeners.delete(
-      viewerId
-    );
-
+  if (!localStream) {
+    return;
   }
 
+  localStream
+    .getTracks()
+    .forEach(track => {
 
-  const candidateData =
-    viewerCandidateListeners.get(
-      viewerId
-    );
+      try {
+        track.stop();
+      } catch (_) {}
 
-  if (candidateData) {
+    });
 
-    off(
-      candidateData.ref,
-      "child_added",
-      candidateData.callback
-    );
+  localStream = null;
 
-    viewerCandidateListeners.delete(
-      viewerId
-    );
-
+  if (preview) {
+    preview.srcObject = null;
   }
-
 }
 
 
 // ============================================================
-// CLOSE VIEWER PEER
+// VIEWER LISTENER
 // ============================================================
 
-function closeViewerPeer(
-  viewerId
-) {
+function startViewerListener() {
 
-  const peer =
-    peerConnections.get(
-      viewerId
-    );
+  if (viewerListener) {
+    return;
+  }
 
-  if (peer) {
+  const viewersRef =
+    ref(db, "pandal/viewers");
+
+  const callback = async snapshot => {
 
     try {
 
-      peer.onicecandidate =
-        null;
-
-      peer.onconnectionstatechange =
-        null;
-
-      peer.oniceconnectionstatechange =
-        null;
-
-      peer.close();
-
-    } catch (_) {}
-
-  }
-
-  peerConnections.delete(
-    viewerId
-  );
-
-  cleanupViewerListeners(
-    viewerId
-  );
-
-  const timer =
-    recoveryTimers.get(
-      viewerId
-    );
-
-  if (timer) {
-
-    clearTimeout(timer);
-
-    recoveryTimers.delete(
-      viewerId
-    );
-
-  }
-
-  viewerCreationLocks.delete(
-    viewerId
-  );
-
-}
-
-
-// ============================================================
-// VIEWER ANSWER
-// ============================================================
-
-function listenForViewerAnswer(
-  viewerId,
-  peer
-) {
-
-  const answerRef =
-    ref(
-      db,
-      `pandal/signals/${viewerId}/answer`
-    );
-
-  const callback =
-    async snapshot => {
-
-      const answer =
-        snapshot.val();
-
-      if (!answer || !peer) {
+      if (!broadcasting) {
         return;
       }
 
-      try {
+      const viewers =
+        snapshot.val();
+
+      if (!viewers) {
+
+        setBroadcastStatus(
+          "LIVE — waiting for viewers..."
+        );
+
+        return;
+      }
+
+      const activeViewerIds =
+        new Set();
+
+      for (
+        const [viewerId, viewer]
+        of Object.entries(viewers)
+      ) {
 
         if (
-          peer.signalingState ===
-          "have-local-offer"
+          viewer &&
+          viewer.active === true &&
+          viewer.broadcastId === broadcastId
         ) {
 
-          await peer.setRemoteDescription(
-            new RTCSessionDescription(
-              answer
-            )
-          );
+          activeViewerIds.add(viewerId);
 
-          console.log(
-            "[WebRTC] Answer received:",
+          if (!peerConnections.has(viewerId)) {
+
+            await createViewerConnection(
+              viewerId
+            );
+          }
+        }
+      }
+
+      for (
+        const viewerId
+        of peerConnections.keys()
+      ) {
+
+        if (
+          !activeViewerIds.has(viewerId)
+        ) {
+
+          closeViewerPeer(
             viewerId
           );
-
         }
-
-      } catch (error) {
-
-        console.warn(
-          "[WebRTC] Answer error:",
-          error
-        );
-
       }
 
-    };
+      if (activeViewerIds.size > 0) {
 
-  onValue(
-    answerRef,
-    callback,
-    error => {
+        setBroadcastStatus(
+          `LIVE — ${activeViewerIds.size} viewer${
+            activeViewerIds.size === 1
+              ? ""
+              : "s"
+          }`
+        );
+      }
 
-      console.error(
-        "[WebRTC] Answer listener error:",
-        error
+    } catch (err) {
+
+      error(
+        "Viewer snapshot processing error:",
+        err
       );
-
     }
-  );
-
-  viewerAnswerListeners.set(
-    viewerId,
-    {
-      ref: answerRef,
-      callback
-    }
-  );
-
-}
+  };
 
 
-// ============================================================
-// VIEWER ICE
-// ============================================================
+  const errorCallback = err => {
 
-function listenForViewerCandidates(
-  viewerId,
-  peer
-) {
-
-  const candidatesRef =
-    ref(
-      db,
-      `pandal/signals/${viewerId}/viewerCandidates`
+    error(
+      "Firebase viewer listener error:",
+      err
     );
 
-  const callback =
-    async snapshot => {
+    if (
+      err?.code ===
+      "PERMISSION_DENIED"
+    ) {
 
-      const candidateData =
-        snapshot.val();
-
-      if (!candidateData) {
-        return;
-      }
-
-      try {
-
-        await peer.addIceCandidate(
-          new RTCIceCandidate(
-            candidateData
-          )
-        );
-
-      } catch (error) {
-
-        console.warn(
-          "[WebRTC] Viewer ICE error:",
-          error
-        );
-
-      }
-
-    };
-
-  onChildAdded(
-    candidatesRef,
-    callback,
-    error => {
-
-      console.error(
-        "[WebRTC] Candidate listener error:",
-        error
+      setBroadcastStatus(
+        "Firebase permission denied for viewers."
       );
 
+    } else {
+
+      setBroadcastStatus(
+        "Viewer connection lost — retrying..."
+      );
+
+      scheduleViewerListenerRecovery();
     }
+  };
+
+
+  onValue(
+    viewersRef,
+    callback,
+    errorCallback
   );
 
-  viewerCandidateListeners.set(
-    viewerId,
-    {
-      ref: candidatesRef,
-      callback
-    }
-  );
+  viewerListener = {
+    ref: viewersRef,
+    callback
+  };
 
+  log("Viewer listener started.");
 }
 
 
 // ============================================================
-// RECOVERY
+// VIEWER LISTENER RECOVERY
 // ============================================================
 
-function scheduleViewerRecovery(
-  viewerId
+function scheduleViewerListenerRecovery() {
+
+  if (!broadcasting) {
+    return;
+  }
+
+  setTimeout(() => {
+
+    if (!broadcasting) {
+      return;
+    }
+
+    stopViewerListener();
+
+    startViewerListener();
+
+  }, 2000);
+}
+
+
+// ============================================================
+// STOP VIEWER LISTENER
+// ============================================================
+
+function stopViewerListener() {
+
+  if (!viewerListener) {
+    return;
+  }
+
+  try {
+
+    off(
+      viewerListener.ref,
+      "value",
+      viewerListener.callback
+    );
+
+  } catch (err) {
+
+    error(
+      "Error stopping viewer listener:",
+      err
+    );
+  }
+
+  viewerListener = null;
+}
+
+
+// ============================================================
+// CREATE VIEWER CONNECTION
+// ============================================================
+
+async function createViewerConnection(
+  viewerId,
+  forceRestart = false
 ) {
 
   if (!broadcasting) {
@@ -787,12 +775,501 @@ function scheduleViewerRecovery(
   }
 
   if (
-    recoveryTimers.has(
-      viewerId
-    )
+    viewerCreationLocks.has(viewerId)
   ) {
+
+    return viewerCreationLocks.get(
+      viewerId
+    );
+  }
+
+  if (
+    peerConnections.has(viewerId) &&
+    !forceRestart
+  ) {
+
     return;
   }
+
+  const creationPromise =
+    createViewerConnectionInternal(
+      viewerId,
+      forceRestart
+    );
+
+  viewerCreationLocks.set(
+    viewerId,
+    creationPromise
+  );
+
+  try {
+
+    await creationPromise;
+
+  } finally {
+
+    viewerCreationLocks.delete(
+      viewerId
+    );
+  }
+}
+
+
+// ============================================================
+// INTERNAL VIEWER CONNECTION
+// ============================================================
+
+async function createViewerConnectionInternal(
+  viewerId,
+  forceRestart = false
+) {
+
+  if (!broadcasting) {
+    return;
+  }
+
+  log(
+    "Creating connection for viewer:",
+    viewerId
+  );
+
+  if (forceRestart) {
+    closeViewerPeer(viewerId);
+  }
+
+  const pc =
+    new RTCPeerConnection(
+      RTC_CONFIGURATION
+    );
+
+  peerConnections.set(
+    viewerId,
+    pc
+  );
+
+  if (!localStream) {
+
+    await getCameraStream();
+  }
+
+  localStream
+    .getTracks()
+    .forEach(track => {
+
+      try {
+
+        pc.addTrack(
+          track,
+          localStream
+        );
+
+      } catch (err) {
+
+        error(
+          "addTrack error:",
+          err
+        );
+      }
+
+    });
+
+
+  // ----------------------------------------------------------
+  // CONNECTION STATE
+  // ----------------------------------------------------------
+
+  pc.onconnectionstatechange = () => {
+
+    const state =
+      pc.connectionState;
+
+    log(
+      `Viewer ${viewerId} connectionState:`,
+      state
+    );
+
+    if (
+      state === "connected"
+    ) {
+
+      clearRecoveryTimer(
+        viewerId
+      );
+
+      setBroadcastStatus(
+        "LIVE — viewer connected"
+      );
+
+    }
+
+    if (
+      state === "failed"
+    ) {
+
+      scheduleViewerRecovery(
+        viewerId,
+        true
+      );
+
+    }
+
+    if (
+      state === "disconnected"
+    ) {
+
+      scheduleViewerRecovery(
+        viewerId,
+        false
+      );
+    }
+
+    if (
+      state === "closed"
+    ) {
+
+      closeViewerPeer(
+        viewerId
+      );
+    }
+  };
+
+
+  // ----------------------------------------------------------
+  // ICE STATE
+  // ----------------------------------------------------------
+
+  pc.oniceconnectionstatechange =
+    () => {
+
+      const state =
+        pc.iceConnectionState;
+
+      log(
+        `Viewer ${viewerId} ICE:`,
+        state
+      );
+
+      if (
+        state === "connected" ||
+        state === "completed"
+      ) {
+
+        clearRecoveryTimer(
+          viewerId
+        );
+      }
+
+      if (
+        state === "failed"
+      ) {
+
+        scheduleViewerRecovery(
+          viewerId,
+          true
+        );
+      }
+
+      if (
+        state === "disconnected"
+      ) {
+
+        scheduleViewerRecovery(
+          viewerId,
+          false
+        );
+      }
+    };
+
+
+  // ----------------------------------------------------------
+  // ICE CANDIDATES
+  // ----------------------------------------------------------
+
+  pc.onicecandidate = async event => {
+
+    if (
+      !event.candidate
+    ) {
+      return;
+    }
+
+    try {
+
+      const candidatesRef =
+        ref(
+          db,
+          `pandal/signals/${viewerId}/broadcasterCandidates`
+        );
+
+      await push(
+        candidatesRef,
+        event.candidate.toJSON()
+      );
+
+    } catch (err) {
+
+      error(
+        "Unable to send broadcaster ICE candidate:",
+        err
+      );
+    }
+  };
+
+
+  // ----------------------------------------------------------
+  // ANSWER LISTENER
+  // ----------------------------------------------------------
+
+  const answerRef =
+    ref(
+      db,
+      `pandal/signals/${viewerId}/answer`
+    );
+
+  const answerCallback =
+    async snapshot => {
+
+      const answer =
+        snapshot.val();
+
+      if (!answer) {
+        return;
+      }
+
+      if (
+        !peerConnections.has(
+          viewerId
+        )
+      ) {
+        return;
+      }
+
+      try {
+
+        if (
+          pc.signalingState !==
+          "have-local-offer"
+        ) {
+          return;
+        }
+
+        await pc.setRemoteDescription(
+          new RTCSessionDescription(
+            answer
+          )
+        );
+
+        log(
+          "Answer applied:",
+          viewerId
+        );
+
+      } catch (err) {
+
+        error(
+          "Answer error:",
+          err
+        );
+
+        scheduleViewerRecovery(
+          viewerId,
+          true
+        );
+      }
+    };
+
+
+  onValue(
+    answerRef,
+    answerCallback,
+    err => {
+
+      error(
+        "Answer listener error:",
+        err
+      );
+    }
+  );
+
+
+  answerListeners.set(
+    viewerId,
+    {
+      ref: answerRef,
+      callback: answerCallback
+    }
+  );
+
+
+  // ----------------------------------------------------------
+  // VIEWER ICE CANDIDATES
+  // ----------------------------------------------------------
+
+  const viewerCandidatesRef =
+    ref(
+      db,
+      `pandal/signals/${viewerId}/viewerCandidates`
+    );
+
+  const viewerCandidatesCallback =
+    async snapshot => {
+
+      const candidates =
+        snapshot.val();
+
+      if (!candidates) {
+        return;
+      }
+
+      for (
+        const candidate
+        of Object.values(candidates)
+      ) {
+
+        try {
+
+          await pc.addIceCandidate(
+            new RTCIceCandidate(
+              candidate
+            )
+          );
+
+        } catch (err) {
+
+          warn(
+            "ICE candidate error:",
+            err
+          );
+        }
+      }
+    };
+
+
+  onValue(
+    viewerCandidatesRef,
+    viewerCandidatesCallback,
+    err => {
+
+      error(
+        "Viewer candidate listener error:",
+        err
+      );
+    }
+  );
+
+
+  viewerCandidatesListeners.set(
+    viewerId,
+    {
+      ref: viewerCandidatesRef,
+      callback:
+        viewerCandidatesCallback
+    }
+  );
+
+
+  // ----------------------------------------------------------
+  // OFFER
+  // ----------------------------------------------------------
+
+  try {
+
+    const offer =
+      await pc.createOffer({
+        offerToReceiveAudio: false,
+        offerToReceiveVideo: false
+      });
+
+    await pc.setLocalDescription(
+      offer
+    );
+
+    await set(
+      ref(
+        db,
+        `pandal/signals/${viewerId}/offer`
+      ),
+      {
+        type:
+          pc.localDescription.type,
+
+        sdp:
+          pc.localDescription.sdp,
+
+        broadcastId
+      }
+    );
+
+    log(
+      "Offer sent to viewer:",
+      viewerId
+    );
+
+  } catch (err) {
+
+    error(
+      "Offer creation error:",
+      err
+    );
+
+    scheduleViewerRecovery(
+      viewerId,
+      true
+    );
+  }
+}
+
+
+// ============================================================
+// VIEWER RECOVERY
+// ============================================================
+
+function scheduleViewerRecovery(
+  viewerId,
+  immediate = false
+) {
+
+  if (!broadcasting) {
+    return;
+  }
+
+  if (
+    recoveryTimers.has(viewerId)
+  ) {
+
+    return;
+  }
+
+  const currentPeer =
+    peerConnections.get(
+      viewerId
+    );
+
+  let delay =
+    immediate
+      ? 500
+      : RECOVERY_DELAY;
+
+  if (currentPeer) {
+
+    const attempts =
+      Number(
+        currentPeer.__recoveryAttempts || 0
+      );
+
+    delay = Math.min(
+      RECOVERY_DELAY *
+      Math.pow(2, attempts),
+      MAX_RECOVERY_DELAY
+    );
+
+    currentPeer.__recoveryAttempts =
+      attempts + 1;
+  }
+
+  log(
+    `Scheduling recovery for ${viewerId} in ${delay}ms`
+  );
 
   const timer =
     setTimeout(
@@ -808,697 +1285,160 @@ function scheduleViewerRecovery(
 
         try {
 
-          const viewerRef =
-            ref(
-              db,
-              `pandal/viewers/${viewerId}`
-            );
-
-          const snapshot =
-            await new Promise(
-              resolve => {
-
-                onValue(
-                  viewerRef,
-                  resolve,
-                  {
-                    onlyOnce: true
-                  }
-                );
-
-              }
-            );
-
-          const viewer =
-            snapshot.val();
-
-          if (
-            !viewer ||
-            viewer.active !== true ||
-            viewer.broadcastId !==
-              broadcastId
-          ) {
-            return;
-          }
-
           await createViewerConnection(
-            viewerId
+            viewerId,
+            true
           );
 
-        } catch (error) {
+        } catch (err) {
 
-          console.error(
-            "[Recovery] Viewer recovery failed:",
-            error
+          error(
+            "Viewer recovery error:",
+            err
           );
 
+          scheduleViewerRecovery(
+            viewerId,
+            false
+          );
         }
 
       },
-      3000
+      delay
     );
 
   recoveryTimers.set(
     viewerId,
     timer
   );
+}
 
+
+function clearRecoveryTimer(
+  viewerId
+) {
+
+  const timer =
+    recoveryTimers.get(
+      viewerId
+    );
+
+  if (!timer) {
+    return;
+  }
+
+  clearTimeout(timer);
+
+  recoveryTimers.delete(
+    viewerId
+  );
+}
+
+
+function clearAllRecoveryTimers() {
+
+  for (
+    const timer
+    of recoveryTimers.values()
+  ) {
+
+    clearTimeout(timer);
+  }
+
+  recoveryTimers.clear();
 }
 
 
 // ============================================================
-// CREATE VIEWER CONNECTION
+// CLOSE VIEWER PEER
 // ============================================================
 
-async function createViewerConnection(
+function closeViewerPeer(
   viewerId
 ) {
 
-  if (
-    !broadcasting ||
-    !localStream ||
-    !viewerId
-  ) {
-    return;
-  }
+  clearRecoveryTimer(
+    viewerId
+  );
 
-  if (
-    viewerCreationLocks.has(
-      viewerId
-    )
-  ) {
-    return;
-  }
-
-  const existingPeer =
+  const pc =
     peerConnections.get(
       viewerId
     );
 
-  if (existingPeer) {
+  if (pc) {
 
-    const state =
-      existingPeer.connectionState;
-
-    if (
-      state === "new" ||
-      state === "connecting" ||
-      state === "connected"
-    ) {
-      return;
-    }
-
-    closeViewerPeer(
-      viewerId
-    );
+    try {
+      pc.onicecandidate = null;
+      pc.onconnectionstatechange = null;
+      pc.oniceconnectionstatechange = null;
+      pc.close();
+    } catch (_) {}
 
   }
 
-  viewerCreationLocks.add(
+  peerConnections.delete(
     viewerId
   );
 
-  try {
 
-    const peer =
-      new RTCPeerConnection(
-        {
-          iceServers:
-            ICE_SERVERS,
+  const answerListener =
+    answerListeners.get(
+      viewerId
+    );
 
-          iceCandidatePoolSize:
-            10,
+  if (answerListener) {
 
-          bundlePolicy:
-            "max-bundle",
+    try {
 
-          rtcpMuxPolicy:
-            "require"
-        }
+      off(
+        answerListener.ref,
+        "value",
+        answerListener.callback
       );
 
-    peerConnections.set(
-      viewerId,
-      peer
-    );
+    } catch (_) {}
 
-
-    localStream
-      .getTracks()
-      .forEach(
-        track => {
-
-          peer.addTrack(
-            track,
-            localStream
-          );
-
-        }
-      );
-
-
-    peer.onicecandidate =
-      async event => {
-
-        if (!event.candidate) {
-          return;
-        }
-
-        try {
-
-          await sendBroadcasterCandidate(
-            viewerId,
-            event.candidate
-          );
-
-        } catch (error) {
-
-          console.warn(
-            "[WebRTC] Candidate send failed:",
-            error
-          );
-
-        }
-
-      };
-
-
-    peer.onconnectionstatechange =
-      () => {
-
-        const state =
-          peer.connectionState;
-
-        console.log(
-          `[WebRTC] Viewer ${viewerId}:`,
-          state
-        );
-
-
-        if (
-          state === "connected"
-        ) {
-
-          setBroadcastStatus(
-            "LIVE — viewer connected"
-          );
-
-        }
-
-
-        if (
-          state === "failed" ||
-          state === "disconnected"
-        ) {
-
-          scheduleViewerRecovery(
-            viewerId
-          );
-
-        }
-
-
-        if (
-          state === "closed"
-        ) {
-
-          peerConnections.delete(
-            viewerId
-          );
-
-        }
-
-      };
-
-
-    peer.oniceconnectionstatechange =
-      () => {
-
-        const state =
-          peer.iceConnectionState;
-
-        console.log(
-          `[WebRTC] ICE ${viewerId}:`,
-          state
-        );
-
-
-        if (
-          state === "failed"
-        ) {
-
-          scheduleViewerRecovery(
-            viewerId
-          );
-
-        }
-
-      };
-
-
-    listenForViewerAnswer(
-      viewerId,
-      peer
-    );
-
-    listenForViewerCandidates(
-      viewerId,
-      peer
-    );
-
-
-    const offer =
-      await peer.createOffer(
-        {
-          offerToReceiveAudio:
-            false,
-
-          offerToReceiveVideo:
-            false
-        }
-      );
-
-
-    await peer.setLocalDescription(
-      offer
-    );
-
-
-    await set(
-      ref(
-        db,
-        `pandal/signals/${viewerId}/offer`
-      ),
-      {
-        type:
-          peer.localDescription.type,
-
-        sdp:
-          peer.localDescription.sdp
-      }
-    );
-
-
-    console.log(
-      "[WebRTC] Offer sent:",
+    answerListeners.delete(
       viewerId
     );
-
-  } catch (error) {
-
-    console.error(
-      "[WebRTC] Peer creation failed:",
-      error
-    );
-
-    closeViewerPeer(
-      viewerId
-    );
-
-    scheduleViewerRecovery(
-      viewerId
-    );
-
-  } finally {
-
-    viewerCreationLocks.delete(
-      viewerId
-    );
-
   }
 
+
+  const candidateListener =
+    viewerCandidatesListeners.get(
+      viewerId
+    );
+
+  if (candidateListener) {
+
+    try {
+
+      off(
+        candidateListener.ref,
+        "value",
+        candidateListener.callback
+      );
+
+    } catch (_) {}
+
+    viewerCandidatesListeners.delete(
+      viewerId
+    );
+  }
+
+  log(
+    "Closed viewer:",
+    viewerId
+  );
 }
 
 
 // ============================================================
-// VIEWER LISTENER
+// CLOSE ALL VIEWERS
 // ============================================================
 
-function startViewerListener() {
-
-  if (viewerListener) {
-
-    console.log(
-      "[Viewer Listener] Already running."
-    );
-
-    return;
-  }
-
-  const viewersRef =
-    ref(
-      db,
-      "pandal/viewers"
-    );
-
-
-  const callback =
-    async snapshot => {
-
-      try {
-
-        const viewers =
-          snapshot.val();
-
-
-        console.log(
-          "[Viewer Listener] Snapshot:",
-          viewers
-        );
-
-
-        if (!broadcasting) {
-          return;
-        }
-
-
-        if (!viewers) {
-
-          setBroadcastStatus(
-            "LIVE — waiting for viewers..."
-          );
-
-          return;
-        }
-
-
-        for (
-          const [
-            viewerId,
-            viewer
-          ] of Object.entries(
-            viewers
-          )
-        ) {
-
-          if (
-            viewer &&
-            viewer.active === true &&
-            viewer.broadcastId ===
-              broadcastId
-          ) {
-
-            console.log(
-              "[Viewer Listener] Viewer found:",
-              viewerId
-            );
-
-
-            if (
-              !peerConnections.has(
-                viewerId
-              )
-            ) {
-
-              await createViewerConnection(
-                viewerId
-              );
-
-            }
-
-          } else {
-
-            if (
-              peerConnections.has(
-                viewerId
-              )
-            ) {
-
-              closeViewerPeer(
-                viewerId
-              );
-
-            }
-
-          }
-
-        }
-
-      } catch (error) {
-
-        console.error(
-          "[Viewer Listener] Processing error:",
-          error
-        );
-
-      }
-
-    };
-
-
-  const errorCallback =
-    error => {
-
-      console.error(
-        "[Viewer Listener] FIREBASE ERROR:",
-        error
-      );
-
-      console.error(
-        "[Viewer Listener] Error code:",
-        error?.code
-      );
-
-      console.error(
-        "[Viewer Listener] Error message:",
-        error?.message
-      );
-
-
-      if (
-        error?.code ===
-        "PERMISSION_DENIED"
-      ) {
-
-        setBroadcastStatus(
-          "Firebase permission denied for viewers."
-        );
-
-      } else {
-
-        setBroadcastStatus(
-          `Viewer listener error: ${
-            error?.message ||
-            error?.code ||
-            "Unknown error"
-          }`
-        );
-
-      }
-
-    };
-
-
-  onValue(
-    viewersRef,
-    callback,
-    errorCallback
-  );
-
-
-  viewerListener = {
-    ref: viewersRef,
-    callback
-  };
-
-
-  console.log(
-    "[Viewer Listener] Started."
-  );
-
-}
-
-
-// ============================================================
-// STOP VIEWER LISTENER
-// ============================================================
-
-function stopViewerListener() {
-
-  if (!viewerListener) {
-    return;
-  }
-
-  off(
-    viewerListener.ref,
-    "value",
-    viewerListener.callback
-  );
-
-  viewerListener =
-    null;
-
-  console.log(
-    "[Viewer Listener] Stopped."
-  );
-
-}
-
-
-// ============================================================
-// START BROADCAST
-// ============================================================
-
-async function startBroadcast() {
-
-  if (broadcasting) {
-    return;
-  }
-
-
-  if (!auth.currentUser) {
-
-    setBroadcastStatus(
-      "Please sign in first."
-    );
-
-    return;
-  }
-
-
-  if (
-    !navigator.mediaDevices ||
-    !navigator.mediaDevices.getUserMedia
-  ) {
-
-    setBroadcastStatus(
-      "Camera access is not supported by this browser."
-    );
-
-    return;
-  }
-
-
-  try {
-
-    setBroadcastStatus(
-      "Requesting camera and microphone..."
-    );
-
-
-    await getCameraStream();
-
-
-    broadcastId =
-      createId(
-        "broadcast"
-      );
-
-
-    broadcasting =
-      true;
-
-
-    await set(
-      ref(
-        db,
-        "pandal/broadcast"
-      ),
-      {
-        active: true,
-
-        id: broadcastId,
-
-        startedAt:
-          Date.now()
-      }
-    );
-
-
-    updateBroadcastButtons();
-
-
-    setBroadcastStatus(
-      "LIVE — waiting for viewers..."
-    );
-
-
-    setConnectionState(
-      "Broadcast is active."
-    );
-
-
-    startViewerListener();
-
-
-    console.log(
-      "[Broadcast] Started:",
-      broadcastId
-    );
-
-  } catch (error) {
-
-    console.error(
-      "[Broadcast] Start failed:",
-      error
-    );
-
-
-    broadcasting =
-      false;
-
-    broadcastId =
-      null;
-
-
-    updateBroadcastButtons();
-
-
-    if (
-      error?.name ===
-      "NotAllowedError"
-    ) {
-
-      setBroadcastStatus(
-        "Camera/microphone permission was denied."
-      );
-
-    } else if (
-      error?.name ===
-      "NotFoundError"
-    ) {
-
-      setBroadcastStatus(
-        "Camera or microphone was not found."
-      );
-
-    } else if (
-      error?.code ===
-      "PERMISSION_DENIED"
-    ) {
-
-      setBroadcastStatus(
-        "Firebase permission denied."
-      );
-
-    } else {
-
-      setBroadcastStatus(
-        `Unable to start broadcast: ${
-          error?.message ||
-          "Unknown error"
-        }`
-      );
-
-    }
-
-  }
-
-}
-
-
-// ============================================================
-// STOP BROADCAST
-// ============================================================
-
-async function stopBroadcast() {
-
-  broadcasting =
-    false;
-
-
-  stopViewerListener();
-
+function closeAllViewerPeers() {
 
   for (
     const viewerId
@@ -1508,168 +1448,259 @@ async function stopBroadcast() {
     closeViewerPeer(
       viewerId
     );
-
   }
+}
 
 
-  peerConnections.clear();
+// ============================================================
+// CLEAR SIGNAL LISTENERS
+// ============================================================
 
-  viewerCreationLocks.clear();
+function clearAllSignalListeners() {
 
-
-  if (broadcastId) {
+  for (
+    const listener
+    of answerListeners.values()
+  ) {
 
     try {
 
-      await set(
-        ref(
-          db,
-          "pandal/broadcast"
-        ),
-        {
-          active: false,
-
-          id: broadcastId,
-
-          stoppedAt:
-            Date.now()
-        }
+      off(
+        listener.ref,
+        "value",
+        listener.callback
       );
 
-    } catch (error) {
+    } catch (_) {}
+  }
 
-      console.warn(
-        "[Broadcast] Unable to update broadcast:",
-        error
+  answerListeners.clear();
+
+
+  for (
+    const listener
+    of viewerCandidatesListeners.values()
+  ) {
+
+    try {
+
+      off(
+        listener.ref,
+        "value",
+        listener.callback
       );
 
-    }
-
+    } catch (_) {}
   }
 
-
-  broadcastId =
-    null;
-
-
-  if (localStream) {
-
-    localStream
-      .getTracks()
-      .forEach(
-        track => {
-          track.stop();
-        }
-      );
-
-    localStream =
-      null;
-
-  }
-
-
-  if (preview) {
-    preview.srcObject =
-      null;
-  }
-
-
-  updateBroadcastButtons();
-
-
-  setBroadcastStatus(
-    "Broadcast stopped."
-  );
-
-
-  setConnectionState(
-    "Broadcast offline."
-  );
-
+  viewerCandidatesListeners.clear();
 }
 
 
 // ============================================================
-// BUTTONS
+// NETWORK RECOVERY
 // ============================================================
 
-if (startBroadcastBtn) {
+window.addEventListener(
+  "offline",
+  () => {
 
-  startBroadcastBtn.addEventListener(
-    "click",
-    startBroadcast
-  );
-
-}
-
-
-if (stopBroadcastBtn) {
-
-  stopBroadcastBtn.addEventListener(
-    "click",
-    stopBroadcast
-  );
-
-}
-
-
-// ============================================================
-// BROADCAST STATE
-// ============================================================
-
-function listenToBroadcastState() {
-
-  const broadcastRef =
-    ref(
-      db,
-      "pandal/broadcast"
+    warn(
+      "Browser reports OFFLINE."
     );
 
+    if (!broadcasting) {
+      return;
+    }
+
+    setConnectionState(
+      "Internet interrupted — reconnecting..."
+    );
+
+    setBroadcastStatus(
+      "LIVE paused temporarily — waiting for network..."
+    );
+  }
+);
+
+
+window.addEventListener(
+  "online",
+  async () => {
+
+    log(
+      "Browser reports ONLINE."
+    );
+
+    if (!broadcasting) {
+      return;
+    }
+
+    setConnectionState(
+      "Network restored — reconnecting..."
+    );
+
+    setBroadcastStatus(
+      "Reconnecting live broadcast..."
+    );
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          1500
+        )
+    );
+
+    if (!broadcasting) {
+      return;
+    }
+
+    stopViewerListener();
+
+    startViewerListener();
+
+    for (
+      const viewerId
+      of peerConnections.keys()
+    ) {
+
+      scheduleViewerRecovery(
+        viewerId,
+        true
+      );
+    }
+
+    setConnectionState(
+      "Broadcast live"
+    );
+  }
+);
+
+
+// ============================================================
+// PAGE VISIBILITY RECOVERY
+// ============================================================
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+
+    if (
+      document.visibilityState !==
+      "visible"
+    ) {
+      return;
+    }
+
+    if (!broadcasting) {
+      return;
+    }
+
+    clearTimeout(
+      visibilityRecoveryTimer
+    );
+
+    visibilityRecoveryTimer =
+      setTimeout(
+        () => {
+
+          if (!broadcasting) {
+            return;
+          }
+
+          log(
+            "Page became visible — checking connections."
+          );
+
+          startViewerListener();
+
+          for (
+            const [
+              viewerId,
+              pc
+            ]
+            of peerConnections
+          ) {
+
+            if (
+              pc.connectionState ===
+                "failed" ||
+              pc.connectionState ===
+                "disconnected" ||
+              pc.iceConnectionState ===
+                "failed"
+            ) {
+
+              scheduleViewerRecovery(
+                viewerId,
+                true
+              );
+            }
+          }
+
+        },
+        1000
+      );
+  }
+);
+
+
+// ============================================================
+// BROADCAST STATE LISTENER
+// ============================================================
+
+function startBroadcastStateListener() {
+
+  if (broadcastStateListener) {
+    return;
+  }
+
+  const broadcastRef =
+    ref(db, "pandal/broadcast");
 
   const callback =
     snapshot => {
 
-      const data =
+      const state =
         snapshot.val();
 
+      if (!state?.active) {
 
-      if (
-        !data ||
-        data.active !== true
-      ) {
-
-        if (!broadcasting) {
-
-          setBroadcastStatus(
-            "Broadcast offline."
-          );
-
-        }
-
+        return;
       }
 
+      if (
+        broadcasting &&
+        state.id === broadcastId
+      ) {
+
+        return;
+      }
+
+      log(
+        "Broadcast state:",
+        state
+      );
     };
 
 
   onValue(
     broadcastRef,
     callback,
-    error => {
+    err => {
 
-      console.error(
-        "[Broadcast State] Firebase error:",
-        error
+      error(
+        "Broadcast state listener error:",
+        err
       );
-
     }
   );
 
-
-  broadcastListener = {
+  broadcastStateListener = {
     ref: broadcastRef,
     callback
   };
-
 }
 
 
@@ -1683,27 +1714,22 @@ function loadPrayers() {
     return;
   }
 
+  if (prayersListener) {
+    return;
+  }
 
   const prayersRef =
-    ref(
-      db,
-      "pandal/prayers_wall"
-    );
+    ref(db, "pandal/prayers_wall");
 
-
-  onValue(
-    prayersRef,
+  const callback =
     snapshot => {
 
-      adminPrayers.innerHTML =
-        "";
-
-
-      const prayers =
+      const data =
         snapshot.val();
 
+      adminPrayers.innerHTML = "";
 
-      if (!prayers) {
+      if (!data) {
 
         adminPrayers.innerHTML =
           "<p>No prayers yet.</p>";
@@ -1711,37 +1737,29 @@ function loadPrayers() {
         return;
       }
 
-
       const entries =
-        Object.entries(
-          prayers
-        )
-        .sort(
-          (a, b) =>
-            Number(
-              b[1]?.createdAt || 0
-            ) -
-            Number(
-              a[1]?.createdAt || 0
-            )
-        );
-
+        Object.entries(data)
+          .sort(
+            ([, a], [, b]) =>
+              (b?.createdAt || 0) -
+              (a?.createdAt || 0)
+          );
 
       for (
         const [
           id,
           prayer
-        ] of entries
+        ]
+        of entries
       ) {
 
-        const item =
+        const article =
           document.createElement(
-            "div"
+            "article"
           );
 
-        item.className =
+        article.className =
           "admin-prayer";
-
 
         const text =
           document.createElement(
@@ -1749,86 +1767,54 @@ function loadPrayers() {
           );
 
         text.textContent =
-          prayer.text || "";
+          prayer?.text || "";
 
-
-        const deleteBtn =
+        const time =
           document.createElement(
-            "button"
+            "small"
           );
 
-        deleteBtn.type =
-          "button";
+        if (prayer?.createdAt) {
 
-        deleteBtn.textContent =
-          "Delete";
+          time.textContent =
+            new Date(
+              prayer.createdAt
+            ).toLocaleString(
+              "en-IN"
+            );
+        }
 
-
-        deleteBtn.addEventListener(
-          "click",
-          async () => {
-
-            if (
-              !confirm(
-                "Delete this prayer?"
-              )
-            ) {
-              return;
-            }
-
-
-            try {
-
-              await remove(
-                ref(
-                  db,
-                  `pandal/prayers_wall/${id}`
-                )
-              );
-
-            } catch (error) {
-
-              console.error(
-                "[Prayer] Delete failed:",
-                error
-              );
-
-            }
-
-          }
-        );
-
-
-        item.appendChild(
+        article.appendChild(
           text
         );
 
-        item.appendChild(
-          deleteBtn
+        article.appendChild(
+          time
         );
-
 
         adminPrayers.appendChild(
-          item
+          article
         );
-
       }
+    };
 
-    },
 
-    error => {
+  onValue(
+    prayersRef,
+    callback,
+    err => {
 
-      console.error(
-        "[Prayer] Listener error:",
-        error
+      error(
+        "Prayer listener error:",
+        err
       );
-
-      adminPrayers.innerHTML =
-        "<p>Unable to load prayers.</p>";
-
     }
   );
 
+  prayersListener = {
+    ref: prayersRef,
+    callback
+  };
 }
 
 
@@ -1844,43 +1830,35 @@ if (announcementForm) {
 
       event.preventDefault();
 
-
-      if (!auth.currentUser) {
+      if (!currentUser) {
 
         setAnnouncementStatus(
-          "Please sign in first.",
-          "error"
+          "Please login first."
         );
 
         return;
       }
-
 
       const title =
         announcementTitle?.value.trim();
 
-
       const message =
         announcementText?.value.trim();
-
 
       if (!title || !message) {
 
         setAnnouncementStatus(
-          "Enter both a title and message.",
-          "error"
+          "Enter announcement title and message."
         );
 
         return;
       }
-
 
       try {
 
         setAnnouncementStatus(
           "Publishing..."
         );
-
 
         const announcementRef =
           push(
@@ -1890,233 +1868,102 @@ if (announcementForm) {
             )
           );
 
-
         await set(
           announcementRef,
           {
-            title: title,
-
-            message: message,
-
+            title,
+            message,
             createdAt:
               Date.now(),
-
             author:
-              auth.currentUser.email ||
-              "Admin"
+              currentUser.email ||
+              currentUser.uid
           }
         );
 
-
         announcementForm.reset();
 
+        setAnnouncementStatus(
+          "Announcement published successfully."
+        );
+
+      } catch (err) {
+
+        error(
+          "Announcement error:",
+          err
+        );
 
         setAnnouncementStatus(
-          "Announcement published.",
-          "success"
+          err?.message ||
+          "Unable to publish announcement."
         );
-
-
-      } catch (error) {
-
-        console.error(
-          "[Announcements] Error:",
-          error
-        );
-
-
-        setAnnouncementStatus(
-          `Unable to publish announcement: ${
-            error?.message ||
-            "Unknown error"
-          }`,
-          "error"
-        );
-
       }
-
     }
   );
+}
 
+
+function setAnnouncementStatus(
+  message
+) {
+
+  if (!announcementStatus) {
+    return;
+  }
+
+  announcementStatus.textContent =
+    message;
 }
 
 
 // ============================================================
-// NETWORK
-// ============================================================
-
-window.addEventListener(
-  "online",
-  () => {
-
-    console.log(
-      "[Network] Browser reports ONLINE."
-    );
-
-
-    if (!broadcasting) {
-      return;
-    }
-
-
-    setBroadcastStatus(
-      "Connection restored — broadcast is live."
-    );
-
-
-    setTimeout(
-      () => {
-
-        if (!broadcasting) {
-          return;
-        }
-
-
-        for (
-          const viewerId
-          of peerConnections.keys()
-        ) {
-
-          scheduleViewerRecovery(
-            viewerId
-          );
-
-        }
-
-      },
-      1000
-    );
-
-  }
-);
-
-
-window.addEventListener(
-  "offline",
-  () => {
-
-    console.warn(
-      "[Network] Browser reports OFFLINE."
-    );
-
-
-    /*
-     * IMPORTANT:
-     * Do not stop the broadcast here.
-     *
-     * The browser can temporarily report
-     * offline while Firebase/WebRTC is
-     * reconnecting.
-     */
-
-    if (broadcasting) {
-
-      setBroadcastStatus(
-        "Connection interrupted — reconnecting..."
-      );
-
-    }
-
-  }
-);
-
-
-// ============================================================
-// VISIBILITY RECOVERY
-// ============================================================
-
-document.addEventListener(
-  "visibilitychange",
-  () => {
-
-    if (
-      document.visibilityState ===
-        "visible" &&
-      broadcasting
-    ) {
-
-      console.log(
-        "[Visibility] Admin page visible again."
-      );
-
-
-      for (
-        const viewerId
-        of peerConnections.keys()
-      ) {
-
-        scheduleViewerRecovery(
-          viewerId
-        );
-
-      }
-
-    }
-
-  }
-);
-
-
-// ============================================================
-// PAGE CLEANUP
+// CLEANUP BEFORE PAGE UNLOAD
 // ============================================================
 
 window.addEventListener(
   "beforeunload",
   () => {
 
-    if (broadcasting) {
-
-      set(
-        ref(
-          db,
-          "pandal/broadcast"
-        ),
-        {
-          active: false,
-
-          id: broadcastId,
-
-          stoppedAt:
-            Date.now()
-        }
-      )
-      .catch(
-        () => {}
-      );
-
+    if (!broadcasting) {
+      return;
     }
 
+    try {
 
-    for (
-      const viewerId
-      of peerConnections.keys()
-    ) {
-
-      closeViewerPeer(
-        viewerId
+      navigator.sendBeacon?.(
+        ""
       );
 
-    }
+    } catch (_) {}
 
+    stopLocalCamera();
   }
 );
 
 
 // ============================================================
-// INITIALIZATION
+// DEBUG
 // ============================================================
 
-updateBroadcastButtons();
+window.GanpatiAdminDebug = {
+  getBroadcastId: () =>
+    broadcastId,
 
-setBroadcastStatus(
-  "Broadcast offline."
-);
+  getViewerCount: () =>
+    peerConnections.size,
 
-listenToBroadcastState();
+  getViewerIds: () =>
+    [...peerConnections.keys()],
+
+  getBroadcasting: () =>
+    broadcasting,
+
+  getIceServers: () =>
+    ICE_SERVERS
+};
 
 
-console.log(
-  "%cGanpati Admin initialized.",
-  "font-weight:bold"
+log(
+  "Ganpati Admin initialized."
 );
