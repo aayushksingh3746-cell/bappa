@@ -1,5 +1,6 @@
 /* =========================================================
-   FIREBASE IMPORTS
+   GANESH CHATURTHI PANDAL — PUBLIC APP
+   Firebase RTDB + Sankalp + Announcements + Aarti + WebRTC
 ========================================================= */
 
 import {
@@ -22,40 +23,27 @@ import {
 ========================================================= */
 
 const firebaseConfig = {
-  apiKey:
-    "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
-
-  authDomain:
-    "ganpati-5f24e.firebaseapp.com",
+  apiKey: "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
+  authDomain: "ganpati-5f24e.firebaseapp.com",
 
   databaseURL:
-    "https://ganpati-5f24e-default-rtdb.firebaseio.com",
+    "https://ganpati-5f24e-default-rtdb.asia-southeast1.firebasedatabase.app",
 
-  projectId:
-    "ganpati-5f24e",
-
-  storageBucket:
-    "ganpati-5f24e.firebasestorage.app",
-
-  messagingSenderId:
-    "512949354669",
-
-  appId:
-    "1:512949354669:web:f561488c630203a9ae4624"
+  projectId: "ganpati-5f24e",
+  storageBucket: "ganpati-5f24e.firebasestorage.app",
+  messagingSenderId: "512949354669",
+  appId: "1:512949354669:web:f561488c630203a9ae4624"
 };
 
 
 /* =========================================================
-   INITIALIZE FIREBASE
+   INITIALIZE
 ========================================================= */
 
-const app =
-  initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
-const database =
-  getDatabase(app);
-
-console.log("Firebase initialized");
+console.log("Ganesh Pandal app initialized");
 
 
 /* =========================================================
@@ -72,25 +60,31 @@ const $ = id =>
 
 function hidePreloader() {
 
-  const preloader =
-    $("preloader");
+  const preloader = $("preloader");
 
   if (!preloader) return;
 
   preloader.classList.add("done");
 
+  setTimeout(() => {
+
+    if (preloader.parentNode) {
+      preloader.remove();
+    }
+
+  }, 900);
+
 }
 
 
-window.addEventListener(
-  "load",
-  () => {
-    setTimeout(
-      hidePreloader,
-      400
-    );
-  }
-);
+window.addEventListener("load", () => {
+
+  setTimeout(
+    hidePreloader,
+    500
+  );
+
+});
 
 
 setTimeout(
@@ -103,11 +97,9 @@ setTimeout(
    COUNTDOWN
 ========================================================= */
 
-const countdown =
-  $("countdown");
-
-
 function updateCountdown() {
+
+  const countdown = $("countdown");
 
   if (!countdown) return;
 
@@ -116,11 +108,8 @@ function updateCountdown() {
       "2026-09-24T00:00:00+05:30"
     ).getTime();
 
-  const now =
-    Date.now();
-
   const difference =
-    target - now;
+    target - Date.now();
 
 
   if (difference <= 0) {
@@ -132,13 +121,13 @@ function updateCountdown() {
     `;
 
     return;
+
   }
 
 
   const days =
     Math.floor(
-      difference /
-      86400000
+      difference / 86400000
     );
 
   const hours =
@@ -216,8 +205,12 @@ if (prayerForm) {
 
       if (!text) {
 
-        prayerStatus.textContent =
-          "Please write your Sankalp.";
+        if (prayerStatus) {
+
+          prayerStatus.textContent =
+            "Please write your Sankalp.";
+
+        }
 
         return;
 
@@ -226,24 +219,27 @@ if (prayerForm) {
 
       if (text.length > 50) {
 
-        prayerStatus.textContent =
-          "Maximum 50 characters allowed.";
+        if (prayerStatus) {
+
+          prayerStatus.textContent =
+            "Maximum 50 characters allowed.";
+
+        }
 
         return;
 
       }
 
 
-      prayerStatus.textContent =
-        "Offering your Sankalp...";
+      if (prayerStatus) {
+
+        prayerStatus.textContent =
+          "Offering your Sankalp...";
+
+      }
 
 
       try {
-
-        console.log(
-          "Submitting Sankalp..."
-        );
-
 
         const prayerRef =
           push(
@@ -286,34 +282,33 @@ if (prayerForm) {
         ]);
 
 
-        console.log(
-          "Sankalp saved:",
-          prayerRef.key
-        );
-
-
         prayerForm.reset();
 
 
-        prayerStatus.textContent =
-          "Your Sankalp has been offered 🙏";
+        if (prayerStatus) {
+
+          prayerStatus.textContent =
+            "Your Sankalp has been offered 🙏";
+
+        }
 
       }
 
       catch (error) {
 
         console.error(
-          "SANKALP ERROR:",
+          "Sankalp error:",
           error
         );
 
 
-        prayerStatus.textContent =
-          "Firebase error: " +
-          (
-            error.message ||
-            "Unable to connect."
-          );
+        if (prayerStatus) {
+
+          prayerStatus.textContent =
+            "Firebase error: " +
+            error.message;
+
+        }
 
       }
 
@@ -324,7 +319,7 @@ if (prayerForm) {
 
 
 /* =========================================================
-   PRAYER WALL
+   SANKALP WALL
 ========================================================= */
 
 if (prayerWall) {
@@ -337,16 +332,15 @@ if (prayerWall) {
 
     snapshot => {
 
-      const prayer =
+      const data =
         snapshot.val();
 
 
-      if (!prayer) return;
+      if (!data) return;
 
 
       const item =
         document.createElement("div");
-
 
       item.className =
         "prayer-item";
@@ -355,19 +349,13 @@ if (prayerWall) {
       const text =
         document.createElement("p");
 
-
       text.textContent =
-        prayer.text || "";
+        data.text || "";
 
 
-      item.appendChild(
-        text
-      );
+      item.appendChild(text);
 
-
-      prayerWall.prepend(
-        item
-      );
+      prayerWall.prepend(item);
 
 
       while (
@@ -391,6 +379,36 @@ if (prayerWall) {
   );
 
 }
+
+
+/* =========================================================
+   HERO SANKALP
+========================================================= */
+
+$("heroSankalp")?.addEventListener(
+  "click",
+  () => {
+
+    const section =
+      $("sankalp");
+
+
+    if (section) {
+
+      section.scrollIntoView({
+        behavior: "smooth"
+      });
+
+    }
+
+
+    setTimeout(
+      () => prayerInput?.focus(),
+      600
+    );
+
+  }
+);
 
 
 /* =========================================================
@@ -421,14 +439,12 @@ if (announcements) {
       const article =
         document.createElement("article");
 
-
       article.className =
         "announcement-item";
 
 
       const title =
         document.createElement("h3");
-
 
       title.textContent =
         data.title || "Announcement";
@@ -437,19 +453,12 @@ if (announcements) {
       const message =
         document.createElement("p");
 
-
       message.textContent =
         data.message || "";
 
 
-      article.appendChild(
-        title
-      );
-
-
-      article.appendChild(
-        message
-      );
+      article.appendChild(title);
+      article.appendChild(message);
 
 
       announcements.prepend(
@@ -461,48 +470,8 @@ if (announcements) {
     error => {
 
       console.error(
-        "Announcement error:",
+        "Announcements error:",
         error
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   HERO SANKALP BUTTON
-========================================================= */
-
-const heroSankalp =
-  $("heroSankalp");
-
-
-if (heroSankalp) {
-
-  heroSankalp.addEventListener(
-    "click",
-    () => {
-
-      const section =
-        $("sankalp");
-
-
-      if (section) {
-
-        section.scrollIntoView({
-          behavior: "smooth"
-        });
-
-      }
-
-
-      setTimeout(
-        () => {
-          prayerInput?.focus();
-        },
-        600
       );
 
     }
@@ -524,42 +493,50 @@ const tracks = [
 
   {
     title: "Ganpati Bappa Moriya",
-    src: "assets/Ganpati Bappa Moriya Humse Badhkar Kaun 128 Kbps.mp3"
+    src:
+      "assets/Ganpati Bappa Moriya Humse Badhkar Kaun 128 Kbps.mp3"
   },
 
   {
     title: "Jalwa Mera Hi Jalwa",
-    src: "assets/Jalwa Mera Hi Jalwa Wanted 128 Kbps.mp3"
+    src:
+      "assets/Jalwa Mera Hi Jalwa Wanted 128 Kbps.mp3"
   },
 
   {
     title: "Sukhkarta Dukhharta",
-    src: "assets/Keshav_Kumar_-_Sukhkarta_Dukhharta_(mp3.pm).mp3"
+    src:
+      "assets/Keshav_Kumar_-_Sukhkarta_Dukhharta_(mp3.pm).mp3"
   },
 
   {
     title: "Jai Ganesh Jai Ganesh Deva",
-    src: "assets/Kumar_Vishu_Vandana_Vajpai_-_Jai_Ganesh_Jai_Ganesh_Deva_(mp3.pm).mp3"
+    src:
+      "assets/Kumar_Vishu_Vandana_Vajpai_-_Jai_Ganesh_Jai_Ganesh_Deva_(mp3.pm).mp3"
   },
 
   {
     title: "Maurya Re",
-    src: "assets/Maurya Re Don 2006 128 Kbps.mp3"
+    src:
+      "assets/Maurya Re Don 2006 128 Kbps.mp3"
   },
 
   {
     title: "Shendur Laal Chadhayo",
-    src: "assets/Shendur Laal Chadhayo Aarti 128 Kbps.mp3"
+    src:
+      "assets/Shendur Laal Chadhayo Aarti 128 Kbps.mp3"
   },
 
   {
     title: "Suno Ganpati Bappa Morya",
-    src: "assets/Suno Ganpati Bappa Morya Judwaa 2 128 Kbps.mp3"
+    src:
+      "assets/Suno Ganpati Bappa Morya Judwaa 2 128 Kbps.mp3"
   },
 
   {
     title: "Shree Ganeshay Dheemahi",
-    src: "assets/Viruddh_-_Shree_Ganeshay_Dheemahi_(mp3.pm).mp3"
+    src:
+      "assets/Viruddh_-_Shree_Ganeshay_Dheemahi_(mp3.pm).mp3"
   }
 
 ];
@@ -608,23 +585,17 @@ function formatTime(seconds) {
   }
 
 
-  const minutes =
-    Math.floor(
-      seconds / 60
-    );
+  const min =
+    Math.floor(seconds / 60);
 
-
-  const secondsPart =
-    Math.floor(
-      seconds % 60
-    );
+  const sec =
+    Math.floor(seconds % 60);
 
 
   return (
-    minutes +
+    min +
     ":" +
-    String(secondsPart)
-      .padStart(2, "0")
+    String(sec).padStart(2, "0")
   );
 
 }
@@ -637,18 +608,15 @@ function updateTrackList() {
 
   trackList
     .querySelectorAll("[data-track]")
-    .forEach(
-      button => {
+    .forEach(button => {
 
-        button.classList.toggle(
-          "active",
-          Number(
-            button.dataset.track
-          ) === currentTrack
-        );
+      button.classList.toggle(
+        "active",
+        Number(button.dataset.track) ===
+          currentTrack
+      );
 
-      }
-    );
+    });
 
 }
 
@@ -670,43 +638,26 @@ function loadTrack(index) {
     track.src;
 
 
-  if (trackTitle) {
-
+  if (trackTitle)
     trackTitle.textContent =
       track.title;
 
-  }
 
-
-  if (trackNumber) {
-
+  if (trackNumber)
     trackNumber.textContent =
       `${index + 1} / ${tracks.length}`;
 
-  }
 
-
-  if (progress) {
-
+  if (progress)
     progress.value = 0;
 
-  }
+
+  if (currentTime)
+    currentTime.textContent = "0:00";
 
 
-  if (currentTime) {
-
-    currentTime.textContent =
-      "0:00";
-
-  }
-
-
-  if (duration) {
-
-    duration.textContent =
-      "0:00";
-
-  }
+  if (duration)
+    duration.textContent = "0:00";
 
 
   updateTrackList();
@@ -729,14 +680,11 @@ if (trackList) {
       button.type =
         "button";
 
-
       button.className =
         "track-item";
 
-
       button.dataset.track =
         index;
-
 
       button.textContent =
         `${index + 1}. ${track.title}`;
@@ -748,34 +696,22 @@ if (trackList) {
 
           loadTrack(index);
 
-
           audio
             ?.play()
             .then(() => {
 
-              if (playIcon) {
-
+              if (playIcon)
                 playIcon.textContent =
                   "❚❚";
 
-              }
-
             })
-            .catch(
-              error =>
-                console.error(
-                  "Audio error:",
-                  error
-                )
-            );
+            .catch(() => {});
 
         }
       );
 
 
-      trackList.appendChild(
-        button
-      );
+      trackList.appendChild(button);
 
     }
   );
@@ -792,22 +728,18 @@ playPause?.addEventListener(
 
     if (audio.paused) {
 
-      audio
-        .play()
+      audio.play()
         .then(() => {
 
-          if (playIcon) {
-
+          if (playIcon)
             playIcon.textContent =
               "❚❚";
-
-          }
 
         })
         .catch(
           error =>
             console.error(
-              "Audio play error:",
+              "Audio error:",
               error
             )
         );
@@ -818,13 +750,9 @@ playPause?.addEventListener(
 
       audio.pause();
 
-
-      if (playIcon) {
-
+      if (playIcon)
         playIcon.textContent =
           "▶";
-
-      }
 
     }
 
@@ -836,14 +764,9 @@ audio?.addEventListener(
   "loadedmetadata",
   () => {
 
-    if (duration) {
-
+    if (duration)
       duration.textContent =
-        formatTime(
-          audio.duration
-        );
-
-    }
+        formatTime(audio.duration);
 
   }
 );
@@ -853,21 +776,13 @@ audio?.addEventListener(
   "timeupdate",
   () => {
 
-    if (currentTime) {
-
+    if (currentTime)
       currentTime.textContent =
-        formatTime(
-          audio.currentTime
-        );
-
-    }
+        formatTime(audio.currentTime);
 
 
     if (
       progress &&
-      Number.isFinite(
-        audio.duration
-      ) &&
       audio.duration > 0
     ) {
 
@@ -875,8 +790,7 @@ audio?.addEventListener(
         (
           audio.currentTime /
           audio.duration
-        ) *
-        100;
+        ) * 100;
 
     }
 
@@ -890,9 +804,7 @@ progress?.addEventListener(
 
     if (
       audio &&
-      Number.isFinite(
-        audio.duration
-      )
+      audio.duration > 0
     ) {
 
       audio.currentTime =
@@ -913,9 +825,7 @@ audio?.addEventListener(
   () => {
 
     currentTrack =
-      (
-        currentTrack + 1
-      ) %
+      (currentTrack + 1) %
       tracks.length;
 
 
@@ -924,8 +834,7 @@ audio?.addEventListener(
     );
 
 
-    audio
-      .play()
+    audio.play()
       .catch(() => {});
 
   }
@@ -949,9 +858,7 @@ const bellAudio =
   $("bellAudio");
 
 
-let petalContext =
-  null;
-
+let petalContext = null;
 let petals = [];
 
 
@@ -962,7 +869,6 @@ function resizePetalCanvas() {
 
   petalCanvas.width =
     window.innerWidth;
-
 
   petalCanvas.height =
     window.innerHeight;
@@ -1015,17 +921,14 @@ function createPetals() {
         petalCanvas.height,
 
       size:
-        5 +
-        Math.random() * 8,
+        5 + Math.random() * 8,
 
       speed:
-        1 +
-        Math.random() * 3,
+        1 + Math.random() * 3,
 
       rotation:
         Math.random() *
-        Math.PI *
-        2,
+        Math.PI * 2,
 
       rotationSpeed:
         -0.04 +
@@ -1058,14 +961,8 @@ function animatePetals() {
   petals.forEach(
     petal => {
 
-      petal.y +=
-        petal.speed;
-
-
-      petal.x +=
-        petal.drift;
-
-
+      petal.y += petal.speed;
+      petal.x += petal.drift;
       petal.rotation +=
         petal.rotationSpeed;
 
@@ -1162,9 +1059,8 @@ pushpanjali?.addEventListener(
 
 setupPetals();
 
-if (petalCanvas) {
+if (petalCanvas)
   animatePetals();
-}
 
 
 /* =========================================================
@@ -1181,46 +1077,25 @@ const offlineStreamUI =
   $("offline-stream-ui");
 
 
-let viewerId =
-  null;
-
-let viewerPeer =
-  null;
-
-let viewerSignalsStarted =
-  false;
-
-let remoteDescriptionSet =
-  false;
-
+let viewerId = null;
+let viewerPeer = null;
+let viewerSignalsStarted = false;
+let remoteDescriptionSet = false;
 let candidateQueue = [];
+let currentBroadcastActive = false;
 
-let currentBroadcastActive =
-  false;
-
-
-/* =========================================================
-   UI
-========================================================= */
 
 function showOffline() {
 
   activeStreamUI
-    ?.classList
-    .add("hidden");
-
+    ?.classList.add("hidden");
 
   offlineStreamUI
-    ?.classList
-    .remove("hidden");
+    ?.classList.remove("hidden");
 
 
-  if (liveVideo) {
-
-    liveVideo.srcObject =
-      null;
-
-  }
+  if (liveVideo)
+    liveVideo.srcObject = null;
 
 }
 
@@ -1228,13 +1103,10 @@ function showOffline() {
 function showLive() {
 
   offlineStreamUI
-    ?.classList
-    .add("hidden");
-
+    ?.classList.add("hidden");
 
   activeStreamUI
-    ?.classList
-    .remove("hidden");
+    ?.classList.remove("hidden");
 
 }
 
@@ -1255,21 +1127,11 @@ onValue(
       snapshot.val();
 
 
-    const active =
+    currentBroadcastActive =
       data?.active === true;
 
 
-    currentBroadcastActive =
-      active;
-
-
-    console.log(
-      "Broadcast status:",
-      active
-    );
-
-
-    if (active) {
+    if (currentBroadcastActive) {
 
       showLive();
 
@@ -1290,7 +1152,7 @@ onValue(
   error => {
 
     console.error(
-      "Broadcast listener error:",
+      "Broadcast status error:",
       error
     );
 
@@ -1301,7 +1163,7 @@ onValue(
 
 
 /* =========================================================
-   CREATE VIEWER ID
+   VIEWER ID
 ========================================================= */
 
 function createViewerId() {
@@ -1343,10 +1205,8 @@ async function startViewer() {
     viewerSignalsStarted =
       false;
 
-
     remoteDescriptionSet =
       false;
-
 
     candidateQueue = [];
 
@@ -1369,26 +1229,26 @@ async function startViewer() {
     viewerPeer.ontrack =
       event => {
 
+        const stream =
+          event.streams?.[0];
+
+
         if (
           liveVideo &&
-          event.streams?.[0]
+          stream
         ) {
 
           liveVideo.srcObject =
-            event.streams[0];
-
+            stream;
 
           liveVideo.autoplay =
             true;
 
-
           liveVideo.playsInline =
             true;
 
-
           liveVideo.play()
             .catch(() => {});
-
 
           showLive();
 
@@ -1431,15 +1291,12 @@ async function startViewer() {
     viewerPeer.onconnectionstatechange =
       () => {
 
-        if (!viewerPeer) return;
-
-
         const state =
-          viewerPeer.connectionState;
+          viewerPeer?.connectionState;
 
 
         console.log(
-          "Viewer WebRTC:",
+          "Viewer state:",
           state
         );
 
@@ -1462,15 +1319,8 @@ async function startViewer() {
         `pandal/viewers/${viewerId}`
       ),
       {
-        createdAt:
-          Date.now()
+        createdAt: Date.now()
       }
-    );
-
-
-    console.log(
-      "Viewer registered:",
-      viewerId
     );
 
 
@@ -1485,7 +1335,6 @@ async function startViewer() {
       error
     );
 
-
     closeViewer();
 
   }
@@ -1494,7 +1343,7 @@ async function startViewer() {
 
 
 /* =========================================================
-   LISTEN FOR SIGNALS
+   VIEWER SIGNALS
 ========================================================= */
 
 function listenForViewerSignals() {
@@ -1517,9 +1366,7 @@ function listenForViewerSignals() {
     `pandal/signals/${viewerId}`;
 
 
-  /* -------------------------
-     OFFER
-  ------------------------- */
+  /* OFFER */
 
   onValue(
     ref(
@@ -1614,11 +1461,6 @@ function listenForViewerSignals() {
           }
         );
 
-
-        console.log(
-          "Answer sent"
-        );
-
       }
 
       catch (error) {
@@ -1634,9 +1476,7 @@ function listenForViewerSignals() {
   );
 
 
-  /* -------------------------
-     BROADCASTER ICE
-  ------------------------- */
+  /* BROADCASTER ICE */
 
   onChildAdded(
     ref(
@@ -1699,9 +1539,7 @@ function listenForViewerSignals() {
   );
 
 
-  /* -------------------------
-     ADMIN CLOSED
-  ------------------------- */
+  /* CLOSED */
 
   onValue(
     ref(
@@ -1735,44 +1573,27 @@ async function closeViewer() {
     viewerId;
 
 
-  viewerId =
-    null;
-
-
-  viewerSignalsStarted =
-    false;
-
-
-  remoteDescriptionSet =
-    false;
-
-
+  viewerId = null;
+  viewerSignalsStarted = false;
+  remoteDescriptionSet = false;
   candidateQueue = [];
 
 
   if (viewerPeer) {
 
     try {
-
       viewerPeer.close();
-
     }
-
     catch (_) {}
 
   }
 
 
-  viewerPeer =
-    null;
+  viewerPeer = null;
 
 
-  if (liveVideo) {
-
-    liveVideo.srcObject =
-      null;
-
-  }
+  if (liveVideo)
+    liveVideo.srcObject = null;
 
 
   if (oldViewerId) {
@@ -1783,9 +1604,7 @@ async function closeViewer() {
         `pandal/viewers/${oldViewerId}`
       )
     )
-    .catch(
-      () => {}
-    );
+    .catch(() => {});
 
   }
 
