@@ -1,1130 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#FDFBF7">
-    <meta name="description" content="Ganesh Chaturthi Pandal — Darshan, Aarti, Schedule and Community Updates.">
-
-    <title>Ganpati Bappa Morya! | Ganesh Chaturthi</title>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        /* =========================================================
-           GLOBAL VARIABLES
-        ========================================================= */
-
-        :root {
-            --bg: #FDFBF7;
-            --surface: rgba(255, 255, 255, 0.54);
-            --surface-strong: rgba(255, 255, 255, 0.72);
-            --text: #2A2A2A;
-            --muted: #77716c;
-            --terracotta: #C06A45;
-            --gold: #D4AF37;
-            --border: rgba(42, 42, 42, 0.10);
-            --radius: 24px;
-            --transition: 0.8s ease;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: "Inter", sans-serif;
-            color: var(--text);
-            background: var(--bg);
-            line-height: 1.6;
-            overflow-x: hidden;
-            transition: background-color 0.8s ease, color 0.8s ease;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            background:
-                radial-gradient(circle at 10% 10%, rgba(212,175,55,.08), transparent 30%),
-                radial-gradient(circle at 90% 70%, rgba(192,106,69,.07), transparent 30%);
-            z-index: -1;
-        }
-
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
-
-        button {
-            font: inherit;
-        }
-
-        img {
-            display: block;
-            max-width: 100%;
-        }
-
-        .container {
-            width: min(1120px, calc(100% - 32px));
-            margin: auto;
-        }
-
-        .serif {
-            font-family: "Playfair Display", serif;
-        }
-
-        /* =========================================================
-           GLASS
-        ========================================================= */
-
-        .glass {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-
-        /* =========================================================
-           NAVBAR
-        ========================================================= */
-
-        .navbar {
-            position: sticky;
-            top: 14px;
-            z-index: 1000;
-            width: min(1120px, calc(100% - 24px));
-            margin: 14px auto 0;
-            padding: 10px 14px;
-            border-radius: 18px;
-        }
-
-        .nav-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
-
-        .brand-symbol {
-            width: 38px;
-            height: 38px;
-            display: grid;
-            place-items: center;
-            border-radius: 50%;
-            background: rgba(212,175,55,.12);
-            border: 1px solid rgba(212,175,55,.28);
-            font-size: 19px;
-        }
-
-        .brand-text span {
-            display: block;
-        }
-
-        .brand-name {
-            font-size: 13px;
-        }
-
-        .brand-sub {
-            color: var(--muted);
-            font-size: 9px;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-        }
-
-        .nav-links {
-            display: none;
-            align-items: center;
-            gap: 26px;
-            font-size: 13px;
-            color: var(--muted);
-        }
-
-        .nav-links a {
-            transition: color .25s ease;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--terracotta);
-        }
-
-        .nav-actions {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .palette-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            cursor: pointer;
-            color: var(--text);
-            display: grid;
-            place-items: center;
-            transition: transform .25s ease;
-        }
-
-        .palette-btn:hover {
-            transform: rotate(25deg);
-        }
-
-        .palette-menu {
-            position: absolute;
-            right: 0;
-            top: calc(100% + 10px);
-            width: 190px;
-            padding: 9px;
-            border-radius: 16px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-8px);
-            transition: .25s ease;
-        }
-
-        .palette-menu.open {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .theme-option {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            border: 0;
-            background: transparent;
-            border-radius: 11px;
-            cursor: pointer;
-            color: var(--text);
-            text-align: left;
-            font-size: 12px;
-        }
-
-        .theme-option:hover {
-            background: rgba(192,106,69,.08);
-        }
-
-        .theme-dot {
-            width: 17px;
-            height: 17px;
-            border-radius: 50%;
-            border: 1px solid rgba(0,0,0,.1);
-        }
-
-        /* =========================================================
-           HERO
-        ========================================================= */
-
-        .hero {
-            min-height: 85vh;
-            display: flex;
-            align-items: center;
-            text-align: center;
-            padding: 90px 0 70px;
-        }
-
-        .hero-content {
-            max-width: 850px;
-            margin: auto;
-        }
-
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 13px;
-            border-radius: 100px;
-            font-size: 11px;
-            color: var(--muted);
-            margin-bottom: 25px;
-        }
-
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #54A66A;
-            box-shadow: 0 0 0 4px rgba(84,166,106,.10);
-        }
-
-        .hero h1 {
-            font-family: "Playfair Display", serif;
-            font-size: clamp(45px, 10vw, 92px);
-            line-height: .98;
-            letter-spacing: -.055em;
-            font-weight: 600;
-            margin-bottom: 25px;
-        }
-
-        .hero p {
-            max-width: 600px;
-            margin: auto;
-            color: var(--muted);
-            font-size: 15px;
-        }
-
-        .countdown {
-            margin: 34px auto 0;
-            display: flex;
-            justify-content: center;
-            gap: 9px;
-            flex-wrap: wrap;
-        }
-
-        .count-box {
-            min-width: 70px;
-            padding: 13px 10px;
-            border-radius: 17px;
-        }
-
-        .count-number {
-            font-family: "Playfair Display", serif;
-            font-size: 25px;
-            line-height: 1;
-        }
-
-        .count-label {
-            margin-top: 5px;
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: .12em;
-            color: var(--muted);
-        }
-
-        /* =========================================================
-           BUTTONS
-        ========================================================= */
-
-        .actions {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 28px;
-        }
-
-        .btn {
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text);
-            padding: 13px 18px;
-            border-radius: 100px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            backdrop-filter: blur(10px);
-            transition: .25s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            border-color: rgba(192,106,69,.35);
-        }
-
-        .btn-primary {
-            background: var(--terracotta);
-            border-color: var(--terracotta);
-            color: white;
-        }
-
-        /* =========================================================
-           SECTIONS
-        ========================================================= */
-
-        section {
-            padding: 80px 0;
-        }
-
-        .section-heading {
-            margin-bottom: 28px;
-        }
-
-        .section-kicker {
-            color: var(--terracotta);
-            font-size: 10px;
-            letter-spacing: .17em;
-            text-transform: uppercase;
-            font-weight: 700;
-            margin-bottom: 9px;
-        }
-
-        .section-heading h2 {
-            font-family: "Playfair Display", serif;
-            font-size: clamp(30px, 6vw, 48px);
-            line-height: 1.1;
-            font-weight: 600;
-            letter-spacing: -.035em;
-        }
-
-        /* =========================================================
-           SHLOKA
-        ========================================================= */
-
-        .shloka-card {
-            padding: 45px 25px;
-            border-radius: var(--radius);
-            text-align: center;
-        }
-
-        .om {
-            font-family: "Playfair Display", serif;
-            font-size: 42px;
-            color: var(--gold);
-            margin-bottom: 18px;
-        }
-
-        .shloka {
-            font-family: "Playfair Display", serif;
-            font-size: clamp(24px, 5vw, 40px);
-            line-height: 1.45;
-            color: var(--text);
-        }
-
-        .translation {
-            max-width: 680px;
-            margin: 20px auto 0;
-            color: var(--muted);
-            font-size: 13px;
-        }
-
-        /* =========================================================
-           NOTICE + SCHEDULE
-        ========================================================= */
-
-        .two-column {
-            display: grid;
-            gap: 18px;
-        }
-
-        .info-card {
-            padding: 27px;
-            border-radius: var(--radius);
-        }
-
-        .info-card h3 {
-            font-family: "Playfair Display", serif;
-            font-size: 25px;
-            margin-bottom: 18px;
-        }
-
-        .notice {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .notice:last-child {
-            border-bottom: 0;
-        }
-
-        .notice-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            display: grid;
-            place-items: center;
-            background: rgba(192,106,69,.09);
-            flex-shrink: 0;
-        }
-
-        .notice strong {
-            display: block;
-            font-size: 13px;
-        }
-
-        .notice small {
-            color: var(--muted);
-            font-size: 11px;
-        }
-
-        .schedule-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            padding: 13px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 12px;
-        }
-
-        .schedule-row:last-child {
-            border-bottom: 0;
-        }
-
-        .schedule-row span:last-child {
-            color: var(--terracotta);
-            font-weight: 600;
-        }
-
-        /* =========================================================
-           GALLERY
-        ========================================================= */
-
-        .gallery {
-            columns: 1;
-            column-gap: 14px;
-        }
-
-        .gallery-item {
-            break-inside: avoid;
-            margin-bottom: 14px;
-            overflow: hidden;
-            border-radius: 19px;
-            border: 1px solid var(--border);
-        }
-
-        .gallery-item img {
-            width: 100%;
-            transition: transform .7s cubic-bezier(.2,.7,.2,1);
-        }
-
-        .gallery-item:hover img {
-            transform: scale(1.06);
-        }
-
-        /* =========================================================
-           FOOTER
-        ========================================================= */
-
-        footer {
-            padding: 25px 0 0;
-        }
-
-        .ticker {
-            overflow: hidden;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            padding: 14px 0;
-            white-space: nowrap;
-        }
-
-        .ticker-track {
-            display: inline-flex;
-            gap: 45px;
-            animation: ticker 25s linear infinite;
-        }
-
-        .ticker span {
-            color: var(--muted);
-            font-size: 11px;
-        }
-
-        .ticker span::before {
-            content: "✦";
-            color: var(--gold);
-            margin-right: 45px;
-        }
-
-        @keyframes ticker {
-            from {
-                transform: translateX(0);
-            }
-            to {
-                transform: translateX(-50%);
-            }
-        }
-
-        .footer-bottom {
-            padding: 30px 0;
-            text-align: center;
-            color: var(--muted);
-            font-size: 10px;
-        }
-
-        /* =========================================================
-           PETALS
-        ========================================================= */
-
-        .petal {
-            position: fixed;
-            top: -30px;
-            z-index: 9999;
-            pointer-events: none;
-            animation: fall linear forwards;
-        }
-
-        @keyframes fall {
-            0% {
-                transform: translate3d(0, -20px, 0) rotate(0);
-                opacity: 0;
-            }
-
-            10% {
-                opacity: 1;
-            }
-
-            100% {
-                transform: translate3d(var(--drift), 110vh, 0) rotate(720deg);
-                opacity: .15;
-            }
-        }
-
-        /* =========================================================
-           SCROLL REVEAL
-        ========================================================= */
-
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity .8s ease, transform .8s ease;
-        }
-
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* =========================================================
-           RESPONSIVE
-        ========================================================= */
-
-        @media (min-width: 700px) {
-            .nav-links {
-                display: flex;
-            }
-
-            .two-column {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .gallery {
-                columns: 2;
-            }
-        }
-
-        @media (min-width: 1000px) {
-            .gallery {
-                columns: 3;
-            }
-
-            .hero {
-                min-height: 88vh;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .brand-sub {
-                display: none;
-            }
-
-            .hero {
-                padding-top: 65px;
-            }
-
-            section {
-                padding: 60px 0;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0D0D0D">
+  <meta name="description" content="Ganesh Chaturthi Pandal — devotion, music, darshan and celebration.">
+  <title>Ganesh Chaturthi Pandal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
 </head>
-
 <body>
+  <canvas id="dustCanvas" aria-hidden="true"></canvas>
 
-    <!-- =========================================================
-         NAVIGATION
-    ========================================================= -->
-
-    <nav class="navbar glass">
-        <div class="nav-inner">
-
-            <a href="index.html" class="brand">
-                <div class="brand-symbol">ॐ</div>
-
-                <div class="brand-text">
-                    <span class="brand-name">Ganpati Bappa</span>
-                    <span class="brand-sub">Ganesh Chaturthi</span>
-                </div>
-            </a>
-
-            <div class="nav-links">
-                <a href="index.html" class="active">Home</a>
-                <a href="live.html">Live Darshan</a>
-                <a href="aarti.html">Aarti</a>
-            </div>
-
-            <div class="nav-actions">
-                <button class="palette-btn" id="paletteBtn" aria-label="Change theme">
-                    ◐
-                </button>
-
-                <div class="palette-menu glass" id="paletteMenu">
-                    <button class="theme-option" data-theme="#FDFBF7">
-                        <span class="theme-dot" style="background:#FDFBF7;"></span>
-                        Warm Cream
-                    </button>
-
-                    <button class="theme-option" data-theme="#F0F4F1">
-                        <span class="theme-dot" style="background:#F0F4F1;"></span>
-                        Soft Sage
-                    </button>
-
-                    <button class="theme-option" data-theme="#F5EFEB">
-                        <span class="theme-dot" style="background:#F5EFEB;"></span>
-                        Muted Sand
-                    </button>
-                </div>
-            </div>
-
-        </div>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="Home">ॐ</a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mainNav">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="mainNav" class="main-nav">
+      <a href="#home">Home</a>
+      <a href="#darshan">Darshan</a>
+      <a href="#aarti">Aarti</a>
+      <a href="#events">Events</a>
+      <a href="#gallery">Gallery</a>
     </nav>
-
-    <main>
-
-        <!-- =====================================================
-             HERO
-        ====================================================== -->
-
-        <section class="hero">
-            <div class="container hero-content reveal">
-
-                <div class="eyebrow glass">
-                    <span class="status-dot"></span>
-                    🟢 Peaceful Darshan
-                </div>
-
-                <h1>Ganpati Bappa<br>Morya!</h1>
-
-                <p>
-                    A peaceful digital space for darshan, aarti,
-                    prayers and community updates during Ganesh Chaturthi.
-                </p>
-
-                <!-- Countdown -->
-                <div class="countdown">
-
-                    <div class="count-box glass">
-                        <div class="count-number" id="days">00</div>
-                        <div class="count-label">Days</div>
-                    </div>
-
-                    <div class="count-box glass">
-                        <div class="count-number" id="hours">00</div>
-                        <div class="count-label">Hours</div>
-                    </div>
-
-                    <div class="count-box glass">
-                        <div class="count-number" id="minutes">00</div>
-                        <div class="count-label">Minutes</div>
-                    </div>
-
-                    <div class="count-box glass">
-                        <div class="count-number" id="seconds">00</div>
-                        <div class="count-label">Seconds</div>
-                    </div>
-
-                </div>
-
-                <div class="actions">
-
-                    <button class="btn btn-primary" id="flowerBtn">
-                        🌸 Offer Flowers
-                    </button>
-
-                    <button class="btn" id="bellBtn">
-                        🔔 Ring Bell
-                    </button>
-
-                </div>
-
-            </div>
-        </section>
-
-        <!-- =====================================================
-             SHLOKA
-        ====================================================== -->
-
-        <section>
-            <div class="container reveal">
-
-                <div class="section-heading">
-                    <div class="section-kicker">Shloka of the Day</div>
-                    <h2>A moment for devotion.</h2>
-                </div>
-
-                <div class="shloka-card glass">
-
-                    <div class="om">ॐ</div>
-
-                    <div class="shloka">
-                        वक्रतुण्ड महाकाय<br>
-                        सूर्यकोटि समप्रभः<br>
-                        निर्विघ्नं कुरु मे देव<br>
-                        शुभ कार्येषु सर्वदा॥
-                    </div>
-
-                    <p class="translation">
-                        O Lord with the curved trunk and immense form,
-                        whose brilliance equals millions of suns,
-                        please make all my auspicious works
-                        free from obstacles, always.
-                    </p>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- =====================================================
-             NOTICE + SCHEDULE
-        ====================================================== -->
-
-        <section>
-            <div class="container">
-
-                <div class="two-column">
-
-                    <div class="info-card glass reveal">
-
-                        <div class="section-kicker">Live Notice Board</div>
-
-                        <h3>Today's Updates</h3>
-
-                        <div class="notice">
-                            <div class="notice-icon">🍬</div>
-                            <div>
-                                <strong>Today's Prasad: Modak</strong>
-                                <small>Prasad distribution begins by 7:30 PM.</small>
-                            </div>
-                        </div>
-
-                        <div class="notice">
-                            <div class="notice-icon">🙏</div>
-                            <div>
-                                <strong>Evening Darshan</strong>
-                                <small>Everyone is welcome to join peacefully.</small>
-                            </div>
-                        </div>
-
-                        <div class="notice">
-                            <div class="notice-icon">🎵</div>
-                            <div>
-                                <strong>Evening Aarti</strong>
-                                <small>Please gather a few minutes early.</small>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="info-card glass reveal">
-
-                        <div class="section-kicker">Daily Schedule</div>
-
-                        <h3>Aarti Timings</h3>
-
-                        <div class="schedule-row">
-                            <span>Morning Aarti</span>
-                            <span>7:00 AM</span>
-                        </div>
-
-                        <div class="schedule-row">
-                            <span>Evening Aarti</span>
-                            <span>7:00 PM</span>
-                        </div>
-
-                        <div class="schedule-row">
-                            <span>Prasad Distribution</span>
-                            <span>7:30 PM</span>
-                        </div>
-
-                        <div class="schedule-row">
-                            <span>Special Aarti</span>
-                            <span>9:00 PM</span>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-        <!-- =====================================================
-             GALLERY
-        ====================================================== -->
-
-        <section>
-            <div class="container reveal">
-
-                <div class="section-heading">
-                    <div class="section-kicker">From Our Pandal</div>
-                    <h2>Moments of devotion.</h2>
-                </div>
-
-                <div class="gallery">
-
-                    <div class="gallery-item">
-                        <img src="gallery1.jpg" alt="Ganesh Chaturthi moment" loading="lazy">
-                    </div>
-
-                    <div class="gallery-item">
-                        <img src="gallery2.jpg" alt="Pandal decoration" loading="lazy">
-                    </div>
-
-                    <div class="gallery-item">
-                        <img src="gallery3.jpg" alt="Ganpati celebration" loading="lazy">
-                    </div>
-
-                    <div class="gallery-item">
-                        <img src="gallery4.jpg" alt="Community celebration" loading="lazy">
-                    </div>
-
-                    <div class="gallery-item">
-                        <img src="gallery5.jpg" alt="Ganesh idol" loading="lazy">
-                    </div>
-
-                    <div class="gallery-item">
-                        <img src="gallery6.jpg" alt="Evening darshan" loading="lazy">
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-    </main>
-
-    <!-- =========================================================
-         FOOTER
-    ========================================================== -->
-
-    <footer>
-
-        <div class="ticker">
-
-            <div class="ticker-track">
-
-                <span>Ganpati Bappa Morya</span>
-                <span>May Bappa bless every home</span>
-                <span>Peace. Prosperity. Devotion.</span>
-                <span>Everyone is welcome for darshan</span>
-                <span>Ganpati Bappa Morya</span>
-                <span>May Bappa bless every home</span>
-                <span>Peace. Prosperity. Devotion.</span>
-                <span>Everyone is welcome for darshan</span>
-
-            </div>
-
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div class="hero-image-wrap">
+        <img src="./assets/images/ganesha-placeholder.jpg" alt="Ganesh idol" class="hero-image"
+             onerror="this.style.display='none';this.parentElement.classList.add('fallback-ganesha')">
+        <div class="ganesha-symbol" aria-hidden="true">ॐ</div>
+      </div>
+      <div class="hero-copy">
+        <p class="eyebrow">GANESH CHATURTHI • [Year Placeholder]</p>
+        <h1>GANPATI<br>BAPPA<br><em>MORYA</em></h1>
+        <p class="hero-subtitle">A sacred space of devotion, music, community and celebration.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#darshan">Explore Our Pandal</a>
+          <a class="btn btn-ghost" href="#darshan"><span class="live-dot"></span> Live Darshan</a>
         </div>
+      </div>
+      <div class="scroll-cue">SCROLL TO EXPLORE <span>↓</span></div>
+    </section>
 
-        <div class="footer-bottom">
-            Made with devotion • Ganesh Chaturthi
+    <section id="darshan" class="section darshan-section">
+      <div class="section-heading">
+        <p class="eyebrow">LIVE EXPERIENCE</p>
+        <h2>Live Darshan</h2>
+        <p>Be a part of the celebration, wherever you are.</p>
+      </div>
+      <div class="video-shell">
+        <div id="liveBadge" class="live-badge" hidden><span></span> LIVE</div>
+        <div id="viewerCount" class="viewer-count" hidden>● [Viewer count]</div>
+        <video id="liveVideo" class="live-video" autoplay muted playsinline controls hidden></video>
+        <div id="offlineState" class="offline-state">
+          <div class="diya" aria-hidden="true">
+            <svg viewBox="0 0 120 120"><path d="M27 69h66c-4 18-17 29-33 29S31 87 27 69Z"/><path d="M60 18c12 17 7 27 0 35-7-8-12-18 0-35Z"/><path d="M60 52c-7-7-9-14-4-23 10 10 13 18 4 23Z"/></svg>
+          </div>
+          <h3>Awaiting Darshan</h3>
+          <p>Next stream begins at <strong>[Time Placeholder]</strong></p>
         </div>
-
-    </footer>
-
-    <!-- =========================================================
-         JAVASCRIPT
-    ========================================================== -->
-
-    <script>
-
-        /* =========================================================
-           THEME SWITCHER
-        ========================================================= */
-
-        const paletteBtn = document.getElementById("paletteBtn");
-        const paletteMenu = document.getElementById("paletteMenu");
-
-        paletteBtn.addEventListener("click", (event) => {
-            event.stopPropagation();
-            paletteMenu.classList.toggle("open");
-        });
-
-        document.addEventListener("click", () => {
-            paletteMenu.classList.remove("open");
-        });
-
-        document.querySelectorAll(".theme-option").forEach(option => {
-
-            option.addEventListener("click", (event) => {
-
-                event.stopPropagation();
-
-                const color = option.dataset.theme;
-
-                document.documentElement.style.setProperty("--bg", color);
-
-                localStorage.setItem("pandalTheme", color);
-
-            });
-
-        });
-
-        const savedTheme = localStorage.getItem("pandalTheme");
-
-        if (savedTheme) {
-            document.documentElement.style.setProperty("--bg", savedTheme);
-        }
-
-
-        /* =========================================================
-           COUNTDOWN
-           
-           IMPORTANT:
-           Change the date below to your actual Maha Visarjan date.
-        ========================================================= */
-
-        const visarjanDate = new Date("September 6, 2026 20:00:00").getTime();
-
-        function updateCountdown() {
-
-            const now = Date.now();
-            const difference = visarjanDate - now;
-
-            if (difference <= 0) {
-
-                document.getElementById("days").textContent = "00";
-                document.getElementById("hours").textContent = "00";
-                document.getElementById("minutes").textContent = "00";
-                document.getElementById("seconds").textContent = "00";
-
-                return;
-            }
-
-            const days = Math.floor(difference / 86400000);
-            const hours = Math.floor((difference % 86400000) / 3600000);
-            const minutes = Math.floor((difference % 3600000) / 60000);
-            const seconds = Math.floor((difference % 60000) / 1000);
-
-            document.getElementById("days").textContent =
-                String(days).padStart(2, "0");
-
-            document.getElementById("hours").textContent =
-                String(hours).padStart(2, "0");
-
-            document.getElementById("minutes").textContent =
-                String(minutes).padStart(2, "0");
-
-            document.getElementById("seconds").textContent =
-                String(seconds).padStart(2, "0");
-        }
-
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-
-
-        /* =========================================================
-           BELL AUDIO
-        ========================================================== */
-
-        const bell = new Audio("bell.mp3");
-        bell.preload = "auto";
-
-        document.getElementById("bellBtn").addEventListener("click", async () => {
-
-            try {
-
-                bell.currentTime = 0;
-                await bell.play();
-
-            } catch (error) {
-
-                console.warn("Bell audio could not be played.", error);
-
-            }
-
-        });
-
-
-        /* =========================================================
-           OFFER FLOWERS
-        ========================================================== */
-
-        const flowerBtn = document.getElementById("flowerBtn");
-
-        flowerBtn.addEventListener("click", () => {
-
-            const petals = ["🌸", "🌺", "🌼", "🌷", "🪷"];
-
-            for (let i = 0; i < 30; i++) {
-
-                const petal = document.createElement("div");
-
-                petal.className = "petal";
-
-                petal.textContent =
-                    petals[Math.floor(Math.random() * petals.length)];
-
-                petal.style.left = Math.random() * 100 + "vw";
-
-                petal.style.fontSize =
-                    (12 + Math.random() * 18) + "px";
-
-                petal.style.setProperty(
-                    "--drift",
-                    (Math.random() * 180 - 90) + "px"
-                );
-
-                petal.style.animationDuration =
-                    (4 + Math.random() * 5) + "s";
-
-                petal.style.animationDelay =
-                    Math.random() * 1.5 + "s";
-
-                document.body.appendChild(petal);
-
-                setTimeout(() => {
-                    petal.remove();
-                }, 10000);
-            }
-
-        });
-
-
-        /* =========================================================
-           SCROLL REVEAL — INTERSECTION OBSERVER
-        ========================================================== */
-
-        const observer = new IntersectionObserver(
-            (entries, observerInstance) => {
-
-                entries.forEach(entry => {
-
-                    if (entry.isIntersecting) {
-
-                        entry.target.classList.add("visible");
-
-                        observerInstance.unobserve(entry.target);
-
-                    }
-
-                });
-
-            },
-            {
-                threshold: 0.12
-            }
-        );
-
-        document.querySelectorAll(".reveal").forEach(element => {
-            observer.observe(element);
-        });
-
-    </script>
-
+      </div>
+    </section>
+
+    <section id="aarti" class="section aarti-section">
+      <div class="section-heading">
+        <p class="eyebrow">DEVOTIONAL MUSIC</p>
+        <h2>Aarti & Bhajans</h2>
+      </div>
+      <div class="player-card">
+        <div class="player-main">
+          <div class="album-art"><img src="./assets/images/ganesha-placeholder.jpg" alt="" onerror="this.style.display='none';this.parentElement.classList.add('art-fallback')"><span>ॐ</span></div>
+          <div class="track-meta"><span id="currentCategory">TRADITIONAL AARTIS</span><h3 id="currentTrack">Sukhkarta Dukhaharta</h3></div>
+          <button class="play-btn" id="playBtn" aria-label="Play"><span class="play-icon">▶</span></button>
+        </div>
+        <div class="progress-wrap"><div id="progressBar"></div></div>
+        <audio id="audioPlayer" preload="metadata"></audio>
+      </div>
+
+      <div class="track-columns">
+        <div class="track-group">
+          <h3>TRADITIONAL AARTIS</h3>
+          <ol id="traditionalList"></ol>
+        </div>
+        <div class="track-group">
+          <h3>FESTIVAL ANTHEMS</h3>
+          <ol id="anthemList"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="events" class="section events-section">
+      <div class="section-heading">
+        <p class="eyebrow">CELEBRATION SCHEDULE</p>
+        <h2>Event Timeline</h2>
+      </div>
+      <div id="timeline" class="timeline"></div>
+    </section>
+
+    <section id="gallery" class="section gallery-section">
+      <div class="section-heading">
+        <p class="eyebrow">MOMENTS</p>
+        <h2>Gallery</h2>
+      </div>
+      <div class="gallery-grid">
+        <button class="gallery-item tall" data-image="./assets/images/gallery-1.jpg"><img src="./assets/images/gallery-1.jpg" alt="Pandal moment" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
+        <button class="gallery-item" data-image="./assets/images/gallery-2.jpg"><img src="./assets/images/gallery-2.jpg" alt="Festival moment" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
+        <button class="gallery-item wide" data-image="./assets/images/gallery-3.jpg"><img src="./assets/images/gallery-3.jpg" alt="Celebration" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
+        <button class="gallery-item" data-image="./assets/images/gallery-4.jpg"><img src="./assets/images/gallery-4.jpg" alt="Decoration" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
+        <button class="gallery-item tall" data-image="./assets/images/gallery-5.jpg"><img src="./assets/images/gallery-5.jpg" alt="Darshan" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
+        <button class="gallery-item" data-image="./assets/images/gallery-6.jpg"><img src="./assets/images/gallery-6.jpg" alt="Community" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>ॐ GANPATI BAPPA MORYA</span><span>Contact: [Contact Placeholder]</span></footer>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button id="lightboxClose" aria-label="Close">×</button>
+    <img id="lightboxImage" src="" alt="">
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
 </body>
 </html>

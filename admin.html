@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0D0D0D">
+  <title>Admin • Ganpati Pandal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="admin-page">
+  <main class="admin-shell">
+    <section id="loginPanel" class="admin-card">
+      <p class="eyebrow">PRIVATE DASHBOARD</p>
+      <h1>Admin Access</h1>
+      <p>Sign in with the Firebase Email/Password account authorised for this dashboard.</p>
+      <form id="loginForm">
+        <label>Email<input id="email" type="email" autocomplete="username" required></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+        <button class="btn btn-primary" type="submit">Sign In</button>
+        <p id="loginError" class="form-error" role="alert"></p>
+      </form>
+    </section>
+
+    <section id="dashboard" class="admin-card" hidden>
+      <div class="admin-top">
+        <div><p class="eyebrow">CONTROL CENTER</p><h1>Festival Dashboard</h1></div>
+        <button id="logoutBtn" class="btn btn-ghost">Sign Out</button>
+      </div>
+
+      <div class="admin-grid">
+        <article class="control-card">
+          <p class="eyebrow">LIVE DARSHAN</p>
+          <h2 id="liveStatusText">Offline</h2>
+          <label class="switch-row"><span>Broadcast status</span><input id="liveToggle" type="checkbox"><span class="switch"></span></label>
+          <p class="admin-note">This controls the public Live Darshan state in Firebase Realtime Database.</p>
+        </article>
+
+        <article class="control-card">
+          <p class="eyebrow">TIMELINE</p>
+          <h2>Create Event</h2>
+          <form id="eventForm">
+            <input id="eventId" type="hidden">
+            <label>Title<input id="eventTitle" required maxlength="80" placeholder="[Event Name Placeholder]"></label>
+            <label>Date / Time<input id="eventTime" required maxlength="80" placeholder="[Date / Time Placeholder]"></label>
+            <label>Description<textarea id="eventDescription" maxlength="240" placeholder="[Event Description Placeholder]"></textarea></label>
+            <label class="check-row"><input id="eventActive" type="checkbox"> Active / Next</label>
+            <div class="form-actions"><button class="btn btn-primary" type="submit">Save Event</button><button class="btn btn-ghost" id="cancelEdit" type="button">Clear</button></div>
+          </form>
+        </article>
+      </div>
+
+      <section class="control-card">
+        <div class="list-header"><h2>Timeline Nodes</h2><span id="eventCount">0</span></div>
+        <div id="eventList" class="admin-list"></div>
+      </section>
+    </section>
+  </main>
+  <script type="module" src="./js/admin.js"></script>
+</body>
+</html>
