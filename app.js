@@ -5,617 +5,1157 @@ import {
 import {
   getDatabase,
   ref,
-  onValue
+  push,
+  onChildAdded,
+  onValue,
+  set,
+  remove,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
+
+/* =========================================================
+   FIREBASE
+========================================================= */
+
 const firebaseConfig = {
-  apiKey: "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
-  authDomain: "ganpati-5f24e.firebaseapp.com",
-  projectId: "ganpati-5f24e",
-  storageBucket: "ganpati-5f24e.firebasestorage.app",
-  messagingSenderId: "512949354669",
-  appId: "1:512949354669:web:f561488c630203a9ae4624",
-  measurementId: "G-1J5J8CBVRD"
+
+  apiKey:
+    "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
+
+  authDomain:
+    "ganpati-5f24e.firebaseapp.com",
+
+  projectId:
+    "ganpati-5f24e",
+
+  storageBucket:
+    "ganpati-5f24e.firebasestorage.app",
+
+  messagingSenderId:
+    "512949354669",
+
+  appId:
+    "1:512949354669:web:f561488c630203a9ae4624"
+
 };
 
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getDatabase(firebaseApp);
+
+const firebaseApp =
+  initializeApp(firebaseConfig);
+
+const database =
+  getDatabase(firebaseApp);
+
+
+const $ = selector =>
+  document.querySelector(selector);
+
 
 /* =========================================================
-   NAVIGATION
+   PRELOADER
 ========================================================= */
 
-const menuToggle = document.getElementById("menuToggle");
-const mainNav = document.getElementById("mainNav");
+function hidePreloader() {
 
-menuToggle?.addEventListener("click", () => {
-  mainNav.classList.toggle("open");
-});
+  const preloader =
+    $("#preloader");
 
-document.querySelectorAll(".main-nav a").forEach(link => {
-  link.addEventListener("click", () => {
-    mainNav.classList.remove("open");
-  });
-});
-
-window.addEventListener("scroll", () => {
-
-  const header = document.querySelector(".site-header");
-
-  if (window.scrollY > 50) {
-    header.classList.add("scrolled");
-  } else {
-    header.classList.remove("scrolled");
+  if (preloader) {
+    preloader.classList.add("done");
   }
 
-});
+}
+
+
+window.addEventListener(
+  "load",
+  () => {
+
+    setTimeout(
+      hidePreloader,
+      500
+    );
+
+  }
+);
+
+
+setTimeout(
+  hidePreloader,
+  2000
+);
+
 
 /* =========================================================
-   HERO PARALLAX
+   COUNTDOWN
 ========================================================= */
 
-const heroContent = document.getElementById("heroContent");
+const countdownTarget =
+  new Date(
+    "2026-09-24T00:00:00+05:30"
+  ).getTime();
 
-window.addEventListener("scroll", () => {
 
-  if (!heroContent) return;
+function updateCountdown() {
 
-  const scroll = window.scrollY;
+  const remaining =
+    countdownTarget - Date.now();
 
-  if (scroll < window.innerHeight) {
 
-    heroContent.style.transform =
-      `translateY(${-scroll * 1.5}px)`;
+  const countdown =
+    $("#countdown");
 
-    heroContent.style.opacity =
-      Math.max(0, 1 - scroll / (window.innerHeight * .75));
+
+  if (!countdown) return;
+
+
+  if (remaining <= 0) {
+
+    countdown.innerHTML = `
+      <strong style="
+        font-family:'Playfair Display',serif;
+        color:var(--gold);
+        font-size:clamp(1.3rem,4vw,2rem);
+      ">
+        Ganpati Bappa Pudhchya Varshi Lavkar Ya
+      </strong>
+    `;
+
+    return;
+  }
+
+
+  const days =
+    Math.floor(
+      remaining / 86400000
+    );
+
+
+  const hours =
+    Math.floor(
+      (remaining % 86400000) / 3600000
+    );
+
+
+  const minutes =
+    Math.floor(
+      (remaining % 3600000) / 60000
+    );
+
+
+  const seconds =
+    Math.floor(
+      (remaining % 60000) / 1000
+    );
+
+
+  $("#days").textContent =
+    String(days).padStart(2,"0");
+
+  $("#hours").textContent =
+    String(hours).padStart(2,"0");
+
+  $("#minutes").textContent =
+    String(minutes).padStart(2,"0");
+
+  $("#seconds").textContent =
+    String(seconds).padStart(2,"0");
+
+}
+
+
+updateCountdown();
+
+setInterval(
+  updateCountdown,
+  1000
+);
+
+
+/* =========================================================
+   HERO SANKALP BUTTON
+========================================================= */
+
+$("#heroSankalp")?.addEventListener(
+  "click",
+  () => {
+
+    document
+      .querySelector("#sankalp")
+      ?.scrollIntoView({
+        behavior: "smooth"
+      });
+
+  }
+);
+
+
+/* =========================================================
+   DIGITAL SANKALP
+========================================================= */
+
+const prayerForm =
+  $("#prayerForm");
+
+const prayerInput =
+  $("#prayerInput");
+
+const prayerWall =
+  $("#prayerWall");
+
+const prayerStatus =
+  $("#prayerStatus");
+
+
+const prayersReference =
+  ref(
+    database,
+    "pandal/prayers_wall"
+  );
+
+
+onChildAdded(
+  prayersReference,
+  snapshot => {
+
+    const prayer =
+      snapshot.val();
+
+
+    if (
+      !prayer ||
+      typeof prayer.text !== "string"
+    ) {
+      return;
+    }
+
+
+    const article =
+      document.createElement("article");
+
+    article.className =
+      "prayer-card";
+
+
+    article.textContent =
+      prayer.text;
+
+
+    const label =
+      document.createElement("small");
+
+    label.textContent =
+      "ॐ Sankalp";
+
+
+    article.appendChild(label);
+
+
+    prayerWall.appendChild(article);
+
+
+    while (
+      prayerWall.children.length > 50
+    ) {
+
+      prayerWall.firstElementChild
+        .remove();
+
+    }
+
+  }
+);
+
+
+prayerForm?.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const text =
+      prayerInput.value.trim();
+
+
+    if (!text) return;
+
+
+    prayerStatus.textContent =
+      "Offering your prayer...";
+
+
+    try {
+
+      await push(
+        prayersReference,
+        {
+          text,
+          createdAt:
+            serverTimestamp()
+        }
+      );
+
+
+      prayerInput.value = "";
+
+      prayerStatus.textContent =
+        "Your Sankalp has been offered. ॐ";
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      prayerStatus.textContent =
+        "Could not submit right now. Please try again.";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   AARTI PLAYER
+========================================================= */
+
+const tracks = [
+
+  [
+    "Gajanana",
+    "./assets/Gajanana.mp3"
+  ],
+
+  [
+    "Deva Ho Deva",
+    "./assets/Ganpati Bappa Moriya Humse Badhkar Kaun 128 Kbps.mp3"
+  ],
+
+  [
+    "Jalwa",
+    "./assets/Jalwa Mera Hi Jalwa Wanted 128 Kbps.mp3"
+  ],
+
+  [
+    "Sukhkarta Dukhharta",
+    "./assets/Keshav_Kumar_-_Sukhkarta_Dukhharta_(mp3.pm).mp3"
+  ],
+
+  [
+    "Jai Ganesh Deva",
+    "./assets/Kumar_Vishu_Vandana_Vajpai_-_Jai_Ganesh_Jai_Ganesh_Deva_(mp3.pm).mp3"
+  ],
+
+  [
+    "Morya Re (Don)",
+    "./assets/Maurya Re Don 2006 128 Kbps.mp3"
+  ],
+
+  [
+    "Shendur Laal Chadhayo",
+    "./assets/Shendur Laal Chadhayo Aarti 128 Kbps.mp3"
+  ],
+
+  [
+    "Suno Ganpati Bappa Morya",
+    "./assets/Suno Ganpati Bappa Morya Judwaa 2 128 Kbps.mp3"
+  ],
+
+  [
+    "Shree Ganeshay Dheemahi",
+    "./assets/Viruddh_-_Shree_Ganeshay_Dheemahi_(mp3.pm).mp3"
+  ]
+
+];
+
+
+const audio =
+  $("#aartiAudio");
+
+const trackList =
+  $("#trackList");
+
+let currentTrack = 0;
+
+
+tracks.forEach(
+  (track,index) => {
+
+    const button =
+      document.createElement("button");
+
+
+    button.type =
+      "button";
+
+
+    button.textContent =
+      `${index + 1}. ${track[0]}`;
+
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        loadTrack(
+          index,
+          true
+        );
+
+      }
+    );
+
+
+    trackList.appendChild(
+      button
+    );
+
+  }
+);
+
+
+function loadTrack(
+  index,
+  autoplay = false
+) {
+
+  currentTrack =
+    index;
+
+
+  audio.src =
+    tracks[index][1];
+
+
+  $("#trackTitle").textContent =
+    tracks[index][0];
+
+
+  $("#trackNumber").textContent =
+    `${index + 1} / ${tracks.length}`;
+
+
+  trackList
+    .querySelectorAll("button")
+    .forEach(
+      (button,index) => {
+
+        button.classList.toggle(
+          "active",
+          index === currentTrack
+        );
+
+      }
+    );
+
+
+  if (autoplay) {
+
+    audio
+      .play()
+      .catch(
+        error =>
+          console.warn(
+            "Audio playback blocked:",
+            error
+          )
+      );
 
   }
 
-}, { passive: true });
+}
+
+
+$("#playPause")?.addEventListener(
+  "click",
+  () => {
+
+    if (audio.paused) {
+
+      audio.play()
+        .catch(
+          error =>
+            console.warn(
+              error
+            )
+        );
+
+    }
+
+    else {
+
+      audio.pause();
+
+    }
+
+  }
+);
+
+
+audio.addEventListener(
+  "play",
+  () => {
+
+    $("#playIcon").textContent =
+      "Ⅱ";
+
+  }
+);
+
+
+audio.addEventListener(
+  "pause",
+  () => {
+
+    $("#playIcon").textContent =
+      "▶";
+
+  }
+);
+
+
+audio.addEventListener(
+  "timeupdate",
+  () => {
+
+    if (audio.duration) {
+
+      $("#progress").value =
+        (
+          audio.currentTime /
+          audio.duration
+        ) * 100;
+
+    }
+
+
+    $("#currentTime").textContent =
+      formatTime(
+        audio.currentTime
+      );
+
+
+    $("#duration").textContent =
+      formatTime(
+        audio.duration
+      );
+
+  }
+);
+
+
+$("#progress")?.addEventListener(
+  "input",
+  event => {
+
+    if (!audio.duration) {
+      return;
+    }
+
+
+    audio.currentTime =
+      (
+        Number(event.target.value) /
+        100
+      ) * audio.duration;
+
+  }
+);
+
+
+audio.addEventListener(
+  "ended",
+  () => {
+
+    const next =
+      (currentTrack + 1) %
+      tracks.length;
+
+
+    loadTrack(
+      next,
+      true
+    );
+
+  }
+);
+
+
+function formatTime(seconds) {
+
+  if (
+    !Number.isFinite(seconds)
+  ) {
+    return "0:00";
+  }
+
+
+  const minutes =
+    Math.floor(
+      seconds / 60
+    );
+
+
+  const remainingSeconds =
+    Math.floor(
+      seconds % 60
+    );
+
+
+  return `${minutes}:${String(
+    remainingSeconds
+  ).padStart(2,"0")}`;
+
+}
+
+
+loadTrack(0);
+
 
 /* =========================================================
-   GOLD DUST PARTICLES
+   PUSHPANJALI
 ========================================================= */
 
-const canvas = document.getElementById("dustCanvas");
-const ctx = canvas.getContext("2d");
+const bellAudio =
+  $("#bellAudio");
 
-let particles = [];
+const canvas =
+  $("#petalCanvas");
+
+const context =
+  canvas.getContext("2d");
+
+
+let petals = [];
+
+let petalAnimationRunning =
+  false;
+
 
 function resizeCanvas() {
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const ratio =
+    window.devicePixelRatio || 1;
 
-  particles = [];
 
-  const count = Math.min(
-    90,
-    Math.floor(window.innerWidth / 12)
+  canvas.width =
+    window.innerWidth * ratio;
+
+  canvas.height =
+    window.innerHeight * ratio;
+
+
+  context.setTransform(
+    ratio,
+    0,
+    0,
+    ratio,
+    0,
+    0
   );
-
-  for (let i = 0; i < count; i++) {
-
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * 1.7 + .4,
-      speedX: (Math.random() - .5) * .12,
-      speedY: (Math.random() - .5) * .12,
-      alpha: Math.random() * .15
-    });
-
-  }
 
 }
 
-function drawParticles() {
-
-  ctx.clearRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-
-  particles.forEach(p => {
-
-    p.x += p.speedX;
-    p.y += p.speedY;
-
-    if (p.x < 0) p.x = canvas.width;
-    if (p.x > canvas.width) p.x = 0;
-
-    if (p.y < 0) p.y = canvas.height;
-    if (p.y > canvas.height) p.y = 0;
-
-    ctx.beginPath();
-
-    ctx.arc(
-      p.x,
-      p.y,
-      p.size,
-      0,
-      Math.PI * 2
-    );
-
-    ctx.fillStyle =
-      `rgba(203,161,83,${p.alpha})`;
-
-    ctx.fill();
-
-  });
-
-  requestAnimationFrame(drawParticles);
-}
 
 resizeCanvas();
-drawParticles();
 
 window.addEventListener(
   "resize",
   resizeCanvas
 );
 
-/* =========================================================
-   FIREBASE LIVE DARSHAN
-========================================================= */
 
-const liveReference = ref(db, "live");
+$("#pushpanjali")?.addEventListener(
+  "click",
+  () => {
 
-const livePlayer = document.querySelector(".live-player");
-const liveStatusText = document.getElementById("liveStatusText");
-const liveIframe = document.getElementById("liveIframe");
-const viewerCount = document.getElementById("viewerCount");
+    bellAudio.currentTime = 0;
 
-onValue(
-  liveReference,
-  snapshot => {
+    bellAudio
+      .play()
+      .catch(
+        error =>
+          console.warn(
+            "Bell playback blocked:",
+            error
+          )
+      );
 
-    const data = snapshot.val() || {};
 
-    const isLive = data.isLive === true;
+    createPetals();
 
-    if (isLive) {
+  }
+);
 
-      livePlayer.classList.add("is-live");
 
-      liveStatusText.textContent = "LIVE";
+function createPetals() {
 
-      viewerCount.textContent =
-        data.viewerCount ?? "[Viewers]";
+  const width =
+    window.innerWidth;
+
+  const height =
+    window.innerHeight;
+
+
+  petals =
+    Array.from(
+      { length: 85 },
+      () => ({
+
+        x:
+          Math.random() *
+          width,
+
+        y:
+          -Math.random() *
+          height *
+          .6,
+
+        radius:
+          3 +
+          Math.random() *
+          5,
+
+        speed:
+          1.2 +
+          Math.random() *
+          2.5,
+
+        angle:
+          Math.random() *
+          Math.PI *
+          2,
+
+        rotation:
+          Math.random() *
+          Math.PI *
+          2,
+
+        rotationSpeed:
+          (
+            Math.random() -
+            .5
+          ) * .06,
+
+        life: 0
+
+      })
+    );
+
+
+  if (!petalAnimationRunning) {
+
+    petalAnimationRunning = true;
+
+    requestAnimationFrame(
+      drawPetals
+    );
+
+  }
+
+}
+
+
+function drawPetals() {
+
+  context.clearRect(
+    0,
+    0,
+    window.innerWidth,
+    window.innerHeight
+  );
+
+
+  let activePetals = 0;
+
+
+  petals.forEach(
+    petal => {
+
+      petal.y +=
+        petal.speed;
+
+
+      petal.x +=
+        Math.sin(
+          petal.y * .01 +
+          petal.angle
+        ) * .7;
+
+
+      petal.rotation +=
+        petal.rotationSpeed;
+
+
+      petal.life++;
+
+
+      context.save();
+
+
+      context.translate(
+        petal.x,
+        petal.y
+      );
+
+
+      context.rotate(
+        petal.rotation
+      );
+
+
+      context.fillStyle =
+        petal.life > 170
+          ? "rgba(203,161,83,.35)"
+          : "rgba(238,156,36,.85)";
+
+
+      context.beginPath();
+
+
+      context.ellipse(
+        0,
+        0,
+        petal.radius,
+        petal.radius * .55,
+        0,
+        0,
+        Math.PI * 2
+      );
+
+
+      context.fill();
+
+
+      context.restore();
+
 
       if (
-        data.streamUrl &&
-        liveIframe.src !== data.streamUrl
+        petal.y <
+        window.innerHeight + 30
       ) {
-        liveIframe.src = data.streamUrl;
+
+        activePetals++;
+
       }
 
-    } else {
-
-      livePlayer.classList.remove("is-live");
-
-      liveStatusText.textContent = "OFFLINE";
-
-      viewerCount.textContent = "[Viewers]";
-
-      liveIframe.src = "";
-
     }
+  );
 
-  },
-  error => {
+
+  if (activePetals > 0) {
+
+    requestAnimationFrame(
+      drawPetals
+    );
+
+  }
+
+  else {
+
+    petalAnimationRunning =
+      false;
+
+    context.clearRect(
+      0,
+      0,
+      window.innerWidth,
+      window.innerHeight
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   WEBRTC VIEWER
+========================================================= */
+
+const viewerId =
+  crypto.randomUUID();
+
+
+const viewerReference =
+  ref(
+    database,
+    `pandal/viewers/${viewerId}`
+  );
+
+
+let viewerPeer =
+  null;
+
+
+let viewerCleaned =
+  false;
+
+
+async function startViewer() {
+
+  try {
+
+    await set(
+      viewerReference,
+      {
+        createdAt:
+          serverTimestamp()
+      }
+    );
+
+
+    onValue(
+      ref(
+        database,
+        `pandal/signals/${viewerId}/offer`
+      ),
+
+      async snapshot => {
+
+        const offer =
+          snapshot.val();
+
+
+        if (!offer) {
+          return;
+        }
+
+
+        if (viewerPeer) {
+
+          viewerPeer.close();
+
+        }
+
+
+        viewerPeer =
+          new RTCPeerConnection({
+
+            iceServers: [
+
+              {
+                urls:
+                  "stun:stun.l.google.com:19302"
+              }
+
+            ]
+
+          });
+
+
+        viewerPeer.ontrack =
+          event => {
+
+            const video =
+              $("#liveVideo");
+
+
+            if (
+              video.srcObject !==
+              event.streams[0]
+            ) {
+
+              video.srcObject =
+                event.streams[0];
+
+            }
+
+
+            $("#active-stream-ui")
+              .classList
+              .remove("hidden");
+
+
+            $("#offline-stream-ui")
+              .classList
+              .add("hidden");
+
+          };
+
+
+        viewerPeer.onicecandidate =
+          event => {
+
+            if (
+              event.candidate
+            ) {
+
+              push(
+                ref(
+                  database,
+                  `pandal/signals/${viewerId}/viewerCandidates`
+                ),
+                event.candidate.toJSON()
+              );
+
+            }
+
+          };
+
+
+        viewerPeer.onconnectionstatechange =
+          () => {
+
+            const state =
+              viewerPeer.connectionState;
+
+
+            if (
+              [
+                "failed",
+                "closed",
+                "disconnected"
+              ].includes(state)
+            ) {
+
+              $("#active-stream-ui")
+                .classList
+                .add("hidden");
+
+
+              $("#offline-stream-ui")
+                .classList
+                .remove("hidden");
+
+            }
+
+          };
+
+
+        await viewerPeer
+          .setRemoteDescription(
+            offer
+          );
+
+
+        const answer =
+          await viewerPeer
+            .createAnswer();
+
+
+        await viewerPeer
+          .setLocalDescription(
+            answer
+          );
+
+
+        await set(
+          ref(
+            database,
+            `pandal/signals/${viewerId}/answer`
+          ),
+          {
+            type:
+              answer.type,
+
+            sdp:
+              answer.sdp
+          }
+        );
+
+
+        onChildAdded(
+          ref(
+            database,
+            `pandal/signals/${viewerId}/broadcasterCandidates`
+          ),
+
+          snapshot => {
+
+            viewerPeer
+              ?.addIceCandidate(
+                snapshot.val()
+              )
+              .catch(
+                () => {}
+              );
+
+          }
+        );
+
+      }
+    );
+
+
+    onValue(
+      ref(
+        database,
+        `pandal/signals/${viewerId}/closed`
+      ),
+
+      snapshot => {
+
+        if (
+          snapshot.val() === true
+        ) {
+
+          $("#active-stream-ui")
+            .classList
+            .add("hidden");
+
+
+          $("#offline-stream-ui")
+            .classList
+            .remove("hidden");
+
+        }
+
+      }
+    );
+
+  }
+
+  catch (error) {
 
     console.error(
-      "Live status error:",
+      "Viewer initialization failed:",
       error
     );
 
   }
-);
-
-/* =========================================================
-   AARTI PLAYER
-========================================================= */
-
-const tracks = {
-
-  traditional: [
-    {
-      title: "Sukhkarta Dukhaharta",
-      src: "./assets/audio/sukhkarta-dukhaharta.mp3"
-    },
-    {
-      title: "Jai Ganesh Deva",
-      src: "./assets/audio/jai-ganesh-deva.mp3"
-    },
-    {
-      title: "Prathama Tula Vandito",
-      src: "./assets/audio/prathama-tula-vandito.mp3"
-    },
-    {
-      title: "Shendur Laal Chadhayo",
-      src: "./assets/audio/shendur-laal-chadhayo.mp3"
-    },
-    {
-      title: "Shree Ganeshay Dheemahi",
-      src: "./assets/audio/shree-ganeshay-dheemahi.mp3"
-    }
-  ],
-
-  anthems: [
-    {
-      title: "Deva Shree Ganesha",
-      src: "./assets/audio/deva-shree-ganesha.mp3"
-    },
-    {
-      title: "Morya Re",
-      src: "./assets/audio/morya-re.mp3"
-    },
-    {
-      title: "Deva Ho Deva",
-      src: "./assets/audio/deva-ho-deva.mp3"
-    },
-    {
-      title: "Suno Ganpati Bappa Morya",
-      src: "./assets/audio/suno-ganpati-bappa-morya.mp3"
-    },
-    {
-      title: "Jalwa",
-      src: "./assets/audio/jalwa.mp3"
-    },
-    {
-      title: "Gajanana",
-      src: "./assets/audio/gajanana.mp3"
-    },
-    {
-      title: "Mourya Re",
-      src: "./assets/audio/mourya-re.mp3"
-    }
-  ]
-
-};
-
-const traditionalContainer =
-  document.getElementById("traditionalTracks");
-
-const anthemContainer =
-  document.getElementById("anthemTracks");
-
-const audio =
-  document.getElementById("audioPlayer");
-
-const playButton =
-  document.getElementById("playButton");
-
-const player =
-  document.querySelector(".aarti-player");
-
-const trackTitle =
-  document.getElementById("trackTitle");
-
-const trackCategory =
-  document.getElementById("trackCategory");
-
-const trackTime =
-  document.getElementById("trackTime");
-
-const audioProgress =
-  document.getElementById("audioProgress");
-
-let currentTrack = null;
-
-function createTrackRows(list, container, category) {
-
-  list.forEach((track, index) => {
-
-    const button =
-      document.createElement("button");
-
-    button.className = "track-row";
-
-    button.innerHTML = `
-      <span class="track-number">
-        ${String(index + 1).padStart(2, "0")}
-      </span>
-
-      <span class="track-name">
-        ${track.title}
-      </span>
-    `;
-
-    button.addEventListener(
-      "click",
-      () => playTrack(track, category, button)
-    );
-
-    container.appendChild(button);
-
-  });
 
 }
 
-createTrackRows(
-  tracks.traditional,
-  traditionalContainer,
-  "TRADITIONAL AARTIS"
-);
 
-createTrackRows(
-  tracks.anthems,
-  anthemContainer,
-  "FESTIVAL ANTHEMS"
-);
+function cleanupViewer() {
 
-function playTrack(
-  track,
-  category,
-  selectedButton = null
-) {
-
-  currentTrack = track;
-
-  audio.src = track.src;
-
-  trackTitle.textContent = track.title;
-  trackCategory.textContent = category;
-
-  document.querySelectorAll(".track-row")
-    .forEach(row => {
-
-      row.classList.remove("active");
-
-      const oldEq =
-        row.querySelector(".eq");
-
-      if (oldEq) {
-        oldEq.remove();
-      }
-
-    });
-
-  if (selectedButton) {
-
-    selectedButton.classList.add("active");
-
-    const number =
-      selectedButton.querySelector(".track-number");
-
-    number.innerHTML = `
-      <span class="eq">
-        <span></span>
-        <span></span>
-        <span></span>
-      </span>
-    `;
-
+  if (viewerCleaned) {
+    return;
   }
 
-  audio.play()
-    .then(() => {
 
-      player.classList.add("playing");
+  viewerCleaned = true;
 
-    })
-    .catch(error => {
 
-      console.warn(
-        "Audio could not autoplay:",
-        error
-      );
+  viewerPeer?.close();
 
-    });
 
-}
-
-playButton.addEventListener(
-  "click",
-  () => {
-
-    if (!currentTrack) {
-
-      const firstButton =
-        traditionalContainer.querySelector(
-          ".track-row"
-        );
-
-      playTrack(
-        tracks.traditional[0],
-        "TRADITIONAL AARTIS",
-        firstButton
-      );
-
-      return;
-    }
-
-    if (audio.paused) {
-
-      audio.play();
-      player.classList.add("playing");
-
-    } else {
-
-      audio.pause();
-      player.classList.remove("playing");
-
-    }
-
-  }
-);
-
-audio.addEventListener(
-  "timeupdate",
-  () => {
-
-    if (!audio.duration) return;
-
-    const percent =
-      (audio.currentTime / audio.duration) * 100;
-
-    audioProgress.style.width =
-      `${percent}%`;
-
-    trackTime.textContent =
-      `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
-
-  }
-);
-
-audio.addEventListener(
-  "ended",
-  () => {
-
-    player.classList.remove("playing");
-
-  }
-);
-
-function formatTime(seconds) {
-
-  if (!Number.isFinite(seconds)) {
-    return "00:00";
-  }
-
-  const minutes =
-    Math.floor(seconds / 60);
-
-  const remaining =
-    Math.floor(seconds % 60);
-
-  return `${String(minutes).padStart(2, "0")}:${String(remaining).padStart(2, "0")}`;
-
-}
-
-document
-  .querySelector(".progress-track")
-  .addEventListener(
-    "click",
-    event => {
-
-      if (!audio.duration) return;
-
-      const rect =
-        event.currentTarget.getBoundingClientRect();
-
-      const percentage =
-        (event.clientX - rect.left) /
-        rect.width;
-
-      audio.currentTime =
-        percentage * audio.duration;
-
-    }
+  remove(
+    viewerReference
+  ).catch(
+    () => {}
   );
 
-/* =========================================================
-   SCROLL REVEAL
-========================================================= */
 
-const timelineItems =
-  document.querySelectorAll(".timeline-item");
-
-const revealObserver =
-  new IntersectionObserver(
-    entries => {
-
-      entries.forEach(entry => {
-
-        if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-        }
-
-      });
-
-    },
-    {
-      threshold: .15
-    }
+  remove(
+    ref(
+      database,
+      `pandal/signals/${viewerId}`
+    )
+  ).catch(
+    () => {}
   );
-
-timelineItems.forEach(
-  item => revealObserver.observe(item)
-);
-
-/* =========================================================
-   GALLERY LIGHTBOX
-========================================================= */
-
-const lightbox =
-  document.getElementById("lightbox");
-
-const lightboxImage =
-  document.getElementById("lightboxImage");
-
-const lightboxClose =
-  document.getElementById("lightboxClose");
-
-document
-  .querySelectorAll(".gallery-item")
-  .forEach(item => {
-
-    item.addEventListener(
-      "click",
-      () => {
-
-        const image =
-          item.querySelector("img");
-
-        if (!image) return;
-
-        lightboxImage.src =
-          image.src;
-
-        lightboxImage.alt =
-          image.alt;
-
-        lightbox.classList.add("open");
-
-        document.body.classList.add(
-          "lightbox-open"
-        );
-
-      }
-    );
-
-  });
-
-function closeLightbox() {
-
-  lightbox.classList.remove("open");
-
-  document.body.classList.remove(
-    "lightbox-open"
-  );
-
-  lightboxImage.src = "";
 
 }
 
-lightboxClose.addEventListener(
-  "click",
-  closeLightbox
+
+window.addEventListener(
+  "pagehide",
+  cleanupViewer
 );
 
-lightbox.addEventListener(
-  "click",
-  event => {
 
-    if (event.target === lightbox) {
-      closeLightbox();
-    }
-
-  }
-);
-
-document.addEventListener(
-  "keydown",
-  event => {
-
-    if (event.key === "Escape") {
-      closeLightbox();
-    }
-
-  }
-);
+startViewer();
