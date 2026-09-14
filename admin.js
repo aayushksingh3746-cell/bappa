@@ -1,12 +1,11 @@
 /* =========================================================
    GANPATI PANDAL — ADMIN.JS
+   LIVE BROADCAST + FIREBASE
 ========================================================= */
 
 
 /* =========================================================
    PRELOADER
-   IMPORTANT:
-   This is deliberately placed BEFORE Firebase code.
 ========================================================= */
 
 (function () {
@@ -16,35 +15,30 @@
         const preloader =
             document.getElementById("preloader");
 
-        if (preloader) {
+        if (!preloader) return;
 
-            preloader.style.display = "none";
-            preloader.style.opacity = "0";
-            preloader.style.visibility = "hidden";
-            preloader.style.pointerEvents = "none";
+        preloader.style.display = "none";
+        preloader.style.opacity = "0";
+        preloader.style.visibility = "hidden";
+        preloader.style.pointerEvents = "none";
 
+        if (preloader.parentNode) {
             preloader.remove();
         }
-
     }
 
-
-    // Remove immediately if DOM is already available
     removePreloader();
 
-
-    // Extra safety
     setTimeout(removePreloader, 100);
     setTimeout(removePreloader, 500);
     setTimeout(removePreloader, 1500);
     setTimeout(removePreloader, 3000);
 
-
 })();
 
 
 /* =========================================================
-   FIREBASE IMPORTS
+   FIREBASE
 ========================================================= */
 
 import {
@@ -72,7 +66,7 @@ import {
 
 
 /* =========================================================
-   FIREBASE CONFIG
+   CONFIG
 ========================================================= */
 
 const firebaseConfig = {
@@ -101,38 +95,18 @@ const firebaseConfig = {
 };
 
 
-/* =========================================================
-   FIREBASE INITIALIZATION
-========================================================= */
+const app =
+    initializeApp(firebaseConfig);
 
-let app = null;
-let auth = null;
-let database = null;
+const auth =
+    getAuth(app);
 
-try {
-
-    app = initializeApp(firebaseConfig);
-
-    auth = getAuth(app);
-
-    database = getDatabase(app);
-
-    console.log(
-        "Firebase initialized."
-    );
-
-} catch (error) {
-
-    console.error(
-        "Firebase initialization error:",
-        error
-    );
-
-}
+const database =
+    getDatabase(app);
 
 
 /* =========================================================
-   ELEMENT HELPER
+   HELPERS
 ========================================================= */
 
 function el(id) {
@@ -141,7 +115,7 @@ function el(id) {
 
 
 /* =========================================================
-   LOGIN ELEMENTS
+   ELEMENTS
 ========================================================= */
 
 const loginPanel =
@@ -168,570 +142,8 @@ const logoutBtn =
 const connectionState =
     el("connectionState");
 
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
-if (loginForm) {
-
-    loginForm.addEventListener(
-        "submit",
-        async function (event) {
-
-            event.preventDefault();
-
-
-            if (!auth) {
-
-                if (loginStatus) {
-                    loginStatus.textContent =
-                        "Firebase is unavailable.";
-                }
-
-                return;
-            }
-
-
-            const email =
-                emailInput
-                    ? emailInput.value.trim()
-                    : "";
-
-
-            const password =
-                passwordInput
-                    ? passwordInput.value
-                    : "";
-
-
-            if (!email || !password) {
-
-                if (loginStatus) {
-                    loginStatus.textContent =
-                        "Enter your email and password.";
-                }
-
-                return;
-            }
-
-
-            if (loginStatus) {
-                loginStatus.textContent =
-                    "Signing in...";
-            }
-
-
-            try {
-
-                await signInWithEmailAndPassword(
-                    auth,
-                    email,
-                    password
-                );
-
-
-                if (loginStatus) {
-                    loginStatus.textContent =
-                        "Login successful.";
-                }
-
-
-            } catch (error) {
-
-                console.error(
-                    "Login error:",
-                    error
-                );
-
-
-                let message =
-                    "Login failed.";
-
-
-                if (
-                    error.code ===
-                    "auth/invalid-credential"
-                ) {
-
-                    message =
-                        "Invalid email or password.";
-
-                }
-
-                else if (
-                    error.code ===
-                    "auth/user-not-found"
-                ) {
-
-                    message =
-                        "User not found.";
-
-                }
-
-                else if (
-                    error.code ===
-                    "auth/wrong-password"
-                ) {
-
-                    message =
-                        "Incorrect password.";
-
-                }
-
-                else if (
-                    error.code ===
-                    "auth/network-request-failed"
-                ) {
-
-                    message =
-                        "Network error.";
-
-                }
-
-                else {
-
-                    message =
-                        error.message ||
-                        "Login failed.";
-
-                }
-
-
-                if (loginStatus) {
-                    loginStatus.textContent =
-                        message;
-                }
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   LOGOUT
-========================================================= */
-
-if (logoutBtn) {
-
-    logoutBtn.addEventListener(
-        "click",
-        async function () {
-
-            if (!auth) return;
-
-            try {
-
-                await signOut(auth);
-
-            } catch (error) {
-
-                console.error(
-                    "Logout error:",
-                    error
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   AUTH STATE
-========================================================= */
-
-if (auth) {
-
-    onAuthStateChanged(
-        auth,
-        function (user) {
-
-            if (user) {
-
-                console.log(
-                    "Logged in:",
-                    user.email
-                );
-
-
-                if (loginPanel) {
-
-                    loginPanel.classList.add(
-                        "hidden"
-                    );
-
-                }
-
-
-                if (dashboard) {
-
-                    dashboard.classList.remove(
-                        "hidden"
-                    );
-
-                }
-
-
-                if (logoutBtn) {
-
-                    logoutBtn.classList.remove(
-                        "hidden"
-                    );
-
-                }
-
-
-                initializeDashboard();
-
-            }
-
-            else {
-
-                if (loginPanel) {
-
-                    loginPanel.classList.remove(
-                        "hidden"
-                    );
-
-                }
-
-
-                if (dashboard) {
-
-                    dashboard.classList.add(
-                        "hidden"
-                    );
-
-                }
-
-
-                if (logoutBtn) {
-
-                    logoutBtn.classList.add(
-                        "hidden"
-                    );
-
-                }
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   FIREBASE CONNECTION STATUS
-========================================================= */
-
-function monitorConnection() {
-
-    if (!database) return;
-
-
-    const connectedRef =
-        ref(
-            database,
-            ".info/connected"
-        );
-
-
-    onValue(
-        connectedRef,
-
-        function (snapshot) {
-
-            const connected =
-                snapshot.val() === true;
-
-
-            if (!connectionState) {
-                return;
-            }
-
-
-            if (connected) {
-
-                connectionState.textContent =
-                    "Firebase Connected";
-
-                connectionState.classList.add(
-                    "online"
-                );
-
-                connectionState.classList.remove(
-                    "offline"
-                );
-
-            }
-
-            else {
-
-                connectionState.textContent =
-                    "Firebase Offline";
-
-                connectionState.classList.add(
-                    "offline"
-                );
-
-                connectionState.classList.remove(
-                    "online"
-                );
-
-            }
-
-        },
-
-        function (error) {
-
-            console.error(
-                "Connection error:",
-                error
-            );
-
-
-            if (connectionState) {
-
-                connectionState.textContent =
-                    "Connection Error";
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   PRAYER WALL
-========================================================= */
-
 const adminPrayers =
     el("adminPrayers");
-
-
-const prayerCards =
-    new Map();
-
-
-function createPrayerCard(
-    id,
-    prayer
-) {
-
-    const card =
-        document.createElement("div");
-
-    card.className =
-        "admin-prayer-item";
-
-    card.dataset.id =
-        id;
-
-
-    const text =
-        document.createElement("div");
-
-    text.className =
-        "admin-prayer-text";
-
-    text.textContent =
-        prayer.text || "";
-
-
-    const date =
-        document.createElement("div");
-
-    date.className =
-        "admin-prayer-meta";
-
-
-    if (prayer.createdAt) {
-
-        date.textContent =
-            new Date(
-                prayer.createdAt
-            ).toLocaleString(
-                "en-IN"
-            );
-
-    }
-
-
-    const deleteButton =
-        document.createElement("button");
-
-    deleteButton.type =
-        "button";
-
-    deleteButton.className =
-        "delete-prayer";
-
-    deleteButton.textContent =
-        "Delete";
-
-
-    deleteButton.addEventListener(
-        "click",
-        async function () {
-
-            if (
-                !window.confirm(
-                    "Delete this Sankalp?"
-                )
-            ) {
-                return;
-            }
-
-
-            try {
-
-                await remove(
-                    ref(
-                        database,
-                        "pandal/prayers_wall/" +
-                        id
-                    )
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "Prayer deletion error:",
-                    error
-                );
-
-
-                window.alert(
-                    "Unable to delete prayer."
-                );
-
-            }
-
-        }
-    );
-
-
-    card.appendChild(text);
-    card.appendChild(date);
-    card.appendChild(deleteButton);
-
-
-    return card;
-}
-
-
-function loadPrayers() {
-
-    if (!database) return;
-
-    if (!adminPrayers) return;
-
-
-    adminPrayers.innerHTML =
-        "";
-
-
-    const prayersRef =
-        ref(
-            database,
-            "pandal/prayers_wall"
-        );
-
-
-    onChildAdded(
-        prayersRef,
-
-        function (snapshot) {
-
-            const id =
-                snapshot.key;
-
-            const prayer =
-                snapshot.val();
-
-
-            if (!id || !prayer) {
-                return;
-            }
-
-
-            const card =
-                createPrayerCard(
-                    id,
-                    prayer
-                );
-
-
-            prayerCards.set(
-                id,
-                card
-            );
-
-
-            adminPrayers.prepend(
-                card
-            );
-
-        },
-
-        function (error) {
-
-            console.error(
-                "Prayer listener error:",
-                error
-            );
-
-
-            adminPrayers.textContent =
-                "Unable to load prayers.";
-
-        }
-    );
-
-
-    onChildRemoved(
-        prayersRef,
-
-        function (snapshot) {
-
-            const id =
-                snapshot.key;
-
-
-            const card =
-                prayerCards.get(
-                    id
-                );
-
-
-            if (card) {
-                card.remove();
-            }
-
-
-            prayerCards.delete(
-                id
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   ANNOUNCEMENTS
-========================================================= */
 
 const announcementForm =
     el("announcementForm");
@@ -744,142 +156,6 @@ const announcementText =
 
 const announcementStatus =
     el("announcementStatus");
-
-
-if (announcementForm) {
-
-    announcementForm.addEventListener(
-        "submit",
-        async function (event) {
-
-            event.preventDefault();
-
-
-            if (!database) {
-
-                if (announcementStatus) {
-                    announcementStatus.textContent =
-                        "Firebase is unavailable.";
-                }
-
-                return;
-            }
-
-
-            if (!auth || !auth.currentUser) {
-
-                if (announcementStatus) {
-                    announcementStatus.textContent =
-                        "Please login again.";
-                }
-
-                return;
-            }
-
-
-            const title =
-                announcementTitle
-                    ? announcementTitle.value.trim()
-                    : "";
-
-
-            const message =
-                announcementText
-                    ? announcementText.value.trim()
-                    : "";
-
-
-            if (!title || !message) {
-
-                if (announcementStatus) {
-                    announcementStatus.textContent =
-                        "Enter title and message.";
-                }
-
-                return;
-            }
-
-
-            if (announcementStatus) {
-                announcementStatus.textContent =
-                    "Publishing...";
-            }
-
-
-            try {
-
-                const announcementRef =
-                    push(
-                        ref(
-                            database,
-                            "pandal/announcements"
-                        )
-                    );
-
-
-                await set(
-                    announcementRef,
-                    {
-
-                        title:
-                            title,
-
-                        message:
-                            message,
-
-                        createdAt:
-                            Date.now(),
-
-                        author:
-                            auth.currentUser.email ||
-                            "Admin"
-
-                    }
-                );
-
-
-                if (announcementTitle) {
-                    announcementTitle.value =
-                        "";
-                }
-
-
-                if (announcementText) {
-                    announcementText.value =
-                        "";
-                }
-
-
-                if (announcementStatus) {
-                    announcementStatus.textContent =
-                        "Announcement published successfully.";
-                }
-
-
-            } catch (error) {
-
-                console.error(
-                    "Announcement error:",
-                    error
-                );
-
-
-                if (announcementStatus) {
-                    announcementStatus.textContent =
-                        "Could not publish announcement.";
-                }
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   BROADCAST ELEMENTS
-========================================================= */
 
 const broadcastStatus =
     el("broadcastStatus");
@@ -898,22 +174,436 @@ const broadcastMessage =
 
 
 /* =========================================================
-   WEBRTC VARIABLES
+   LOGIN
 ========================================================= */
 
-let localStream =
-    null;
+if (loginForm) {
 
-let broadcasting =
-    false;
+    loginForm.addEventListener(
+        "submit",
+        async (event) => {
 
-let viewerListenerStarted =
-    false;
+            event.preventDefault();
 
+            const email =
+                emailInput.value.trim();
+
+            const password =
+                passwordInput.value;
+
+            if (!email || !password) {
+
+                loginStatus.textContent =
+                    "Enter your email and password.";
+
+                return;
+            }
+
+            loginStatus.textContent =
+                "Signing in...";
+
+            try {
+
+                await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+                loginStatus.textContent =
+                    "Login successful.";
+
+            } catch (error) {
+
+                console.error(error);
+
+                if (
+                    error.code ===
+                    "auth/invalid-credential"
+                ) {
+
+                    loginStatus.textContent =
+                        "Invalid email or password.";
+
+                } else {
+
+                    loginStatus.textContent =
+                        error.message ||
+                        "Login failed.";
+
+                }
+            }
+        }
+    );
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+if (logoutBtn) {
+
+    logoutBtn.addEventListener(
+        "click",
+        async () => {
+
+            await stopBroadcast();
+
+            await signOut(auth);
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+onAuthStateChanged(
+    auth,
+    (user) => {
+
+        if (user) {
+
+            loginPanel.classList.add(
+                "hidden"
+            );
+
+            dashboard.classList.remove(
+                "hidden"
+            );
+
+            logoutBtn.classList.remove(
+                "hidden"
+            );
+
+            initializeDashboard();
+
+        } else {
+
+            loginPanel.classList.remove(
+                "hidden"
+            );
+
+            dashboard.classList.add(
+                "hidden"
+            );
+
+            logoutBtn.classList.add(
+                "hidden"
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   CONNECTION
+========================================================= */
+
+function monitorConnection() {
+
+    const connectedRef =
+        ref(
+            database,
+            ".info/connected"
+        );
+
+    onValue(
+        connectedRef,
+        (snapshot) => {
+
+            const connected =
+                snapshot.val() === true;
+
+            if (connected) {
+
+                connectionState.textContent =
+                    "Firebase Connected";
+
+                connectionState.classList.add(
+                    "online"
+                );
+
+                connectionState.classList.remove(
+                    "offline"
+                );
+
+            } else {
+
+                connectionState.textContent =
+                    "Firebase Offline";
+
+                connectionState.classList.add(
+                    "offline"
+                );
+
+                connectionState.classList.remove(
+                    "online"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   PRAYERS
+========================================================= */
+
+const prayerCards =
+    new Map();
+
+function createPrayerCard(
+    id,
+    prayer
+) {
+
+    const card =
+        document.createElement("div");
+
+    card.className =
+        "admin-prayer-item";
+
+    const text =
+        document.createElement("div");
+
+    text.className =
+        "admin-prayer-text";
+
+    text.textContent =
+        prayer.text || "";
+
+    const date =
+        document.createElement("div");
+
+    date.className =
+        "admin-prayer-meta";
+
+    if (prayer.createdAt) {
+
+        date.textContent =
+            new Date(
+                prayer.createdAt
+            ).toLocaleString("en-IN");
+
+    }
+
+    const deleteButton =
+        document.createElement("button");
+
+    deleteButton.type =
+        "button";
+
+    deleteButton.className =
+        "delete-prayer";
+
+    deleteButton.textContent =
+        "Delete";
+
+    deleteButton.onclick =
+        async () => {
+
+            if (
+                !confirm(
+                    "Delete this Sankalp?"
+                )
+            ) return;
+
+            try {
+
+                await remove(
+                    ref(
+                        database,
+                        `pandal/prayers_wall/${id}`
+                    )
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+        };
+
+    card.appendChild(text);
+    card.appendChild(date);
+    card.appendChild(deleteButton);
+
+    return card;
+}
+
+
+function loadPrayers() {
+
+    if (!adminPrayers) return;
+
+    const prayersRef =
+        ref(
+            database,
+            "pandal/prayers_wall"
+        );
+
+    onChildAdded(
+        prayersRef,
+        (snapshot) => {
+
+            const id =
+                snapshot.key;
+
+            const prayer =
+                snapshot.val();
+
+            if (!id || !prayer) return;
+
+            const card =
+                createPrayerCard(
+                    id,
+                    prayer
+                );
+
+            prayerCards.set(
+                id,
+                card
+            );
+
+            adminPrayers.prepend(
+                card
+            );
+
+        }
+    );
+
+    onChildRemoved(
+        prayersRef,
+        (snapshot) => {
+
+            const card =
+                prayerCards.get(
+                    snapshot.key
+                );
+
+            if (card) {
+                card.remove();
+            }
+
+            prayerCards.delete(
+                snapshot.key
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   ANNOUNCEMENTS
+========================================================= */
+
+if (announcementForm) {
+
+    announcementForm.addEventListener(
+        "submit",
+        async (event) => {
+
+            event.preventDefault();
+
+            const title =
+                announcementTitle.value.trim();
+
+            const message =
+                announcementText.value.trim();
+
+            if (!title || !message) {
+
+                announcementStatus.textContent =
+                    "Enter title and message.";
+
+                return;
+            }
+
+            announcementStatus.textContent =
+                "Publishing...";
+
+            try {
+
+                const announcementRef =
+                    push(
+                        ref(
+                            database,
+                            "pandal/announcements"
+                        )
+                    );
+
+                await set(
+                    announcementRef,
+                    {
+
+                        title,
+
+                        message,
+
+                        createdAt:
+                            Date.now(),
+
+                        author:
+                            auth.currentUser?.email ||
+                            "Admin"
+
+                    }
+                );
+
+                announcementTitle.value =
+                    "";
+
+                announcementText.value =
+                    "";
+
+                announcementStatus.textContent =
+                    "Announcement published.";
+
+            } catch (error) {
+
+                console.error(error);
+
+                announcementStatus.textContent =
+                    "Could not publish announcement.";
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   WEBRTC
+========================================================= */
+
+let localStream = null;
+
+let broadcasting = false;
+
+let broadcastId = null;
+
+let viewersListener = null;
 
 const peerConnections =
     new Map();
 
+const pendingViewerCandidates =
+    new Map();
 
 const rtcConfig = {
 
@@ -927,6 +617,11 @@ const rtcConfig = {
         {
             urls:
                 "stun:stun1.l.google.com:19302"
+        },
+
+        {
+            urls:
+                "stun:stun2.l.google.com:19302"
         }
 
     ]
@@ -935,93 +630,184 @@ const rtcConfig = {
 
 
 /* =========================================================
-   BROADCAST STATUS
+   MESSAGE
 ========================================================= */
 
-function loadBroadcastStatus() {
+function broadcastMessage(
+    text
+) {
 
-    if (!database) return;
+    if (broadcastMessageElement()) {
+
+        broadcastMessageElement()
+            .textContent = text;
+
+    }
+
+}
+
+function broadcastMessageElement() {
+    return broadcastMessage;
+}
 
 
-    const broadcastRef =
-        ref(
-            database,
-            "pandal/broadcast"
+/* =========================================================
+   START BROADCAST
+========================================================= */
+
+async function startBroadcast() {
+
+    if (broadcasting) return;
+
+    try {
+
+        broadcastMessage(
+            "Requesting camera permission..."
         );
 
 
-    onValue(
-        broadcastRef,
+        localStream =
+            await navigator
+                .mediaDevices
+                .getUserMedia({
 
-        function (snapshot) {
+                    video: {
 
-            const data =
-                snapshot.val();
+                        facingMode:
+                            "environment",
+
+                        width: {
+                            ideal: 1280
+                        },
+
+                        height: {
+                            ideal: 720
+                        }
+
+                    },
+
+                    audio: true
+
+                });
 
 
-            const active =
-                data &&
-                data.active === true;
+        preview.srcObject =
+            localStream;
+
+        preview.muted =
+            true;
+
+        preview.playsInline =
+            true;
+
+        await preview.play()
+            .catch(() => {});
 
 
-            if (broadcastStatus) {
-
-                broadcastStatus.textContent =
-                    active
-                        ? "LIVE"
-                        : "Offline";
+        broadcasting =
+            true;
 
 
-                broadcastStatus.classList.toggle(
-                    "live",
-                    active
+        broadcastId =
+            "broadcast-" +
+            Date.now();
+
+
+        /*
+         * THIS IS IMPORTANT.
+         * Public index.html listens to this node.
+         */
+
+        await set(
+            ref(
+                database,
+                "pandal/broadcast"
+            ),
+            {
+
+                active:
+                    true,
+
+                id:
+                    broadcastId,
+
+                startedAt:
+                    Date.now()
+
+            }
+        );
+
+
+        broadcastStatus.textContent =
+            "LIVE";
+
+        broadcastStatus.classList.add(
+            "live"
+        );
+
+
+        startBroadcastButton.disabled =
+            true;
+
+        stopBroadcastButton.disabled =
+            false;
+
+
+        broadcastMessage(
+            "Live Darshan is now LIVE."
+        );
+
+
+        listenForViewers();
+
+
+        console.log(
+            "BROADCAST STARTED:",
+            broadcastId
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Camera error:",
+            error
+        );
+
+        broadcasting =
+            false;
+
+        if (localStream) {
+
+            localStream
+                .getTracks()
+                .forEach(
+                    track =>
+                        track.stop()
                 );
 
-            }
+            localStream =
+                null;
 
+        }
 
-            if (startBroadcastButton) {
+        if (
+            error.name ===
+            "NotAllowedError"
+        ) {
 
-                startBroadcastButton.disabled =
-                    active;
+            broadcastMessage(
+                "Camera permission was denied."
+            );
 
-            }
+        } else {
 
-
-            if (stopBroadcastButton) {
-
-                stopBroadcastButton.disabled =
-                    !active;
-
-            }
-
-        },
-
-        function (error) {
-
-            console.error(
-                "Broadcast status error:",
-                error
+            broadcastMessage(
+                error.message ||
+                "Could not start camera."
             );
 
         }
-    );
-
-}
-
-
-/* =========================================================
-   BROADCAST MESSAGE
-========================================================= */
-
-function showBroadcastMessage(
-    message
-) {
-
-    if (broadcastMessage) {
-
-        broadcastMessage.textContent =
-            message;
 
     }
 
@@ -1029,17 +815,76 @@ function showBroadcastMessage(
 
 
 /* =========================================================
-   CREATE WEBRTC PEER
+   LISTEN FOR VIEWERS
 ========================================================= */
 
-async function createPeer(
+function listenForViewers() {
+
+    if (viewersListener) {
+        return;
+    }
+
+
+    const viewersRef =
+        ref(
+            database,
+            "pandal/viewers"
+        );
+
+
+    viewersListener =
+        onChildAdded(
+            viewersRef,
+            async (snapshot) => {
+
+                if (!broadcasting) {
+                    return;
+                }
+
+
+                const viewerId =
+                    snapshot.key;
+
+
+                if (!viewerId) {
+                    return;
+                }
+
+
+                console.log(
+                    "VIEWER JOINED:",
+                    viewerId
+                );
+
+
+                try {
+
+                    await createPeerConnection(
+                        viewerId
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Viewer connection error:",
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   CREATE PEER CONNECTION
+========================================================= */
+
+async function createPeerConnection(
     viewerId
 ) {
-
-    if (!broadcasting) {
-        return null;
-    }
-
 
     if (
         peerConnections.has(
@@ -1047,9 +892,7 @@ async function createPeer(
         )
     ) {
 
-        return peerConnections.get(
-            viewerId
-        );
+        return;
 
     }
 
@@ -1066,14 +909,16 @@ async function createPeer(
     );
 
 
-    /* Camera + microphone */
+    /*
+     * Send camera + microphone.
+     */
 
     if (localStream) {
 
         localStream
             .getTracks()
             .forEach(
-                track => {
+                (track) => {
 
                     pc.addTrack(
                         track,
@@ -1086,15 +931,16 @@ async function createPeer(
     }
 
 
-    /* ICE */
+    /*
+     * ICE candidates.
+     */
 
     pc.onicecandidate =
-        async function (event) {
+        async (event) => {
 
             if (!event.candidate) {
                 return;
             }
-
 
             try {
 
@@ -1102,12 +948,9 @@ async function createPeer(
                     push(
                         ref(
                             database,
-                            "pandal/signals/" +
-                            viewerId +
-                            "/broadcasterCandidates"
+                            `pandal/signals/${viewerId}/broadcasterCandidates`
                         )
                     );
-
 
                 await set(
                     candidateRef,
@@ -1117,7 +960,7 @@ async function createPeer(
             } catch (error) {
 
                 console.error(
-                    "ICE error:",
+                    "Broadcaster ICE error:",
                     error
                 );
 
@@ -1126,26 +969,38 @@ async function createPeer(
         };
 
 
-    /* Connection state */
+    /*
+     * Connection state.
+     */
 
     pc.onconnectionstatechange =
-        function () {
+        () => {
 
             console.log(
                 "Viewer",
                 viewerId,
+                "=>",
                 pc.connectionState
             );
 
+            if (
+                pc.connectionState ===
+                "failed"
+            ) {
+
+                console.warn(
+                    "Connection failed:",
+                    viewerId
+                );
+
+            }
 
             if (
                 pc.connectionState ===
-                    "failed" ||
-                pc.connectionState ===
-                    "closed"
+                "closed"
             ) {
 
-                closePeer(
+                peerConnections.delete(
                     viewerId
                 );
 
@@ -1154,10 +1009,20 @@ async function createPeer(
         };
 
 
-    /* Create offer */
+    /*
+     * CREATE OFFER
+     */
 
     const offer =
-        await pc.createOffer();
+        await pc.createOffer({
+
+            offerToReceiveAudio:
+                false,
+
+            offerToReceiveVideo:
+                false
+
+        });
 
 
     await pc.setLocalDescription(
@@ -1165,12 +1030,14 @@ async function createPeer(
     );
 
 
+    /*
+     * Publish offer.
+     */
+
     await set(
         ref(
             database,
-            "pandal/signals/" +
-            viewerId +
-            "/offer"
+            `pandal/signals/${viewerId}/offer`
         ),
         {
 
@@ -1184,21 +1051,25 @@ async function createPeer(
     );
 
 
-    /* Listen for answer */
+    console.log(
+        "OFFER SENT:",
+        viewerId
+    );
+
+
+    /*
+     * ANSWER
+     */
 
     onValue(
         ref(
             database,
-            "pandal/signals/" +
-            viewerId +
-            "/answer"
+            `pandal/signals/${viewerId}/answer`
         ),
-
-        async function (snapshot) {
+        async (snapshot) => {
 
             const answer =
                 snapshot.val();
-
 
             if (!answer) {
                 return;
@@ -1208,7 +1079,9 @@ async function createPeer(
             if (
                 pc.currentRemoteDescription
             ) {
+
                 return;
+
             }
 
 
@@ -1220,10 +1093,58 @@ async function createPeer(
                     )
                 );
 
+
+                console.log(
+                    "ANSWER RECEIVED:",
+                    viewerId
+                );
+
+
+                /*
+                 * Add candidates that arrived
+                 * before the answer.
+                 */
+
+                const queued =
+                    pendingViewerCandidates.get(
+                        viewerId
+                    ) || [];
+
+
+                for (
+                    const candidate
+                    of queued
+                ) {
+
+                    try {
+
+                        await pc.addIceCandidate(
+                            new RTCIceCandidate(
+                                candidate
+                            )
+                        );
+
+                    } catch (error) {
+
+                        console.warn(
+                            "Queued ICE error:",
+                            error
+                        );
+
+                    }
+
+                }
+
+
+                pendingViewerCandidates.delete(
+                    viewerId
+                );
+
+
             } catch (error) {
 
                 console.error(
-                    "Answer error:",
+                    "Answer handling error:",
                     error
                 );
 
@@ -1233,23 +1154,53 @@ async function createPeer(
     );
 
 
-    /* Viewer ICE */
+    /*
+     * VIEWER ICE
+     */
 
     onChildAdded(
         ref(
             database,
-            "pandal/signals/" +
-            viewerId +
-            "/viewerCandidates"
+            `pandal/signals/${viewerId}/viewerCandidates`
         ),
-
-        async function (snapshot) {
+        async (snapshot) => {
 
             const candidate =
                 snapshot.val();
 
-
             if (!candidate) {
+                return;
+            }
+
+
+            /*
+             * IMPORTANT:
+             * Don't lose ICE candidates that arrive
+             * before the viewer answer.
+             */
+
+            if (
+                !pc.remoteDescription
+            ) {
+
+                if (
+                    !pendingViewerCandidates.has(
+                        viewerId
+                    )
+                ) {
+
+                    pendingViewerCandidates.set(
+                        viewerId,
+                        []
+                    );
+
+                }
+
+
+                pendingViewerCandidates
+                    .get(viewerId)
+                    .push(candidate);
+
                 return;
             }
 
@@ -1264,8 +1215,8 @@ async function createPeer(
 
             } catch (error) {
 
-                console.error(
-                    "Viewer candidate error:",
+                console.warn(
+                    "Viewer ICE error:",
                     error
                 );
 
@@ -1273,373 +1224,6 @@ async function createPeer(
 
         }
     );
-
-
-    return pc;
-}
-
-
-/* =========================================================
-   CLOSE PEER
-========================================================= */
-
-async function closePeer(
-    viewerId
-) {
-
-    const pc =
-        peerConnections.get(
-            viewerId
-        );
-
-
-    if (pc) {
-
-        try {
-            pc.close();
-        } catch {}
-
-        peerConnections.delete(
-            viewerId
-        );
-
-    }
-
-
-    if (!database) {
-        return;
-    }
-
-
-    try {
-
-        await set(
-            ref(
-                database,
-                "pandal/signals/" +
-                viewerId +
-                "/closed"
-            ),
-            true
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Close peer error:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   LISTEN FOR VIEWERS
-========================================================= */
-
-function listenForViewers() {
-
-    if (!database) {
-        return;
-    }
-
-
-    if (viewerListenerStarted) {
-        return;
-    }
-
-
-    viewerListenerStarted =
-        true;
-
-
-    const viewersRef =
-        ref(
-            database,
-            "pandal/viewers"
-        );
-
-
-    onChildAdded(
-        viewersRef,
-
-        async function (snapshot) {
-
-            if (!broadcasting) {
-                return;
-            }
-
-
-            const viewerId =
-                snapshot.key;
-
-
-            if (!viewerId) {
-                return;
-            }
-
-
-            console.log(
-                "Viewer joined:",
-                viewerId
-            );
-
-
-            try {
-
-                await createPeer(
-                    viewerId
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Peer creation error:",
-                    error
-                );
-
-            }
-
-        },
-
-        function (error) {
-
-            console.error(
-                "Viewer listener error:",
-                error
-            );
-
-        }
-    );
-
-
-    onChildRemoved(
-        viewersRef,
-
-        function (snapshot) {
-
-            const viewerId =
-                snapshot.key;
-
-
-            if (viewerId) {
-
-                closePeer(
-                    viewerId
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   START CAMERA BROADCAST
-========================================================= */
-
-async function startBroadcast() {
-
-    if (broadcasting) {
-        return;
-    }
-
-
-    if (!database) {
-
-        showBroadcastMessage(
-            "Firebase is unavailable."
-        );
-
-        return;
-    }
-
-
-    if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia
-    ) {
-
-        showBroadcastMessage(
-            "Camera is not supported."
-        );
-
-        return;
-    }
-
-
-    showBroadcastMessage(
-        "Requesting camera permission..."
-    );
-
-
-    try {
-
-        localStream =
-            await navigator.mediaDevices.getUserMedia({
-
-                video: {
-
-                    facingMode:
-                        "environment",
-
-                    width: {
-                        ideal: 1280
-                    },
-
-                    height: {
-                        ideal: 720
-                    }
-
-                },
-
-                audio: true
-
-            });
-
-
-        if (preview) {
-
-            preview.srcObject =
-                localStream;
-
-            preview.muted =
-                true;
-
-            preview.autoplay =
-                true;
-
-            preview.playsInline =
-                true;
-
-
-            try {
-
-                await preview.play();
-
-            } catch {}
-
-        }
-
-
-        broadcasting =
-            true;
-
-
-        if (startBroadcastButton) {
-
-            startBroadcastButton.disabled =
-                true;
-
-        }
-
-
-        if (stopBroadcastButton) {
-
-            stopBroadcastButton.disabled =
-                false;
-
-        }
-
-
-        if (broadcastStatus) {
-
-            broadcastStatus.textContent =
-                "LIVE";
-
-            broadcastStatus.classList.add(
-                "live"
-            );
-
-        }
-
-
-        await set(
-            ref(
-                database,
-                "pandal/broadcast"
-            ),
-            {
-
-                active:
-                    true,
-
-                startedAt:
-                    serverTimestamp()
-
-            }
-        );
-
-
-        viewerListenerStarted =
-            false;
-
-
-        listenForViewers();
-
-
-        showBroadcastMessage(
-            "Live Darshan is now LIVE."
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Broadcast error:",
-            error
-        );
-
-
-        broadcasting =
-            false;
-
-
-        if (localStream) {
-
-            localStream
-                .getTracks()
-                .forEach(
-                    track =>
-                        track.stop()
-                );
-
-            localStream =
-                null;
-
-        }
-
-
-        if (preview) {
-            preview.srcObject =
-                null;
-        }
-
-
-        if (
-            error.name ===
-            "NotAllowedError"
-        ) {
-
-            showBroadcastMessage(
-                "Camera or microphone permission denied."
-            );
-
-        }
-
-        else {
-
-            showBroadcastMessage(
-                "Could not start camera."
-            );
-
-        }
-
-    }
 
 }
 
@@ -1654,7 +1238,45 @@ async function stopBroadcast() {
         false;
 
 
-    /* Stop camera */
+    /*
+     * Close all peer connections.
+     */
+
+    for (
+        const [
+            viewerId,
+            pc
+        ] of peerConnections
+    ) {
+
+        try {
+            pc.close();
+        } catch {}
+
+        try {
+
+            await set(
+                ref(
+                    database,
+                    `pandal/signals/${viewerId}/closed`
+                ),
+                true
+            );
+
+        } catch {}
+
+    }
+
+
+    peerConnections.clear();
+
+
+    pendingViewerCandidates.clear();
+
+
+    /*
+     * Stop camera.
+     */
 
     if (localStream) {
 
@@ -1677,77 +1299,44 @@ async function stopBroadcast() {
     }
 
 
-    /* Close peers */
+    /*
+     * Tell public website that stream
+     * is OFFLINE.
+     */
 
-    for (
-        const [
-            viewerId,
-            pc
-        ] of peerConnections
-    ) {
+    try {
 
-        try {
-            pc.close();
-        } catch {}
+        await set(
+            ref(
+                database,
+                "pandal/broadcast"
+            ),
+            {
 
+                active:
+                    false,
 
-        if (database) {
+                id:
+                    broadcastId,
 
-            try {
+                stoppedAt:
+                    Date.now()
 
-                await set(
-                    ref(
-                        database,
-                        "pandal/signals/" +
-                        viewerId +
-                        "/closed"
-                    ),
-                    true
-                );
+            }
+        );
 
-            } catch {}
+    } catch (error) {
 
-        }
-
-    }
-
-
-    peerConnections.clear();
-
-
-    if (database) {
-
-        try {
-
-            await set(
-                ref(
-                    database,
-                    "pandal/broadcast"
-                ),
-                {
-
-                    active:
-                        false,
-
-                    closed:
-                        true,
-
-                    stoppedAt:
-                        serverTimestamp()
-
-                }
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Broadcast stop Firebase error:",
-                error
-            );
-
-        }
+        console.error(
+            "Stop broadcast Firebase error:",
+            error
+        );
 
     }
+
+
+    broadcastId =
+        null;
 
 
     if (broadcastStatus) {
@@ -1778,15 +1367,20 @@ async function stopBroadcast() {
     }
 
 
-    showBroadcastMessage(
+    broadcastMessage(
         "Live Darshan stopped."
+    );
+
+
+    console.log(
+        "BROADCAST STOPPED"
     );
 
 }
 
 
 /* =========================================================
-   BUTTON EVENTS
+   BUTTONS
 ========================================================= */
 
 if (startBroadcastButton) {
@@ -1810,39 +1404,89 @@ if (stopBroadcastButton) {
 
 
 /* =========================================================
-   DASHBOARD INITIALIZATION
+   EXISTING BROADCAST STATUS
 ========================================================= */
 
-let dashboardInitialized =
+function monitorBroadcastStatus() {
+
+    const broadcastRef =
+        ref(
+            database,
+            "pandal/broadcast"
+        );
+
+
+    onValue(
+        broadcastRef,
+        (snapshot) => {
+
+            const data =
+                snapshot.val();
+
+
+            if (
+                data &&
+                data.active === true
+            ) {
+
+                broadcastStatus.textContent =
+                    "LIVE";
+
+                broadcastStatus.classList.add(
+                    "live"
+                );
+
+                startBroadcastButton.disabled =
+                    true;
+
+                stopBroadcastButton.disabled =
+                    false;
+
+            } else {
+
+                broadcastStatus.textContent =
+                    "Offline";
+
+                broadcastStatus.classList.remove(
+                    "live"
+                );
+
+                startBroadcastButton.disabled =
+                    false;
+
+                stopBroadcastButton.disabled =
+                    true;
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+let dashboardStarted =
     false;
 
 
 function initializeDashboard() {
 
-    if (dashboardInitialized) {
+    if (dashboardStarted) {
         return;
     }
 
-
-    dashboardInitialized =
+    dashboardStarted =
         true;
-
-
-    console.log(
-        "Initializing dashboard..."
-    );
-
 
     monitorConnection();
 
     loadPrayers();
 
-    loadBroadcastStatus();
-
-
-    console.log(
-        "Dashboard initialized."
-    );
+    monitorBroadcastStatus();
 
 }
 
@@ -1853,7 +1497,7 @@ function initializeDashboard() {
 
 window.addEventListener(
     "error",
-    function (event) {
+    (event) => {
 
         console.error(
             "ADMIN ERROR:",
@@ -1867,7 +1511,7 @@ window.addEventListener(
 
 window.addEventListener(
     "unhandledrejection",
-    function (event) {
+    (event) => {
 
         console.error(
             "ADMIN PROMISE ERROR:",
@@ -1879,5 +1523,5 @@ window.addEventListener(
 
 
 console.log(
-    "ADMIN.JS LOADED"
+    "GANPATI ADMIN.JS READY"
 );
