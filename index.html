@@ -1,1545 +1,1130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#f59e0b" />
-  <meta name="description" content="Colony Ganesh Utsav 2026 — Darshan, Aarti, Lyrics and Digital Prayer Wall." />
-
-  <title>Ganpati Bappa Morya! | Colony Ganesh Utsav 2026</title>
-
-  <!-- Google Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,1,0&family=Poppins:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
-
-  <style>
-    /* =========================================================
-       1. THEME VARIABLES
-       JavaScript automatically switches these at 6:30 PM.
-       ========================================================= */
-
-    :root {
-      --bg: #fffaf0;
-      --surface: #ffffff;
-      --surface-2: #fff3d6;
-      --text: #32180b;
-      --muted: #765b4d;
-      --primary: #e85d04;
-      --primary-dark: #b93800;
-      --gold: #f59e0b;
-      --gold-light: #ffd166;
-      --red: #c62828;
-      --border: rgba(120, 65, 15, 0.12);
-      --shadow: 0 14px 40px rgba(111, 52, 0, 0.12);
-      --nav-bg: rgba(255, 250, 240, 0.82);
-      --hero-glow: rgba(245, 158, 11, 0.20);
-    }
-
-    body.night {
-      --bg: #180b0b;
-      --surface: #261313;
-      --surface-2: #351818;
-      --text: #fff3d0;
-      --muted: #c7a996;
-      --primary: #e0523e;
-      --primary-dark: #ff755c;
-      --gold: #ffc247;
-      --gold-light: #ffe19a;
-      --red: #ff5252;
-      --border: rgba(255, 194, 71, 0.16);
-      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-      --nav-bg: rgba(24, 11, 11, 0.84);
-      --hero-glow: rgba(255, 194, 71, 0.12);
-    }
-
-    /* =========================================================
-       2. RESET
-       ========================================================= */
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 15% 10%, var(--hero-glow), transparent 28%),
-        var(--bg);
-      color: var(--text);
-      font-family: "Poppins", sans-serif;
-      line-height: 1.6;
-      transition:
-        background 0.5s ease,
-        color 0.5s ease;
-      overflow-x: hidden;
-    }
-
-    button {
-      font: inherit;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* =========================================================
-       3. NAVIGATION
-       ========================================================= */
-
-    .navbar {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      width: 100%;
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      background: var(--nav-bg);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-inner {
-      width: min(1100px, calc(100% - 28px));
-      min-height: 68px;
-      margin: auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .brand-icon {
-      width: 38px;
-      height: 38px;
-      display: grid;
-      place-items: center;
-      border-radius: 13px;
-      background: linear-gradient(135deg, var(--primary), var(--gold));
-      color: white;
-      box-shadow: 0 7px 20px rgba(232, 93, 4, 0.25);
-    }
-
-    .brand-text {
-      font-size: 0.82rem;
-      letter-spacing: 0.2px;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .nav-links::-webkit-scrollbar {
-      display: none;
-    }
-
-    .nav-links a {
-      padding: 9px 11px;
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 600;
-      border-radius: 10px;
-      transition: 0.25s ease;
-      white-space: nowrap;
-    }
-
-    .nav-links a:hover {
-      color: var(--primary);
-      background: var(--surface-2);
-    }
-
-    /* =========================================================
-       4. COMMON LAYOUT
-       ========================================================= */
-
-    main {
-      width: min(1100px, calc(100% - 28px));
-      margin: auto;
-    }
-
-    section {
-      scroll-margin-top: 85px;
-    }
-
-    .section {
-      padding: 70px 0;
-    }
-
-    .section-heading {
-      margin-bottom: 26px;
-    }
-
-    .eyebrow {
-      color: var(--primary);
-      font-size: 0.76rem;
-      font-weight: 800;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .section-heading h2 {
-      font-size: clamp(1.7rem, 6vw, 2.6rem);
-      line-height: 1.15;
-      margin-bottom: 8px;
-    }
-
-    .section-heading p {
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
-    /* =========================================================
-       5. HERO
-       ========================================================= */
-
-    .hero {
-      min-height: calc(100vh - 68px);
-      display: grid;
-      place-items: center;
-      padding: 65px 0 50px;
-      position: relative;
-    }
-
-    .hero-content {
-      text-align: center;
-      max-width: 800px;
-      margin: auto;
-    }
-
-    .ganesh-symbol {
-      width: 84px;
-      height: 84px;
-      margin: 0 auto 22px;
-      display: grid;
-      place-items: center;
-      border-radius: 28px;
-      font-size: 3rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      animation: float 4s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-8px);
-      }
-    }
-
-    .hero h1 {
-      font-size: clamp(2.4rem, 10vw, 5.5rem);
-      line-height: 1.02;
-      letter-spacing: -2px;
-      font-weight: 800;
-      background: linear-gradient(
-        120deg,
-        var(--primary),
-        var(--gold),
-        var(--primary-dark)
-      );
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 18px;
-    }
-
-    .hero-subtitle {
-      color: var(--muted);
-      font-size: clamp(0.95rem, 3vw, 1.15rem);
-      margin-bottom: 24px;
-    }
-
-    .crowd-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      border-radius: 999px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-      color: var(--text);
-      font-size: 0.78rem;
-      font-weight: 700;
-      margin-bottom: 32px;
-    }
-
-    .status-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #16a34a;
-      box-shadow: 0 0 0 5px rgba(22, 163, 74, 0.12);
-    }
-
-    .countdown-card {
-      width: min(650px, 100%);
-      margin: auto;
-      padding: 22px;
-      border-radius: 24px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-
-    .countdown-title {
-      color: var(--muted);
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      font-weight: 700;
-      margin-bottom: 14px;
-    }
-
-    .countdown {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-
-    .time-box {
-      padding: 12px 4px;
-      background: var(--surface-2);
-      border-radius: 16px;
-    }
-
-    .time-number {
-      display: block;
-      font-size: clamp(1.3rem, 6vw, 2rem);
-      line-height: 1;
-      font-weight: 800;
-      color: var(--primary);
-    }
-
-    .time-label {
-      display: block;
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 0.62rem;
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    /* =========================================================
-       6. DEVOTION BUTTONS
-       ========================================================= */
-
-    .devotion-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-
-    .devotion-btn {
-      position: relative;
-      overflow: hidden;
-      border: 0;
-      min-height: 130px;
-      border-radius: 24px;
-      padding: 22px;
-      cursor: pointer;
-      color: white;
-      text-align: left;
-      box-shadow: var(--shadow);
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .devotion-btn:hover {
-      transform: translateY(-4px);
-    }
-
-    .devotion-btn:active {
-      transform: scale(0.98);
-    }
-
-    .flower-btn {
-      background: linear-gradient(135deg, #e85d04, #f59e0b);
-    }
-
-    .bell-btn {
-      background: linear-gradient(135deg, #9b1c31, #d97706);
-    }
-
-    .devotion-icon {
-      font-size: 2.2rem;
-      margin-bottom: 9px;
-      display: block;
-    }
-
-    .devotion-btn strong {
-      display: block;
-      font-size: 1.05rem;
-    }
-
-    .devotion-btn span:last-child {
-      opacity: 0.82;
-      font-size: 0.75rem;
-    }
-
-    /* =========================================================
-       7. FALLING FLOWERS
-       ========================================================= */
-
-    .petal {
-      position: fixed;
-      top: -40px;
-      z-index: 2000;
-      width: 14px;
-      height: 20px;
-      border-radius: 70% 30% 70% 30%;
-      pointer-events: none;
-      animation: fall linear forwards;
-    }
-
-    @keyframes fall {
-      0% {
-        transform: translate3d(0, -20px, 0) rotate(0deg);
-        opacity: 1;
-      }
-
-      50% {
-        transform: translate3d(70px, 50vh, 0) rotate(180deg);
-      }
-
-      100% {
-        transform: translate3d(-70px, 110vh, 0) rotate(400deg);
-        opacity: 0;
-      }
-    }
-
-    /* =========================================================
-       8. DARSHAN VIDEO
-       ========================================================= */
-
-    .video-card {
-      position: relative;
-      overflow: hidden;
-      background: #090707;
-      border-radius: 26px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-
-    .video-wrapper {
-      position: relative;
-      aspect-ratio: 16 / 9;
-    }
-
-    .video-wrapper video {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      background: #090707;
-    }
-
-    .video-overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      padding: 16px;
-      background: linear-gradient(
-        transparent 60%,
-        rgba(0,0,0,0.6)
-      );
-    }
-
-    .video-status {
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 700;
-      background: rgba(0,0,0,0.5);
-      padding: 7px 10px;
-      border-radius: 999px;
-      backdrop-filter: blur(8px);
-    }
-
-    .video-controls {
-      display: flex;
-      gap: 8px;
-      pointer-events: auto;
-    }
-
-    .video-control {
-      width: 44px;
-      height: 44px;
-      display: grid;
-      place-items: center;
-      border: 0;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.92);
-      color: #24130e;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    .video-control:hover {
-      transform: scale(1.08);
-    }
-
-    .stream-note {
-      padding: 14px 17px;
-      color: var(--muted);
-      font-size: 0.72rem;
-      border-top: 1px solid var(--border);
-    }
-
-    /* =========================================================
-       9. SCHEDULE
-       ========================================================= */
-
-    .schedule {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      margin-bottom: 30px;
-    }
-
-    .schedule-item {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 18px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.05);
-    }
-
-    .schedule-icon {
-      width: 48px;
-      height: 48px;
-      flex-shrink: 0;
-      display: grid;
-      place-items: center;
-      border-radius: 15px;
-      background: var(--surface-2);
-      color: var(--primary);
-    }
-
-    .schedule-item small {
-      display: block;
-      color: var(--muted);
-      font-size: 0.7rem;
-      font-weight: 600;
-    }
-
-    .schedule-item strong {
-      display: block;
-      font-size: 0.94rem;
-    }
-
-    /* =========================================================
-       10. ACCORDION
-       ========================================================= */
-
-    .accordion {
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      background: var(--surface);
-      box-shadow: var(--shadow);
-    }
-
-    .accordion-header {
-      width: 100%;
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      border: 0;
-      background: transparent;
-      color: var(--text);
-      text-align: left;
-      cursor: pointer;
-      font-weight: 700;
-    }
-
-    .accordion-header .material-symbols-rounded {
-      transition: transform 0.3s ease;
-    }
-
-    .accordion.open .accordion-header .material-symbols-rounded {
-      transform: rotate(180deg);
-    }
-
-    .accordion-content {
-      display: grid;
-      grid-template-rows: 0fr;
-      transition: grid-template-rows 0.4s ease;
-    }
-
-    .accordion.open .accordion-content {
-      grid-template-rows: 1fr;
-    }
-
-    .accordion-inner {
-      overflow: hidden;
-    }
-
-    .lyrics {
-      padding: 0 20px 24px;
-      color: var(--muted);
-      font-family: "Mukta", "Poppins", sans-serif;
-      font-size: 1rem;
-      line-height: 2;
-    }
-
-    .lyrics-title {
-      color: var(--primary);
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-
-    /* =========================================================
-       11. PRAYER WALL
-       ========================================================= */
-
-    .prayer-wall {
-      position: relative;
-      overflow: hidden;
-      border-top: 1px solid var(--border);
-      background: var(--surface);
-      padding: 16px 0;
-      box-shadow: 0 -8px 30px rgba(0,0,0,0.05);
-    }
-
-    .wall-label {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      background: var(--surface);
-      color: var(--primary);
-      font-size: 0.7rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 10px 0 25px rgba(0,0,0,0.08);
-    }
-
-    .ticker {
-      width: max-content;
-      display: flex;
-      gap: 60px;
-      padding-left: 150px;
-      animation: ticker 28s linear infinite;
-      white-space: nowrap;
-    }
-
-    .ticker span {
-      color: var(--muted);
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    @keyframes ticker {
-      from {
-        transform: translateX(0);
-      }
-      to {
-        transform: translateX(-50%);
-      }
-    }
-
-    footer {
-      padding: 28px 20px 100px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.7rem;
-    }
-
-    /* =========================================================
-       12. RESPONSIVE
-       ========================================================= */
-
-    @media (min-width: 650px) {
-      .devotion-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .schedule {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (min-width: 800px) {
-      .nav-inner {
-        min-height: 74px;
-      }
-
-      .nav-links {
-        gap: 8px;
-      }
-
-      .nav-links a {
-        padding: 10px 14px;
-        font-size: 0.82rem;
-      }
-
-      .hero {
-        padding-top: 90px;
-      }
-
-      .section {
-        padding: 90px 0;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .brand-text {
-        display: none;
-      }
-
-      .nav-inner {
-        width: calc(100% - 18px);
-      }
-
-      .nav-links a {
-        padding: 8px 9px;
-      }
-
-      .countdown-card {
-        padding: 16px;
-      }
-
-      .time-box {
-        padding: 10px 3px;
-      }
-    }
-
-    /* Accessibility */
-    @media (prefers-reduced-motion: reduce) {
-      html {
-        scroll-behavior: auto;
-      }
-
-      *,
-      *::before,
-      *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FDFBF7">
+    <meta name="description" content="Ganesh Chaturthi Pandal — Darshan, Aarti, Schedule and Community Updates.">
+
+    <title>Ganpati Bappa Morya! | Ganesh Chaturthi</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================================
+           GLOBAL VARIABLES
+        ========================================================= */
+
+        :root {
+            --bg: #FDFBF7;
+            --surface: rgba(255, 255, 255, 0.54);
+            --surface-strong: rgba(255, 255, 255, 0.72);
+            --text: #2A2A2A;
+            --muted: #77716c;
+            --terracotta: #C06A45;
+            --gold: #D4AF37;
+            --border: rgba(42, 42, 42, 0.10);
+            --radius: 24px;
+            --transition: 0.8s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color 0.8s ease, color 0.8s ease;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(212,175,55,.08), transparent 30%),
+                radial-gradient(circle at 90% 70%, rgba(192,106,69,.07), transparent 30%);
+            z-index: -1;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
+        .container {
+            width: min(1120px, calc(100% - 32px));
+            margin: auto;
+        }
+
+        .serif {
+            font-family: "Playfair Display", serif;
+        }
+
+        /* =========================================================
+           GLASS
+        ========================================================= */
+
+        .glass {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* =========================================================
+           NAVBAR
+        ========================================================= */
+
+        .navbar {
+            position: sticky;
+            top: 14px;
+            z-index: 1000;
+            width: min(1120px, calc(100% - 24px));
+            margin: 14px auto 0;
+            padding: 10px 14px;
+            border-radius: 18px;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-symbol {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: rgba(212,175,55,.12);
+            border: 1px solid rgba(212,175,55,.28);
+            font-size: 19px;
+        }
+
+        .brand-text span {
+            display: block;
+        }
+
+        .brand-name {
+            font-size: 13px;
+        }
+
+        .brand-sub {
+            color: var(--muted);
+            font-size: 9px;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 26px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .nav-links a {
+            transition: color .25s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--terracotta);
+        }
+
+        .nav-actions {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .palette-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            cursor: pointer;
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            transition: transform .25s ease;
+        }
+
+        .palette-btn:hover {
+            transform: rotate(25deg);
+        }
+
+        .palette-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 10px);
+            width: 190px;
+            padding: 9px;
+            border-radius: 16px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: .25s ease;
+        }
+
+        .palette-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .theme-option {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 0;
+            background: transparent;
+            border-radius: 11px;
+            cursor: pointer;
+            color: var(--text);
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .theme-option:hover {
+            background: rgba(192,106,69,.08);
+        }
+
+        .theme-dot {
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,.1);
+        }
+
+        /* =========================================================
+           HERO
+        ========================================================= */
+
+        .hero {
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            padding: 90px 0 70px;
+        }
+
+        .hero-content {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 13px;
+            border-radius: 100px;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 25px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #54A66A;
+            box-shadow: 0 0 0 4px rgba(84,166,106,.10);
+        }
+
+        .hero h1 {
+            font-family: "Playfair Display", serif;
+            font-size: clamp(45px, 10vw, 92px);
+            line-height: .98;
+            letter-spacing: -.055em;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        .hero p {
+            max-width: 600px;
+            margin: auto;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .countdown {
+            margin: 34px auto 0;
+            display: flex;
+            justify-content: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .count-box {
+            min-width: 70px;
+            padding: 13px 10px;
+            border-radius: 17px;
+        }
+
+        .count-number {
+            font-family: "Playfair Display", serif;
+            font-size: 25px;
+            line-height: 1;
+        }
+
+        .count-label {
+            margin-top: 5px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--muted);
+        }
+
+        /* =========================================================
+           BUTTONS
+        ========================================================= */
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .btn {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            padding: 13px 18px;
+            border-radius: 100px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            transition: .25s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(192,106,69,.35);
+        }
+
+        .btn-primary {
+            background: var(--terracotta);
+            border-color: var(--terracotta);
+            color: white;
+        }
+
+        /* =========================================================
+           SECTIONS
+        ========================================================= */
+
+        section {
+            padding: 80px 0;
+        }
+
+        .section-heading {
+            margin-bottom: 28px;
+        }
+
+        .section-kicker {
+            color: var(--terracotta);
+            font-size: 10px;
+            letter-spacing: .17em;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 9px;
+        }
+
+        .section-heading h2 {
+            font-family: "Playfair Display", serif;
+            font-size: clamp(30px, 6vw, 48px);
+            line-height: 1.1;
+            font-weight: 600;
+            letter-spacing: -.035em;
+        }
+
+        /* =========================================================
+           SHLOKA
+        ========================================================= */
+
+        .shloka-card {
+            padding: 45px 25px;
+            border-radius: var(--radius);
+            text-align: center;
+        }
+
+        .om {
+            font-family: "Playfair Display", serif;
+            font-size: 42px;
+            color: var(--gold);
+            margin-bottom: 18px;
+        }
+
+        .shloka {
+            font-family: "Playfair Display", serif;
+            font-size: clamp(24px, 5vw, 40px);
+            line-height: 1.45;
+            color: var(--text);
+        }
+
+        .translation {
+            max-width: 680px;
+            margin: 20px auto 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* =========================================================
+           NOTICE + SCHEDULE
+        ========================================================= */
+
+        .two-column {
+            display: grid;
+            gap: 18px;
+        }
+
+        .info-card {
+            padding: 27px;
+            border-radius: var(--radius);
+        }
+
+        .info-card h3 {
+            font-family: "Playfair Display", serif;
+            font-size: 25px;
+            margin-bottom: 18px;
+        }
+
+        .notice {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .notice:last-child {
+            border-bottom: 0;
+        }
+
+        .notice-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            background: rgba(192,106,69,.09);
+            flex-shrink: 0;
+        }
+
+        .notice strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .notice small {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .schedule-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .schedule-row:last-child {
+            border-bottom: 0;
+        }
+
+        .schedule-row span:last-child {
+            color: var(--terracotta);
+            font-weight: 600;
+        }
+
+        /* =========================================================
+           GALLERY
+        ========================================================= */
+
+        .gallery {
+            columns: 1;
+            column-gap: 14px;
+        }
+
+        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: 14px;
+            overflow: hidden;
+            border-radius: 19px;
+            border: 1px solid var(--border);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            transition: transform .7s cubic-bezier(.2,.7,.2,1);
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.06);
+        }
+
+        /* =========================================================
+           FOOTER
+        ========================================================= */
+
+        footer {
+            padding: 25px 0 0;
+        }
+
+        .ticker {
+            overflow: hidden;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 0;
+            white-space: nowrap;
+        }
+
+        .ticker-track {
+            display: inline-flex;
+            gap: 45px;
+            animation: ticker 25s linear infinite;
+        }
+
+        .ticker span {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .ticker span::before {
+            content: "✦";
+            color: var(--gold);
+            margin-right: 45px;
+        }
+
+        @keyframes ticker {
+            from {
+                transform: translateX(0);
+            }
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        .footer-bottom {
+            padding: 30px 0;
+            text-align: center;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        /* =========================================================
+           PETALS
+        ========================================================= */
+
+        .petal {
+            position: fixed;
+            top: -30px;
+            z-index: 9999;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translate3d(0, -20px, 0) rotate(0);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate3d(var(--drift), 110vh, 0) rotate(720deg);
+                opacity: .15;
+            }
+        }
+
+        /* =========================================================
+           SCROLL REVEAL
+        ========================================================= */
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity .8s ease, transform .8s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+        @media (min-width: 700px) {
+            .nav-links {
+                display: flex;
+            }
+
+            .two-column {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .gallery {
+                columns: 2;
+            }
+        }
+
+        @media (min-width: 1000px) {
+            .gallery {
+                columns: 3;
+            }
+
+            .hero {
+                min-height: 88vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .brand-sub {
+                display: none;
+            }
+
+            .hero {
+                padding-top: 65px;
+            }
+
+            section {
+                padding: 60px 0;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-  <!-- =======================================================
-       STICKY NAVIGATION
-       ======================================================= -->
+    <!-- =========================================================
+         NAVIGATION
+    ========================================================= -->
 
-  <header class="navbar">
-    <div class="nav-inner">
+    <nav class="navbar glass">
+        <div class="nav-inner">
 
-      <a href="#home" class="brand" aria-label="Home">
-        <div class="brand-icon">
-          <span class="material-symbols-rounded">temple_hindu</span>
-        </div>
-        <span class="brand-text">COLONY GANESH UTSAV</span>
-      </a>
+            <a href="index.html" class="brand">
+                <div class="brand-symbol">ॐ</div>
 
-      <nav class="nav-links" aria-label="Main navigation">
-        <a href="#home">Home</a>
-        <a href="#darshan">Darshan</a>
-        <a href="#lyrics">Lyrics</a>
-        <a href="#wall">Wall</a>
-      </nav>
+                <div class="brand-text">
+                    <span class="brand-name">Ganpati Bappa</span>
+                    <span class="brand-sub">Ganesh Chaturthi</span>
+                </div>
+            </a>
 
-    </div>
-  </header>
-
-
-  <main>
-
-    <!-- =====================================================
-         1. HERO
-         ===================================================== -->
-
-    <section id="home" class="hero">
-
-      <div class="hero-content">
-
-        <div class="ganesh-symbol" aria-hidden="true">
-          🪔
-        </div>
-
-        <p class="eyebrow">Ganesh Chaturthi 2026</p>
-
-        <h1>Ganpati Bappa Morya!</h1>
-
-        <p class="hero-subtitle">
-          Welcome to our Colony Ganesh Utsav 2026.
-        </p>
-
-        <div class="crowd-badge">
-          <span class="status-dot"></span>
-          🟢 Peaceful Darshan - Come down!
-        </div>
-
-        <!-- Countdown -->
-        <div class="countdown-card">
-
-          <div class="countdown-title">
-            Countdown to Visarjan — 24 September 2026
-          </div>
-
-          <div class="countdown" id="countdown">
-
-            <div class="time-box">
-              <span class="time-number" id="days">00</span>
-              <span class="time-label">Days</span>
+            <div class="nav-links">
+                <a href="index.html" class="active">Home</a>
+                <a href="live.html">Live Darshan</a>
+                <a href="aarti.html">Aarti</a>
             </div>
 
-            <div class="time-box">
-              <span class="time-number" id="hours">00</span>
-              <span class="time-label">Hours</span>
+            <div class="nav-actions">
+                <button class="palette-btn" id="paletteBtn" aria-label="Change theme">
+                    ◐
+                </button>
+
+                <div class="palette-menu glass" id="paletteMenu">
+                    <button class="theme-option" data-theme="#FDFBF7">
+                        <span class="theme-dot" style="background:#FDFBF7;"></span>
+                        Warm Cream
+                    </button>
+
+                    <button class="theme-option" data-theme="#F0F4F1">
+                        <span class="theme-dot" style="background:#F0F4F1;"></span>
+                        Soft Sage
+                    </button>
+
+                    <button class="theme-option" data-theme="#F5EFEB">
+                        <span class="theme-dot" style="background:#F5EFEB;"></span>
+                        Muted Sand
+                    </button>
+                </div>
             </div>
 
-            <div class="time-box">
-              <span class="time-number" id="minutes">00</span>
-              <span class="time-label">Minutes</span>
-            </div>
-
-            <div class="time-box">
-              <span class="time-number" id="seconds">00</span>
-              <span class="time-label">Seconds</span>
-            </div>
-
-          </div>
-
         </div>
+    </nav>
 
-      </div>
+    <main>
 
-    </section>
+        <!-- =====================================================
+             HERO
+        ====================================================== -->
 
+        <section class="hero">
+            <div class="container hero-content reveal">
 
-    <!-- =====================================================
-         2. INTERACTIVE DEVOTION
-         ===================================================== -->
+                <div class="eyebrow glass">
+                    <span class="status-dot"></span>
+                    🟢 Peaceful Darshan
+                </div>
 
-    <section class="section" aria-label="Interactive devotion">
+                <h1>Ganpati Bappa<br>Morya!</h1>
 
-      <div class="section-heading">
-        <p class="eyebrow">Offer Your Prayers</p>
-        <h2>Interactive Devotion</h2>
-        <p>
-          Join the celebration with a digital Pushpanjali and temple bell.
-        </p>
-      </div>
+                <p>
+                    A peaceful digital space for darshan, aarti,
+                    prayers and community updates during Ganesh Chaturthi.
+                </p>
 
-      <div class="devotion-grid">
+                <!-- Countdown -->
+                <div class="countdown">
 
-        <button
-          class="devotion-btn flower-btn"
-          id="flowerButton"
-          type="button"
-        >
-          <span class="devotion-icon">🌺</span>
-          <strong>Offer Flowers</strong>
-          <span>Offer a digital Pushpanjali</span>
-        </button>
+                    <div class="count-box glass">
+                        <div class="count-number" id="days">00</div>
+                        <div class="count-label">Days</div>
+                    </div>
 
-        <button
-          class="devotion-btn bell-btn"
-          id="bellButton"
-          type="button"
-        >
-          <span class="devotion-icon">🔔</span>
-          <strong>Ring Bell</strong>
-          <span>Begin your Darshan with a bell</span>
-        </button>
+                    <div class="count-box glass">
+                        <div class="count-number" id="hours">00</div>
+                        <div class="count-label">Hours</div>
+                    </div>
 
-      </div>
+                    <div class="count-box glass">
+                        <div class="count-number" id="minutes">00</div>
+                        <div class="count-label">Minutes</div>
+                    </div>
 
-    </section>
+                    <div class="count-box glass">
+                        <div class="count-number" id="seconds">00</div>
+                        <div class="count-label">Seconds</div>
+                    </div>
 
+                </div>
 
-    <!-- =====================================================
-         3. LIVE DARSHAN
-         ===================================================== -->
+                <div class="actions">
 
-    <section id="darshan" class="section">
+                    <button class="btn btn-primary" id="flowerBtn">
+                        🌸 Offer Flowers
+                    </button>
 
-      <div class="section-heading">
-        <p class="eyebrow">Live From The Pandal</p>
-        <h2>Live Darshan</h2>
-        <p>
-          Join the Darshan from wherever you are.
-        </p>
-      </div>
+                    <button class="btn" id="bellBtn">
+                        🔔 Ring Bell
+                    </button>
 
-      <div class="video-card">
-
-        <div class="video-wrapper">
-
-          <!--
-            IMPORTANT:
-            Replace the placeholder .m3u8 URL below with your
-            actual HLS stream URL.
-
-            Native HLS support works directly in browsers such
-            as Safari. For browsers without native HLS support,
-            an HLS JavaScript library would normally be required.
-          -->
-
-          <video
-            id="darshanVideo"
-            playsinline
-            preload="metadata"
-            poster=""
-          >
-            <source
-              src="https://example.com/live/robust-placeholder-stream.m3u8"
-              type="application/x-mpegURL"
-            >
-            Your browser does not support HTML5 video.
-          </video>
-
-          <!-- Custom Controls -->
-          <div class="video-overlay">
-
-            <div class="video-status">
-              🔴 LIVE DARSHAN
-            </div>
-
-            <div class="video-controls">
-
-              <button
-                class="video-control"
-                id="playButton"
-                type="button"
-                aria-label="Play video"
-              >
-                <span
-                  class="material-symbols-rounded"
-                  id="playIcon"
-                >
-                  play_arrow
-                </span>
-              </button>
-
-              <button
-                class="video-control"
-                id="muteButton"
-                type="button"
-                aria-label="Mute video"
-              >
-                <span
-                  class="material-symbols-rounded"
-                  id="muteIcon"
-                >
-                  volume_up
-                </span>
-              </button>
+                </div>
 
             </div>
+        </section>
 
-          </div>
+        <!-- =====================================================
+             SHLOKA
+        ====================================================== -->
 
-        </div>
+        <section>
+            <div class="container reveal">
 
-        <div class="stream-note">
-          Live stream placeholder — replace the <strong>.m3u8</strong>
-          source in the HTML with your actual HLS stream.
-        </div>
+                <div class="section-heading">
+                    <div class="section-kicker">Shloka of the Day</div>
+                    <h2>A moment for devotion.</h2>
+                </div>
 
-      </div>
+                <div class="shloka-card glass">
 
-    </section>
+                    <div class="om">ॐ</div>
 
+                    <div class="shloka">
+                        वक्रतुण्ड महाकाय<br>
+                        सूर्यकोटि समप्रभः<br>
+                        निर्विघ्नं कुरु मे देव<br>
+                        शुभ कार्येषु सर्वदा॥
+                    </div>
 
-    <!-- =====================================================
-         4. DAILY SCHEDULE + AARTI LYRICS
-         ===================================================== -->
+                    <p class="translation">
+                        O Lord with the curved trunk and immense form,
+                        whose brilliance equals millions of suns,
+                        please make all my auspicious works
+                        free from obstacles, always.
+                    </p>
 
-    <section id="lyrics" class="section">
+                </div>
+            </div>
+        </section>
 
-      <div class="section-heading">
-        <p class="eyebrow">Daily Rituals</p>
-        <h2>Schedule & Aarti</h2>
-        <p>
-          Keep this page open on your phone during Darshan.
-        </p>
-      </div>
+        <!-- =====================================================
+             NOTICE + SCHEDULE
+        ====================================================== -->
 
-      <!-- Schedule -->
-      <div class="schedule">
+        <section>
+            <div class="container">
 
-        <div class="schedule-item">
+                <div class="two-column">
 
-          <div class="schedule-icon">
-            <span class="material-symbols-rounded">
-              wb_sunny
-            </span>
-          </div>
+                    <div class="info-card glass reveal">
 
-          <div>
-            <small>Morning</small>
-            <strong>Morning Aarti — 8:30 AM</strong>
-          </div>
+                        <div class="section-kicker">Live Notice Board</div>
 
-        </div>
+                        <h3>Today's Updates</h3>
 
-        <div class="schedule-item">
+                        <div class="notice">
+                            <div class="notice-icon">🍬</div>
+                            <div>
+                                <strong>Today's Prasad: Modak</strong>
+                                <small>Prasad distribution begins by 7:30 PM.</small>
+                            </div>
+                        </div>
 
-          <div class="schedule-icon">
-            <span class="material-symbols-rounded">
-              brightness_4
-            </span>
-          </div>
+                        <div class="notice">
+                            <div class="notice-icon">🙏</div>
+                            <div>
+                                <strong>Evening Darshan</strong>
+                                <small>Everyone is welcome to join peacefully.</small>
+                            </div>
+                        </div>
 
-          <div>
-            <small>Evening</small>
-            <strong>Evening Maha Aarti — 7:30 PM</strong>
-          </div>
+                        <div class="notice">
+                            <div class="notice-icon">🎵</div>
+                            <div>
+                                <strong>Evening Aarti</strong>
+                                <small>Please gather a few minutes early.</small>
+                            </div>
+                        </div>
 
-        </div>
+                    </div>
 
-      </div>
+                    <div class="info-card glass reveal">
 
+                        <div class="section-kicker">Daily Schedule</div>
 
-      <!-- Accordion -->
-      <div class="accordion" id="aartiAccordion">
+                        <h3>Aarti Timings</h3>
 
-        <button
-          class="accordion-header"
-          type="button"
-          id="accordionButton"
-          aria-expanded="false"
-          aria-controls="lyricsContent"
-        >
-          <span>🙏 Aarti Lyrics (In-Hand Book)</span>
+                        <div class="schedule-row">
+                            <span>Morning Aarti</span>
+                            <span>7:00 AM</span>
+                        </div>
 
-          <span class="material-symbols-rounded">
-            expand_more
-          </span>
-        </button>
+                        <div class="schedule-row">
+                            <span>Evening Aarti</span>
+                            <span>7:00 PM</span>
+                        </div>
 
-        <div
-          class="accordion-content"
-          id="lyricsContent"
-        >
+                        <div class="schedule-row">
+                            <span>Prasad Distribution</span>
+                            <span>7:30 PM</span>
+                        </div>
 
-          <div class="accordion-inner">
+                        <div class="schedule-row">
+                            <span>Special Aarti</span>
+                            <span>9:00 PM</span>
+                        </div>
 
-            <div class="lyrics">
+                    </div>
 
-              <div class="lyrics-title">
-                जय गणेश देवा
-              </div>
+                </div>
 
-              <p>
-                जय गणेश, जय गणेश, जय गणेश देवा।<br>
-                माता जाकी पार्वती, पिता महादेवा॥
-              </p>
+            </div>
+        </section>
 
-              <br>
+        <!-- =====================================================
+             GALLERY
+        ====================================================== -->
 
-              <p>
-                एक दंत दयावंत, चार भुजा धारी।<br>
-                माथे सिंदूर सोहे, मूसे की सवारी॥
-              </p>
+        <section>
+            <div class="container reveal">
 
-              <br>
+                <div class="section-heading">
+                    <div class="section-kicker">From Our Pandal</div>
+                    <h2>Moments of devotion.</h2>
+                </div>
 
-              <p>
-                पान चढ़े, फूल चढ़े और चढ़े मेवा।<br>
-                लड्डुअन का भोग लगे, संत करें सेवा॥
-              </p>
+                <div class="gallery">
 
-              <br>
+                    <div class="gallery-item">
+                        <img src="gallery1.jpg" alt="Ganesh Chaturthi moment" loading="lazy">
+                    </div>
 
-              <p>
-                अंधन को आंख देत, कोढ़िन को काया।<br>
-                बांझन को पुत्र देत, निर्धन को माया॥
-              </p>
+                    <div class="gallery-item">
+                        <img src="gallery2.jpg" alt="Pandal decoration" loading="lazy">
+                    </div>
 
-              <br>
+                    <div class="gallery-item">
+                        <img src="gallery3.jpg" alt="Ganpati celebration" loading="lazy">
+                    </div>
 
-              <p>
-                हार चढ़े, फूल चढ़े और चढ़े मेवा।<br>
-                सूर श्याम शरण आए, सफल कीजे सेवा॥
-              </p>
+                    <div class="gallery-item">
+                        <img src="gallery4.jpg" alt="Community celebration" loading="lazy">
+                    </div>
 
-              <br>
+                    <div class="gallery-item">
+                        <img src="gallery5.jpg" alt="Ganesh idol" loading="lazy">
+                    </div>
 
-              <p>
-                जय गणेश, जय गणेश, जय गणेश देवा।<br>
-                माता जाकी पार्वती, पिता महादेवा॥
-              </p>
+                    <div class="gallery-item">
+                        <img src="gallery6.jpg" alt="Evening darshan" loading="lazy">
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================== -->
+
+    <footer>
+
+        <div class="ticker">
+
+            <div class="ticker-track">
+
+                <span>Ganpati Bappa Morya</span>
+                <span>May Bappa bless every home</span>
+                <span>Peace. Prosperity. Devotion.</span>
+                <span>Everyone is welcome for darshan</span>
+                <span>Ganpati Bappa Morya</span>
+                <span>May Bappa bless every home</span>
+                <span>Peace. Prosperity. Devotion.</span>
+                <span>Everyone is welcome for darshan</span>
 
             </div>
 
-          </div>
-
         </div>
 
-      </div>
+        <div class="footer-bottom">
+            Made with devotion • Ganesh Chaturthi
+        </div>
 
-    </section>
+    </footer>
 
-  </main>
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================== -->
 
+    <script>
 
-  <!-- =======================================================
-       5. DIGITAL PRAYER WALL
-       ======================================================= -->
+        /* =========================================================
+           THEME SWITCHER
+        ========================================================= */
 
-  <section id="wall" class="prayer-wall">
+        const paletteBtn = document.getElementById("paletteBtn");
+        const paletteMenu = document.getElementById("paletteMenu");
 
-    <div class="wall-label">
-      Prayer Wall
-    </div>
-
-    <div class="ticker">
-
-      <!-- First set -->
-      <span>🙏 गणपति बप्पा मोरया — May Bappa bless every family.</span>
-      <span>🌺 Wishing everyone peace, happiness and prosperity.</span>
-      <span>🪔 May our colony always remain united.</span>
-      <span>❤️ Bappa, keep our families healthy and happy.</span>
-      <span>🌸 May every prayer find its way to Bappa.</span>
-
-      <!-- Duplicate set creates a seamless loop -->
-      <span>🙏 गणपति बप्पा मोरया — May Bappa bless every family.</span>
-      <span>🌺 Wishing everyone peace, happiness and prosperity.</span>
-      <span>🪔 May our colony always remain united.</span>
-      <span>❤️ Bappa, keep our families healthy and happy.</span>
-      <span>🌸 May every prayer find its way to Bappa.</span>
-
-    </div>
-
-  </section>
-
-
-  <footer>
-    Ganpati Bappa Morya! • Colony Ganesh Utsav 2026
-  </footer>
-
-
-  <!-- =======================================================
-       JAVASCRIPT
-       ======================================================= -->
-
-  <script>
-
-    /* =========================================================
-       1. DAY / NIGHT THEME
-
-       After 18:30 local time:
-       -> Diya / dark theme
-
-       Before 18:30:
-       -> Festive light theme
-       ========================================================= */
-
-    function updateTheme() {
-
-      const now = new Date();
-
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-
-      const isNight =
-        hours > 18 ||
-        (hours === 18 && minutes >= 30);
-
-      document.body.classList.toggle("night", isNight);
-
-      const themeColor = isNight ? "#180b0b" : "#f59e0b";
-
-      const metaTheme =
-        document.querySelector('meta[name="theme-color"]');
-
-      if (metaTheme) {
-        metaTheme.setAttribute("content", themeColor);
-      }
-    }
-
-    updateTheme();
-
-    // Check again every minute.
-    setInterval(updateTheme, 60000);
-
-
-    /* =========================================================
-       2. COUNTDOWN TO VISARJAN
-
-       Target:
-       September 24, 2026
-
-       The time is set to midnight local time.
-       Change the time below if your actual Visarjan
-       ceremony has a specific time.
-       ========================================================= */
-
-    const visarjanDate =
-      new Date("September 24, 2026 00:00:00").getTime();
-
-    const daysElement =
-      document.getElementById("days");
-
-    const hoursElement =
-      document.getElementById("hours");
-
-    const minutesElement =
-      document.getElementById("minutes");
-
-    const secondsElement =
-      document.getElementById("seconds");
-
-
-    function updateCountdown() {
-
-      const now = new Date().getTime();
-
-      const difference = visarjanDate - now;
-
-      if (difference <= 0) {
-
-        daysElement.textContent = "00";
-        hoursElement.textContent = "00";
-        minutesElement.textContent = "00";
-        secondsElement.textContent = "00";
-
-        return;
-      }
-
-      const days =
-        Math.floor(
-          difference / (1000 * 60 * 60 * 24)
-        );
-
-      const hours =
-        Math.floor(
-          (difference / (1000 * 60 * 60)) % 24
-        );
-
-      const minutes =
-        Math.floor(
-          (difference / (1000 * 60)) % 60
-        );
-
-      const seconds =
-        Math.floor(
-          (difference / 1000) % 60
-        );
-
-      daysElement.textContent =
-        String(days).padStart(2, "0");
-
-      hoursElement.textContent =
-        String(hours).padStart(2, "0");
-
-      minutesElement.textContent =
-        String(minutes).padStart(2, "0");
-
-      secondsElement.textContent =
-        String(seconds).padStart(2, "0");
-    }
-
-    updateCountdown();
-
-    setInterval(updateCountdown, 1000);
-
-
-    /* =========================================================
-       3. OFFER FLOWERS
-
-       Dynamically creates petals and animates them from
-       the top to the bottom of the screen.
-       ========================================================= */
-
-    const flowerButton =
-      document.getElementById("flowerButton");
-
-    flowerButton.addEventListener("click", () => {
-
-      // Number of petals created per click
-      const petalCount = 28;
-
-      for (let i = 0; i < petalCount; i++) {
-
-        const petal =
-          document.createElement("div");
-
-        petal.className = "petal";
-
-        // Orange / red palette
-        const colors = [
-          "#f97316",
-          "#ea580c",
-          "#dc2626",
-          "#ef4444",
-          "#fb923c"
-        ];
-
-        petal.style.background =
-          colors[
-            Math.floor(Math.random() * colors.length)
-          ];
-
-        // Random horizontal starting position
-        petal.style.left =
-          Math.random() * 100 + "vw";
-
-        // Different sizes
-        const size =
-          9 + Math.random() * 12;
-
-        petal.style.width = size + "px";
-        petal.style.height = size * 1.35 + "px";
-
-        // Different animation speeds
-        const duration =
-          2.8 + Math.random() * 2.5;
-
-        petal.style.animationDuration =
-          duration + "s";
-
-        // Different delays
-        petal.style.animationDelay =
-          Math.random() * 0.8 + "s";
-
-        document.body.appendChild(petal);
-
-        // Remove after animation
-        setTimeout(
-          () => petal.remove(),
-          (duration + 1) * 1000
-        );
-      }
-
-    });
-
-
-    /* =========================================================
-       4. TEMPLE BELL
-
-       The browser expects:
-       bell.mp3
-
-       Place bell.mp3 in the SAME folder as index.html.
-       ========================================================= */
-
-    const bellButton =
-      document.getElementById("bellButton");
-
-    // Preload the audio file.
-    const bellAudio =
-      new Audio("bell.mp3");
-
-    bellAudio.preload = "auto";
-
-    bellButton.addEventListener("click", () => {
-
-      // Restart the bell if it is already playing.
-      bellAudio.currentTime = 0;
-
-      bellAudio.play().catch(error => {
-
-        console.warn(
-          "Bell audio could not be played:",
-          error
-        );
-
-      });
-
-    });
-
-
-    /* =========================================================
-       5. CUSTOM VIDEO PLAYER
-       ========================================================= */
-
-    const video =
-      document.getElementById("darshanVideo");
-
-    const playButton =
-      document.getElementById("playButton");
-
-    const playIcon =
-      document.getElementById("playIcon");
-
-    const muteButton =
-      document.getElementById("muteButton");
-
-    const muteIcon =
-      document.getElementById("muteIcon");
-
-
-    // Play / Pause
-    playButton.addEventListener("click", () => {
-
-      if (video.paused) {
-
-        video.play().catch(error => {
-
-          console.warn(
-            "Video could not be played:",
-            error
-          );
-
+        paletteBtn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            paletteMenu.classList.toggle("open");
         });
 
-      } else {
+        document.addEventListener("click", () => {
+            paletteMenu.classList.remove("open");
+        });
 
-        video.pause();
+        document.querySelectorAll(".theme-option").forEach(option => {
 
-      }
+            option.addEventListener("click", (event) => {
 
-    });
+                event.stopPropagation();
 
+                const color = option.dataset.theme;
 
-    // Update play icon
-    video.addEventListener("play", () => {
+                document.documentElement.style.setProperty("--bg", color);
 
-      playIcon.textContent = "pause";
-
-    });
-
-
-    video.addEventListener("pause", () => {
-
-      playIcon.textContent = "play_arrow";
-
-    });
-
-
-    // Mute / Unmute
-    muteButton.addEventListener("click", () => {
-
-      video.muted = !video.muted;
-
-      if (video.muted) {
-
-        muteIcon.textContent = "volume_off";
-
-      } else {
-
-        muteIcon.textContent = "volume_up";
-
-      }
-
-    });
-
-
-    /* =========================================================
-       6. AARTI ACCORDION
-       ========================================================= */
-
-    const accordion =
-      document.getElementById("aartiAccordion");
-
-    const accordionButton =
-      document.getElementById("accordionButton");
-
-
-    accordionButton.addEventListener("click", () => {
-
-      const isOpen =
-        accordion.classList.toggle("open");
-
-      accordionButton.setAttribute(
-        "aria-expanded",
-        isOpen
-      );
-
-    });
-
-
-    /* =========================================================
-       7. ACTIVE NAVIGATION
-
-       Highlights the section currently visible.
-       ========================================================= */
-
-    const sections =
-      document.querySelectorAll("main section[id]");
-
-    const navigationLinks =
-      document.querySelectorAll(".nav-links a");
-
-
-    const observer =
-      new IntersectionObserver(
-        (entries) => {
-
-          entries.forEach(entry => {
-
-            if (!entry.isIntersecting) {
-              return;
-            }
-
-            navigationLinks.forEach(link => {
-
-              link.style.color = "";
+                localStorage.setItem("pandalTheme", color);
 
             });
 
-            const activeLink =
-              document.querySelector(
-                `.nav-links a[href="#${entry.target.id}"]`
-              );
+        });
 
-            if (activeLink) {
+        const savedTheme = localStorage.getItem("pandalTheme");
 
-              activeLink.style.color =
-                "var(--primary)";
+        if (savedTheme) {
+            document.documentElement.style.setProperty("--bg", savedTheme);
+        }
+
+
+        /* =========================================================
+           COUNTDOWN
+           
+           IMPORTANT:
+           Change the date below to your actual Maha Visarjan date.
+        ========================================================= */
+
+        const visarjanDate = new Date("September 6, 2026 20:00:00").getTime();
+
+        function updateCountdown() {
+
+            const now = Date.now();
+            const difference = visarjanDate - now;
+
+            if (difference <= 0) {
+
+                document.getElementById("days").textContent = "00";
+                document.getElementById("hours").textContent = "00";
+                document.getElementById("minutes").textContent = "00";
+                document.getElementById("seconds").textContent = "00";
+
+                return;
+            }
+
+            const days = Math.floor(difference / 86400000);
+            const hours = Math.floor((difference % 86400000) / 3600000);
+            const minutes = Math.floor((difference % 3600000) / 60000);
+            const seconds = Math.floor((difference % 60000) / 1000);
+
+            document.getElementById("days").textContent =
+                String(days).padStart(2, "0");
+
+            document.getElementById("hours").textContent =
+                String(hours).padStart(2, "0");
+
+            document.getElementById("minutes").textContent =
+                String(minutes).padStart(2, "0");
+
+            document.getElementById("seconds").textContent =
+                String(seconds).padStart(2, "0");
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+
+        /* =========================================================
+           BELL AUDIO
+        ========================================================== */
+
+        const bell = new Audio("bell.mp3");
+        bell.preload = "auto";
+
+        document.getElementById("bellBtn").addEventListener("click", async () => {
+
+            try {
+
+                bell.currentTime = 0;
+                await bell.play();
+
+            } catch (error) {
+
+                console.warn("Bell audio could not be played.", error);
 
             }
 
-          });
-
-        },
-        {
-          threshold: 0.35
-        }
-      );
+        });
 
 
-    sections.forEach(section => {
-      observer.observe(section);
-    });
+        /* =========================================================
+           OFFER FLOWERS
+        ========================================================== */
 
-  </script>
+        const flowerBtn = document.getElementById("flowerBtn");
+
+        flowerBtn.addEventListener("click", () => {
+
+            const petals = ["🌸", "🌺", "🌼", "🌷", "🪷"];
+
+            for (let i = 0; i < 30; i++) {
+
+                const petal = document.createElement("div");
+
+                petal.className = "petal";
+
+                petal.textContent =
+                    petals[Math.floor(Math.random() * petals.length)];
+
+                petal.style.left = Math.random() * 100 + "vw";
+
+                petal.style.fontSize =
+                    (12 + Math.random() * 18) + "px";
+
+                petal.style.setProperty(
+                    "--drift",
+                    (Math.random() * 180 - 90) + "px"
+                );
+
+                petal.style.animationDuration =
+                    (4 + Math.random() * 5) + "s";
+
+                petal.style.animationDelay =
+                    Math.random() * 1.5 + "s";
+
+                document.body.appendChild(petal);
+
+                setTimeout(() => {
+                    petal.remove();
+                }, 10000);
+            }
+
+        });
+
+
+        /* =========================================================
+           SCROLL REVEAL — INTERSECTION OBSERVER
+        ========================================================== */
+
+        const observer = new IntersectionObserver(
+            (entries, observerInstance) => {
+
+                entries.forEach(entry => {
+
+                    if (entry.isIntersecting) {
+
+                        entry.target.classList.add("visible");
+
+                        observerInstance.unobserve(entry.target);
+
+                    }
+
+                });
+
+            },
+            {
+                threshold: 0.12
+            }
+        );
+
+        document.querySelectorAll(".reveal").forEach(element => {
+            observer.observe(element);
+        });
+
+    </script>
 
 </body>
 </html>
