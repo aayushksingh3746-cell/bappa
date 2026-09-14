@@ -1,63 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <meta name="theme-color" content="#0D0D0D">
-  <title>Admin • Ganpati Pandal</title>
+
+  <title>Admin Dashboard | Ganesh Chaturthi</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/style.css">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="./style.css">
+
 </head>
-<body class="admin-page">
-  <main class="admin-shell">
-    <section id="loginPanel" class="admin-card">
-      <p class="eyebrow">PRIVATE DASHBOARD</p>
-      <h1>Admin Access</h1>
-      <p>Sign in with the Firebase Email/Password account authorised for this dashboard.</p>
+
+<body class="admin-body">
+
+  <!-- ================= LOGIN ================= -->
+
+  <section class="auth-wrapper" id="loginScreen">
+
+    <div class="auth-card">
+
+      <div class="eyebrow">
+        PRIVATE AREA
+      </div>
+
+      <h1>Admin Login</h1>
+
+      <p>
+        Authorized access only.
+        Sign in to manage the Pandal website.
+      </p>
+
       <form id="loginForm">
-        <label>Email<input id="email" type="email" autocomplete="username" required></label>
-        <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
-        <button class="btn btn-primary" type="submit">Sign In</button>
-        <p id="loginError" class="form-error" role="alert"></p>
+
+        <div class="input-group">
+
+          <label for="email">
+            Email
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            autocomplete="username"
+            placeholder="[Email Placeholder]"
+            required
+          >
+
+        </div>
+
+        <div class="input-group">
+
+          <label for="password">
+            Password
+          </label>
+
+          <input
+            id="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="[Password Placeholder]"
+            required
+          >
+
+        </div>
+
+        <button
+          type="submit"
+          class="admin-button"
+        >
+          Sign In
+        </button>
+
+        <div
+          class="auth-error"
+          id="authError"
+        ></div>
+
       </form>
-    </section>
 
-    <section id="dashboard" class="admin-card" hidden>
-      <div class="admin-top">
-        <div><p class="eyebrow">CONTROL CENTER</p><h1>Festival Dashboard</h1></div>
-        <button id="logoutBtn" class="btn btn-ghost">Sign Out</button>
-      </div>
+    </div>
 
-      <div class="admin-grid">
-        <article class="control-card">
-          <p class="eyebrow">LIVE DARSHAN</p>
-          <h2 id="liveStatusText">Offline</h2>
-          <label class="switch-row"><span>Broadcast status</span><input id="liveToggle" type="checkbox"><span class="switch"></span></label>
-          <p class="admin-note">This controls the public Live Darshan state in Firebase Realtime Database.</p>
-        </article>
+  </section>
 
-        <article class="control-card">
-          <p class="eyebrow">TIMELINE</p>
-          <h2>Create Event</h2>
-          <form id="eventForm">
-            <input id="eventId" type="hidden">
-            <label>Title<input id="eventTitle" required maxlength="80" placeholder="[Event Name Placeholder]"></label>
-            <label>Date / Time<input id="eventTime" required maxlength="80" placeholder="[Date / Time Placeholder]"></label>
-            <label>Description<textarea id="eventDescription" maxlength="240" placeholder="[Event Description Placeholder]"></textarea></label>
-            <label class="check-row"><input id="eventActive" type="checkbox"> Active / Next</label>
-            <div class="form-actions"><button class="btn btn-primary" type="submit">Save Event</button><button class="btn btn-ghost" id="cancelEdit" type="button">Clear</button></div>
+  <!-- ================= DASHBOARD ================= -->
+
+  <div class="admin-shell" id="dashboardShell">
+
+    <header class="admin-header">
+
+      <h1>
+        Ganesh <span>Admin</span>
+      </h1>
+
+      <button
+        class="logout-button"
+        id="logoutButton"
+      >
+        Sign Out
+      </button>
+
+    </header>
+
+    <main class="dashboard">
+
+      <div class="dashboard-grid">
+
+        <!-- LIVE CONTROL -->
+
+        <section class="dashboard-card live-control-card">
+
+          <div class="live-control">
+
+            <div>
+
+              <div class="eyebrow">
+                DARSHAN CONTROL
+              </div>
+
+              <h2>Live Darshan</h2>
+
+              <p>
+                Turn the public Live Darshan interface
+                on or off instantly.
+              </p>
+
+              <div
+                class="dashboard-status"
+                id="liveDashboardStatus"
+              >
+                OFFLINE
+              </div>
+
+            </div>
+
+            <label class="toggle">
+
+              <input
+                type="checkbox"
+                id="liveToggle"
+              >
+
+              <span class="toggle-slider"></span>
+
+            </label>
+
+          </div>
+
+        </section>
+
+        <!-- REGISTRATIONS -->
+
+        <section class="dashboard-card">
+
+          <div class="eyebrow">
+            REGISTRATIONS
+          </div>
+
+          <div
+            class="stat-number"
+            id="registrationCount"
+          >
+            0
+          </div>
+
+          <p>
+            Total registration records.
+          </p>
+
+        </section>
+
+        <!-- HELP REQUESTS -->
+
+        <section class="dashboard-card">
+
+          <div class="eyebrow">
+            HELP REQUESTS
+          </div>
+
+          <div
+            class="stat-number"
+            id="helpCount"
+          >
+            0
+          </div>
+
+          <p>
+            Total help requests.
+          </p>
+
+        </section>
+
+        <!-- CURRENT USER -->
+
+        <section class="dashboard-card">
+
+          <div class="eyebrow">
+            AUTHENTICATED USER
+          </div>
+
+          <p id="adminUser">
+            Loading...
+          </p>
+
+        </section>
+
+        <!-- ANNOUNCEMENTS -->
+
+        <section class="dashboard-card live-control-card">
+
+          <div class="eyebrow">
+            ANNOUNCEMENTS
+          </div>
+
+          <h2>Publish Announcement</h2>
+
+          <form
+            class="announcement-form"
+            id="announcementForm"
+          >
+
+            <div class="input-group">
+
+              <label for="announcementTitle">
+                Title
+              </label>
+
+              <input
+                id="announcementTitle"
+                type="text"
+                placeholder="[Announcement Title Placeholder]"
+                required
+              >
+
+            </div>
+
+            <div class="input-group">
+
+              <label for="announcementMessage">
+                Message
+              </label>
+
+              <textarea
+                id="announcementMessage"
+                placeholder="[Announcement Message Placeholder]"
+                required
+              ></textarea>
+
+            </div>
+
+            <button
+              class="admin-button"
+              type="submit"
+            >
+              Publish Announcement
+            </button>
+
           </form>
-        </article>
+
+          <div
+            class="announcement-list"
+            id="announcementList"
+          ></div>
+
+        </section>
+
       </div>
 
-      <section class="control-card">
-        <div class="list-header"><h2>Timeline Nodes</h2><span id="eventCount">0</span></div>
-        <div id="eventList" class="admin-list"></div>
-      </section>
-    </section>
-  </main>
-  <script type="module" src="./js/admin.js"></script>
+    </main>
+
+  </div>
+
+  <script type="module" src="./admin.js"></script>
+
 </body>
 </html>
