@@ -4,100 +4,97 @@ import {
 
 import {
   getAuth,
-  signInWithEmailAndPassword,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 import {
   getDatabase,
   ref,
-  set,
   onValue,
+  onChildAdded,
   push,
-  query,
-  orderByChild
+  set,
+  remove,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 
 /* =========================================================
-   FIREBASE CONFIG
+   FIREBASE
 ========================================================= */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
-  authDomain: "ganpati-5f24e.firebaseapp.com",
-  projectId: "ganpati-5f24e",
-  storageBucket: "ganpati-5f24e.firebasestorage.app",
-  messagingSenderId: "512949354669",
-  appId: "1:512949354669:web:f561488c630203a9ae4624",
-  measurementId: "G-1J5J8CBVRD"
+
+  apiKey:
+    "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
+
+  authDomain:
+    "ganpati-5f24e.firebaseapp.com",
+
+  projectId:
+    "ganpati-5f24e",
+
+  storageBucket:
+    "ganpati-5f24e.firebasestorage.app",
+
+  messagingSenderId:
+    "512949354669",
+
+  appId:
+    "1:512949354669:web:f561488c630203a9ae4624"
+
 };
 
 
-/* =========================================================
-   INITIALIZE FIREBASE
-========================================================= */
-
-const firebaseApp =
+const app =
   initializeApp(firebaseConfig);
 
-const auth =
-  getAuth(firebaseApp);
 
-const db =
-  getDatabase(firebaseApp);
+const auth =
+  getAuth(app);
+
+
+const database =
+  getDatabase(app);
+
+
+const $ =
+  selector =>
+    document.querySelector(selector);
 
 
 /* =========================================================
-   ELEMENTS
+   PRELOADER
 ========================================================= */
 
-const loginScreen =
-  document.getElementById("loginScreen");
+function hidePreloader() {
 
-const dashboardShell =
-  document.getElementById("dashboardShell");
+  $("#preloader")
+    ?.classList
+    .add("done");
 
-const loginForm =
-  document.getElementById("loginForm");
+}
 
-const authError =
-  document.getElementById("authError");
 
-const logoutButton =
-  document.getElementById("logoutButton");
+window.addEventListener(
+  "load",
+  () => {
 
-const liveToggle =
-  document.getElementById("liveToggle");
+    setTimeout(
+      hidePreloader,
+      400
+    );
 
-const liveDashboardStatus =
-  document.getElementById(
-    "liveDashboardStatus"
-  );
+  }
+);
 
-const adminUser =
-  document.getElementById("adminUser");
 
-const registrationCount =
-  document.getElementById(
-    "registrationCount"
-  );
-
-const helpCount =
-  document.getElementById(
-    "helpCount"
-  );
-
-const announcementForm =
-  document.getElementById(
-    "announcementForm"
-  );
-
-const announcementList =
-  document.getElementById(
-    "announcementList"
-  );
+setTimeout(
+  hidePreloader,
+  2000
+);
 
 
 /* =========================================================
@@ -110,24 +107,47 @@ onAuthStateChanged(
 
     if (user) {
 
-      loginScreen.style.display =
-        "none";
+      $("#loginPanel")
+        .classList
+        .add("hidden");
 
-      dashboardShell.style.display =
-        "block";
 
-      adminUser.textContent =
-        user.email || "[Authenticated User]";
+      $("#dashboard")
+        .classList
+        .remove("hidden");
 
-      startDashboardListeners();
 
-    } else {
+      $("#logoutBtn")
+        .classList
+        .remove("hidden");
 
-      loginScreen.style.display =
-        "grid";
 
-      dashboardShell.style.display =
-        "none";
+      $("#connectionState")
+        .textContent =
+        "Authenticated";
+
+
+      loadPrayers();
+
+      listenForViewers();
+
+    }
+
+    else {
+
+      $("#loginPanel")
+        .classList
+        .remove("hidden");
+
+
+      $("#dashboard")
+        .classList
+        .add("hidden");
+
+
+      $("#logoutBtn")
+        .classList
+        .add("hidden");
 
     }
 
@@ -135,338 +155,711 @@ onAuthStateChanged(
 );
 
 
-/* =========================================================
-   LOGIN
-========================================================= */
+/* LOGIN */
 
-loginForm.addEventListener(
-  "submit",
-  async event => {
+$("#loginForm")
+  .addEventListener(
+    "submit",
+    async event => {
 
-    event.preventDefault();
-
-    authError.textContent = "";
-
-    const email =
-      document.getElementById("email")
-        .value
-        .trim();
-
-    const password =
-      document.getElementById("password")
-        .value;
-
-    try {
-
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
-    } catch (error) {
-
-      console.error(error);
-
-      authError.textContent =
-        getFriendlyAuthError(error);
-
-    }
-
-  }
-);
+      event.preventDefault();
 
 
-/* =========================================================
-   LOGOUT
-========================================================= */
-
-logoutButton.addEventListener(
-  "click",
-  async () => {
-
-    try {
-
-      await signOut(auth);
-
-    } catch (error) {
-
-      console.error(
-        "Logout error:",
-        error
-      );
-
-    }
-
-  }
-);
+      const email =
+        $("#email")
+          .value
+          .trim();
 
 
-/* =========================================================
-   LIVE STATE
-========================================================= */
-
-function startDashboardListeners() {
-
-  const liveRef =
-    ref(db, "live");
-
-  onValue(
-    liveRef,
-    snapshot => {
-
-      const data =
-        snapshot.val() || {};
-
-      const isLive =
-        data.isLive === true;
-
-      liveToggle.checked =
-        isLive;
-
-      liveDashboardStatus.textContent =
-        isLive
-          ? "LIVE"
-          : "OFFLINE";
-
-    }
-  );
+      const password =
+        $("#password")
+          .value;
 
 
-  /* ================= REGISTRATIONS ================= */
-
-  const registrationsRef =
-    ref(db, "registrations");
-
-  onValue(
-    registrationsRef,
-    snapshot => {
-
-      const data =
-        snapshot.val() || {};
-
-      registrationCount.textContent =
-        Object.keys(data).length;
-
-    }
-  );
+      $("#loginStatus")
+        .textContent =
+        "Signing in...";
 
 
-  /* ================= HELP ================= */
+      try {
 
-  const helpRef =
-    ref(db, "helpRequests");
-
-  onValue(
-    helpRef,
-    snapshot => {
-
-      const data =
-        snapshot.val() || {};
-
-      helpCount.textContent =
-        Object.keys(data).length;
-
-    }
-  );
+        await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
 
 
-  /* ================= ANNOUNCEMENTS ================= */
+        $("#loginStatus")
+          .textContent = "";
 
-  const announcementsRef =
-    query(
-      ref(db, "announcements"),
-      orderByChild("createdAt")
-    );
+      }
 
-  onValue(
-    announcementsRef,
-    snapshot => {
+      catch (error) {
 
-      announcementList.innerHTML = "";
+        console.error(error);
 
-      const data =
-        snapshot.val() || {};
 
-      const announcements =
-        Object.values(data)
-          .reverse();
+        if (
+          error.code ===
+          "auth/invalid-credential"
+        ) {
 
-      announcements.forEach(
-        announcement => {
-
-          const element =
-            document.createElement("article");
-
-          element.className =
-            "announcement";
-
-          element.innerHTML = `
-            <strong>
-              ${escapeHTML(
-                announcement.title ||
-                "[Announcement]"
-              )}
-            </strong>
-
-            <p>
-              ${escapeHTML(
-                announcement.message ||
-                ""
-              )}
-            </p>
-          `;
-
-          announcementList.appendChild(
-            element
-          );
+          $("#loginStatus")
+            .textContent =
+            "Invalid email or password.";
 
         }
+
+        else {
+
+          $("#loginStatus")
+            .textContent =
+            "Sign-in failed. Check Firebase Authentication.";
+
+        }
+
+      }
+
+    }
+  );
+
+
+/* LOGOUT */
+
+$("#logoutBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      signOut(auth);
+
+    }
+  );
+
+
+/* =========================================================
+   PRAYER ADMIN
+========================================================= */
+
+function loadPrayers() {
+
+  const container =
+    $("#adminPrayers");
+
+
+  container.innerHTML = "";
+
+
+  onChildAdded(
+    ref(
+      database,
+      "pandal/prayers_wall"
+    ),
+
+    snapshot => {
+
+      const prayer =
+        snapshot.val();
+
+
+      if (!prayer) {
+        return;
+      }
+
+
+      const item =
+        document.createElement("div");
+
+
+      item.className =
+        "admin-item";
+
+
+      const strong =
+        document.createElement("strong");
+
+
+      strong.textContent =
+        prayer.text || "";
+
+
+      const label =
+        document.createElement("span");
+
+
+      label.textContent =
+        "Sankalp";
+
+
+      item.appendChild(
+        strong
       );
+
+
+      item.appendChild(
+        label
+      );
+
+
+      container.prepend(
+        item
+      );
+
+
+      while (
+        container.children.length > 50
+      ) {
+
+        container.lastElementChild
+          .remove();
+
+      }
 
     }
   );
 
 }
-
-
-/* =========================================================
-   LIVE TOGGLE
-========================================================= */
-
-liveToggle.addEventListener(
-  "change",
-  async () => {
-
-    const isLive =
-      liveToggle.checked;
-
-    try {
-
-      await set(
-        ref(db, "live"),
-        {
-          isLive,
-          updatedAt: Date.now()
-        }
-      );
-
-      liveDashboardStatus.textContent =
-        isLive
-          ? "LIVE"
-          : "OFFLINE";
-
-    } catch (error) {
-
-      console.error(
-        "Unable to update live status:",
-        error
-      );
-
-      liveToggle.checked =
-        !isLive;
-
-    }
-
-  }
-);
 
 
 /* =========================================================
    ANNOUNCEMENTS
 ========================================================= */
 
-announcementForm.addEventListener(
-  "submit",
-  async event => {
+$("#announcementForm")
+  .addEventListener(
+    "submit",
+    async event => {
 
-    event.preventDefault();
+      event.preventDefault();
 
-    const title =
-      document.getElementById(
-        "announcementTitle"
-      ).value.trim();
 
-    const message =
-      document.getElementById(
-        "announcementMessage"
-      ).value.trim();
+      const title =
+        $("#announcementTitle")
+          .value
+          .trim();
 
-    if (!title || !message) {
-      return;
+
+      const message =
+        $("#announcementText")
+          .value
+          .trim();
+
+
+      const status =
+        $("#announcementStatus");
+
+
+      status.textContent =
+        "Publishing...";
+
+
+      try {
+
+        await push(
+          ref(
+            database,
+            "pandal/announcements"
+          ),
+          {
+
+            title,
+
+            message,
+
+            createdAt:
+              serverTimestamp(),
+
+            author:
+              auth.currentUser.uid
+
+          }
+        );
+
+
+        event.target.reset();
+
+
+        status.textContent =
+          "Announcement published.";
+
+      }
+
+      catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+          "Could not publish announcement.";
+
+      }
+
     }
-
-    try {
-
-      await push(
-        ref(db, "announcements"),
-        {
-          title,
-          message,
-          createdAt: Date.now()
-        }
-      );
-
-      announcementForm.reset();
-
-    } catch (error) {
-
-      console.error(
-        "Announcement error:",
-        error
-      );
-
-      alert(
-        "Unable to publish announcement."
-      );
-
-    }
-
-  }
-);
+  );
 
 
 /* =========================================================
-   SECURITY HELPERS
+   WEBRTC BROADCAST
 ========================================================= */
 
-function escapeHTML(value) {
+let localStream =
+  null;
 
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+
+let broadcasting =
+  false;
+
+
+const peerConnections =
+  new Map();
+
+
+const viewerListeners =
+  new Map();
+
+
+let viewersListenerStarted =
+  false;
+
+
+/* START */
+
+$("#startBroadcast")
+  .addEventListener(
+    "click",
+    startBroadcast
+  );
+
+
+/* STOP */
+
+$("#stopBroadcast")
+  .addEventListener(
+    "click",
+    stopBroadcast
+  );
+
+
+async function startBroadcast() {
+
+  if (broadcasting) {
+    return;
+  }
+
+
+  const message =
+    $("#broadcastMessage");
+
+
+  try {
+
+    localStream =
+      await navigator.mediaDevices
+        .getUserMedia({
+
+          video: {
+
+            facingMode:
+              "user",
+
+            width: {
+              ideal: 1280
+            },
+
+            height: {
+              ideal: 720
+            }
+
+          },
+
+          audio: true
+
+        });
+
+
+    $("#preview")
+      .srcObject =
+      localStream;
+
+
+    broadcasting = true;
+
+
+    $("#broadcastStatus")
+      .textContent =
+      "LIVE";
+
+
+    message.textContent =
+      "Camera is live. Keep this page open while broadcasting.";
+
+
+    listenForViewers();
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+
+    message.textContent =
+      "Camera or microphone access was denied or unavailable.";
+
+  }
 
 }
 
 
-/* =========================================================
-   FIREBASE AUTH ERRORS
-========================================================= */
+/* VIEWERS */
 
-function getFriendlyAuthError(error) {
+function listenForViewers() {
 
-  switch (error.code) {
+  if (viewersListenerStarted) {
+    return;
+  }
 
-    case "auth/invalid-email":
-      return "Please enter a valid email address.";
 
-    case "auth/invalid-credential":
-      return "Incorrect email or password.";
+  viewersListenerStarted = true;
 
-    case "auth/user-not-found":
-      return "No admin account exists for this email.";
 
-    case "auth/wrong-password":
-      return "Incorrect password.";
+  onChildAdded(
+    ref(
+      database,
+      "pandal/viewers"
+    ),
 
-    case "auth/too-many-requests":
-      return "Too many attempts. Please try again later.";
+    snapshot => {
 
-    default:
-      return "Login failed. Please check your Firebase configuration.";
+      if (
+        !broadcasting
+      ) {
+
+        return;
+
+      }
+
+
+      const viewerId =
+        snapshot.key;
+
+
+      if (
+        peerConnections.has(
+          viewerId
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      createViewerConnection(
+        viewerId
+      )
+      .catch(
+        error =>
+          console.error(
+            "Peer creation failed:",
+            error
+          )
+      );
+
+    }
+  );
+
+}
+
+
+/* CREATE PEER */
+
+async function createViewerConnection(
+  viewerId
+) {
+
+  if (!localStream) {
+    return;
+  }
+
+
+  const peer =
+    new RTCPeerConnection({
+
+      iceServers: [
+
+        {
+          urls:
+            "stun:stun.l.google.com:19302"
+        }
+
+      ]
+
+    });
+
+
+  peerConnections.set(
+    viewerId,
+    peer
+  );
+
+
+  localStream
+    .getTracks()
+    .forEach(
+      track => {
+
+        peer.addTrack(
+          track,
+          localStream
+        );
+
+      }
+    );
+
+
+  peer.onicecandidate =
+    event => {
+
+      if (
+        event.candidate
+      ) {
+
+        push(
+          ref(
+            database,
+            `pandal/signals/${viewerId}/broadcasterCandidates`
+          ),
+          event.candidate.toJSON()
+        );
+
+      }
+
+    };
+
+
+  peer.onconnectionstatechange =
+    () => {
+
+      const state =
+        peer.connectionState;
+
+
+      if (
+        [
+          "failed",
+          "closed",
+          "disconnected"
+        ].includes(state)
+      ) {
+
+        closePeer(
+          viewerId
+        );
+
+      }
+
+    };
+
+
+  onChildAdded(
+    ref(
+      database,
+      `pandal/signals/${viewerId}/viewerCandidates`
+    ),
+
+    snapshot => {
+
+      peer
+        .addIceCandidate(
+          snapshot.val()
+        )
+        .catch(
+          () => {}
+        );
+
+    }
+  );
+
+
+  const offer =
+    await peer.createOffer();
+
+
+  await peer.setLocalDescription(
+    offer
+  );
+
+
+  await set(
+    ref(
+      database,
+      `pandal/signals/${viewerId}/offer`
+    ),
+    {
+
+      type:
+        offer.type,
+
+      sdp:
+        offer.sdp
+
+    }
+  );
+
+
+  onValue(
+    ref(
+      database,
+      `pandal/signals/${viewerId}/answer`
+    ),
+
+    async snapshot => {
+
+      const answer =
+        snapshot.val();
+
+
+      if (
+        !answer ||
+        peer.signalingState ===
+        "stable"
+      ) {
+
+        return;
+
+      }
+
+
+      try {
+
+        await peer
+          .setRemoteDescription(
+            answer
+          );
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Answer error:",
+          error
+        );
+
+      }
+
+    }
+  );
+
+
+  viewerListeners.set(
+    viewerId,
+    true
+  );
+
+}
+
+
+/* CLOSE PEER */
+
+async function closePeer(
+  viewerId
+) {
+
+  const peer =
+    peerConnections.get(
+      viewerId
+    );
+
+
+  if (peer) {
+
+    peer.close();
+
+  }
+
+
+  peerConnections.delete(
+    viewerId
+  );
+
+
+  await set(
+    ref(
+      database,
+      `pandal/signals/${viewerId}/closed`
+    ),
+    true
+  )
+  .catch(
+    () => {}
+  );
+
+
+  await remove(
+    ref(
+      database,
+      `pandal/signals/${viewerId}`
+    )
+  )
+  .catch(
+    () => {}
+  );
+
+}
+
+
+/* STOP BROADCAST */
+
+async function stopBroadcast() {
+
+  broadcasting = false;
+
+
+  if (localStream) {
+
+    localStream
+      .getTracks()
+      .forEach(
+        track =>
+          track.stop()
+      );
+
+  }
+
+
+  localStream = null;
+
+
+  $("#preview")
+    .srcObject =
+    null;
+
+
+  $("#broadcastStatus")
+    .textContent =
+    "Offline";
+
+
+  $("#broadcastMessage")
+    .textContent =
+    "Broadcast stopped.";
+
+
+  const ids =
+    Array.from(
+      peerConnections.keys()
+    );
+
+
+  for (
+    const viewerId of ids
+  ) {
+
+    await closePeer(
+      viewerId
+    );
 
   }
 
