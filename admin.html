@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
   <meta charset="UTF-8">
@@ -9,282 +10,339 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <meta name="theme-color" content="#0D0D0D">
+  <meta
+    name="theme-color"
+    content="#0D0D0D"
+  >
 
-  <title>Admin Dashboard | Ganesh Chaturthi</title>
+  <title>
+    Admin Studio | Ganpati Pandal
+  </title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="./style.css">
+  <link
+    rel="stylesheet"
+    href="./style.css"
+  >
 
 </head>
 
+
 <body class="admin-body">
 
-  <!-- ================= LOGIN ================= -->
+  <div
+    id="preloader"
+    class="preloader"
+  >
+    <div class="om-loader">
+      ॐ
+    </div>
+  </div>
 
-  <section class="auth-wrapper" id="loginScreen">
 
-    <div class="auth-card">
+  <header class="site-header">
 
-      <div class="eyebrow">
-        PRIVATE AREA
-      </div>
+    <a
+      href="./index.html"
+      class="brand"
+    >
 
-      <h1>Admin Login</h1>
+      <span class="brand-symbol">
+        ॐ
+      </span>
 
-      <p>
-        Authorized access only.
-        Sign in to manage the Pandal website.
+      <span class="brand-text">
+
+        <strong>
+          GANPATI
+        </strong>
+
+        <small>
+          Admin Studio
+        </small>
+
+      </span>
+
+    </a>
+
+
+    <button
+      id="logoutBtn"
+      class="btn btn-outline hidden"
+      type="button"
+    >
+      Sign Out
+    </button>
+
+  </header>
+
+
+  <main class="admin-main">
+
+
+    <!-- LOGIN -->
+    <section
+      id="loginPanel"
+      class="auth-panel"
+    >
+
+      <p class="eyebrow">
+        PRIVATE ACCESS
       </p>
+
+      <h1>
+        Admin <em>Studio</em>
+      </h1>
+
+      <p class="auth-description">
+        Sign in with your Firebase administrator account.
+      </p>
+
 
       <form id="loginForm">
 
-        <div class="input-group">
-
-          <label for="email">
-            Email
-          </label>
+        <label>
+          Email
 
           <input
             id="email"
             type="email"
             autocomplete="username"
-            placeholder="[Email Placeholder]"
             required
           >
 
-        </div>
+        </label>
 
-        <div class="input-group">
 
-          <label for="password">
-            Password
-          </label>
+        <label>
+          Password
 
           <input
             id="password"
             type="password"
             autocomplete="current-password"
-            placeholder="[Password Placeholder]"
             required
           >
 
-        </div>
+        </label>
+
 
         <button
           type="submit"
-          class="admin-button"
+          class="btn btn-gold"
         >
           Sign In
         </button>
 
-        <div
-          class="auth-error"
-          id="authError"
-        ></div>
+
+        <p
+          id="loginStatus"
+          class="form-status"
+        ></p>
 
       </form>
 
-    </div>
+    </section>
 
-  </section>
 
-  <!-- ================= DASHBOARD ================= -->
+    <!-- DASHBOARD -->
+    <section
+      id="dashboard"
+      class="dashboard hidden"
+    >
 
-  <div class="admin-shell" id="dashboardShell">
+      <div class="dashboard-header">
 
-    <header class="admin-header">
+        <div>
 
-      <h1>
-        Ganesh <span>Admin</span>
-      </h1>
-
-      <button
-        class="logout-button"
-        id="logoutButton"
-      >
-        Sign Out
-      </button>
-
-    </header>
-
-    <main class="dashboard">
-
-      <div class="dashboard-grid">
-
-        <!-- LIVE CONTROL -->
-
-        <section class="dashboard-card live-control-card">
-
-          <div class="live-control">
-
-            <div>
-
-              <div class="eyebrow">
-                DARSHAN CONTROL
-              </div>
-
-              <h2>Live Darshan</h2>
-
-              <p>
-                Turn the public Live Darshan interface
-                on or off instantly.
-              </p>
-
-              <div
-                class="dashboard-status"
-                id="liveDashboardStatus"
-              >
-                OFFLINE
-              </div>
-
-            </div>
-
-            <label class="toggle">
-
-              <input
-                type="checkbox"
-                id="liveToggle"
-              >
-
-              <span class="toggle-slider"></span>
-
-            </label>
-
-          </div>
-
-        </section>
-
-        <!-- REGISTRATIONS -->
-
-        <section class="dashboard-card">
-
-          <div class="eyebrow">
-            REGISTRATIONS
-          </div>
-
-          <div
-            class="stat-number"
-            id="registrationCount"
-          >
-            0
-          </div>
-
-          <p>
-            Total registration records.
+          <p class="eyebrow">
+            CONTROL ROOM
           </p>
 
-        </section>
+          <h1>
+            Seva <em>Dashboard</em>
+          </h1>
 
-        <!-- HELP REQUESTS -->
+        </div>
 
-        <section class="dashboard-card">
-
-          <div class="eyebrow">
-            HELP REQUESTS
-          </div>
-
-          <div
-            class="stat-number"
-            id="helpCount"
-          >
-            0
-          </div>
-
-          <p>
-            Total help requests.
-          </p>
-
-        </section>
-
-        <!-- CURRENT USER -->
-
-        <section class="dashboard-card">
-
-          <div class="eyebrow">
-            AUTHENTICATED USER
-          </div>
-
-          <p id="adminUser">
-            Loading...
-          </p>
-
-        </section>
-
-        <!-- ANNOUNCEMENTS -->
-
-        <section class="dashboard-card live-control-card">
-
-          <div class="eyebrow">
-            ANNOUNCEMENTS
-          </div>
-
-          <h2>Publish Announcement</h2>
-
-          <form
-            class="announcement-form"
-            id="announcementForm"
-          >
-
-            <div class="input-group">
-
-              <label for="announcementTitle">
-                Title
-              </label>
-
-              <input
-                id="announcementTitle"
-                type="text"
-                placeholder="[Announcement Title Placeholder]"
-                required
-              >
-
-            </div>
-
-            <div class="input-group">
-
-              <label for="announcementMessage">
-                Message
-              </label>
-
-              <textarea
-                id="announcementMessage"
-                placeholder="[Announcement Message Placeholder]"
-                required
-              ></textarea>
-
-            </div>
-
-            <button
-              class="admin-button"
-              type="submit"
-            >
-              Publish Announcement
-            </button>
-
-          </form>
-
-          <div
-            class="announcement-list"
-            id="announcementList"
-          ></div>
-
-        </section>
+        <span
+          id="connectionState"
+          class="status-pill"
+        >
+          Checking...
+        </span>
 
       </div>
 
-    </main>
 
-  </div>
+      <div class="admin-grid">
 
-  <script type="module" src="./admin.js"></script>
+
+        <!-- BROADCAST -->
+        <article class="admin-card broadcast-card">
+
+          <div class="card-heading">
+
+            <div>
+
+              <p class="eyebrow">
+                DARSHAN
+              </p>
+
+              <h2>
+                Live Broadcast
+              </h2>
+
+            </div>
+
+            <span
+              id="broadcastStatus"
+              class="status-pill"
+            >
+              Offline
+            </span>
+
+          </div>
+
+
+          <video
+            id="preview"
+            autoplay
+            muted
+            playsinline
+          ></video>
+
+
+          <div class="admin-buttons">
+
+            <button
+              id="startBroadcast"
+              class="btn btn-gold"
+              type="button"
+            >
+              Start Camera
+            </button>
+
+
+            <button
+              id="stopBroadcast"
+              class="btn btn-outline"
+              type="button"
+            >
+              Stop
+            </button>
+
+          </div>
+
+
+          <p
+            id="broadcastMessage"
+            class="form-status"
+          >
+            Camera access is requested only after pressing
+            Start Camera.
+          </p>
+
+        </article>
+
+
+        <!-- PRAYERS -->
+        <article class="admin-card">
+
+          <p class="eyebrow">
+            PRAYERS
+          </p>
+
+          <h2>
+            Recent Sankalps
+          </h2>
+
+          <div
+            id="adminPrayers"
+            class="admin-list"
+          ></div>
+
+        </article>
+
+
+        <!-- ANNOUNCEMENTS -->
+        <article class="admin-card">
+
+          <p class="eyebrow">
+            ANNOUNCEMENTS
+          </p>
+
+          <h2>
+            Publish a Message
+          </h2>
+
+
+          <form id="announcementForm">
+
+            <label>
+              Title
+
+              <input
+                id="announcementTitle"
+                maxlength="80"
+                required
+              >
+
+            </label>
+
+
+            <label>
+              Message
+
+              <textarea
+                id="announcementText"
+                maxlength="500"
+                required
+              ></textarea>
+
+            </label>
+
+
+            <button
+              class="btn btn-gold"
+              type="submit"
+            >
+              Publish
+            </button>
+
+
+            <p
+              id="announcementStatus"
+              class="form-status"
+            ></p>
+
+          </form>
+
+        </article>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script
+    type="module"
+    src="./admin.js"
+  ></script>
 
 </body>
 </html>
