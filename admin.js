@@ -1,6 +1,6 @@
 /* =========================================================
-   GANESH PANDAL — ADMIN DASHBOARD
-   Firebase Auth + Realtime Database + WebRTC
+   GANESH CHATURTHI PANDAL — ADMIN
+   Firebase Auth + RTDB + WebRTC Broadcaster
 ========================================================= */
 
 import {
@@ -27,32 +27,20 @@ import {
 
 
 /* =========================================================
-   FIREBASE
+   FIREBASE CONFIG
 ========================================================= */
 
 const firebaseConfig = {
-
-  apiKey:
-    "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
-
-  authDomain:
-    "ganpati-5f24e.firebaseapp.com",
+  apiKey: "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
+  authDomain: "ganpati-5f24e.firebaseapp.com",
 
   databaseURL:
-    "https://ganpati-5f24e-default-rtdb.firebaseio.com",
+    "https://ganpati-5f24e-default-rtdb.asia-southeast1.firebasedatabase.app",
 
-  projectId:
-    "ganpati-5f24e",
-
-  storageBucket:
-    "ganpati-5f24e.firebasestorage.app",
-
-  messagingSenderId:
-    "512949354669",
-
-  appId:
-    "1:512949354669:web:f561488c630203a9ae4624"
-
+  projectId: "ganpati-5f24e",
+  storageBucket: "ganpati-5f24e.firebasestorage.app",
+  messagingSenderId: "512949354669",
+  appId: "1:512949354669:web:f561488c630203a9ae4624"
 };
 
 
@@ -134,31 +122,25 @@ const announcementStatus =
    STATE
 ========================================================= */
 
-let localStream =
-  null;
-
-let broadcasting =
-  false;
-
-let viewersListenerStarted =
-  false;
+let localStream = null;
+let broadcasting = false;
+let viewersListenerStarted = false;
 
 const viewerPeers =
   new Map();
 
-const viewerCandidateListeners =
-  new Map();
-
 
 /* =========================================================
-   CONNECTION TEST
+   FIREBASE CONNECTION
 ========================================================= */
 
 onValue(
   ref(database, ".info/connected"),
+
   snapshot => {
 
     if (!connectionState) return;
+
 
     if (snapshot.val() === true) {
 
@@ -182,6 +164,15 @@ onValue(
 
     }
 
+  },
+
+  error => {
+
+    console.error(
+      "Connection listener:",
+      error
+    );
+
   }
 );
 
@@ -196,6 +187,7 @@ loginForm?.addEventListener(
 
     event.preventDefault();
 
+
     const email =
       emailInput?.value.trim();
 
@@ -205,24 +197,18 @@ loginForm?.addEventListener(
 
     if (!email || !password) {
 
-      if (loginStatus) {
-
+      if (loginStatus)
         loginStatus.textContent =
           "Enter email and password.";
-
-      }
 
       return;
 
     }
 
 
-    if (loginStatus) {
-
+    if (loginStatus)
       loginStatus.textContent =
         "Signing in...";
-
-    }
 
 
     try {
@@ -234,30 +220,22 @@ loginForm?.addEventListener(
       );
 
 
-      if (loginStatus) {
-
-        loginStatus.textContent =
-          "";
-
-      }
+      if (loginStatus)
+        loginStatus.textContent = "";
 
     }
 
     catch (error) {
 
       console.error(
-        "LOGIN ERROR:",
+        "Login error:",
         error
       );
 
 
-      if (loginStatus) {
-
+      if (loginStatus)
         loginStatus.textContent =
-          error.message ||
-          "Login failed.";
-
-      }
+          error.message;
 
     }
 
@@ -284,18 +262,18 @@ onAuthStateChanged(
       );
 
 
-      if (connectionState) {
-
+      if (connectionState)
         connectionState.textContent =
-          "Logged in as " +
+          "Logged in: " +
           user.email;
-
-      }
 
 
       loadAdminPrayers();
 
       loadExistingBroadcast();
+
+      viewersListenerStarted =
+        false;
 
       listenForViewers();
 
@@ -328,29 +306,29 @@ logoutBtn?.addEventListener(
   "click",
   async () => {
 
-    try {
-
-      await stopBroadcast();
-
-      await signOut(auth);
-
-    }
-
-    catch (error) {
-
-      console.error(
-        "Logout error:",
-        error
+    await stopBroadcast()
+      .catch(error =>
+        console.error(
+          "Stop error:",
+          error
+        )
       );
 
-    }
+
+    await signOut(auth)
+      .catch(error =>
+        console.error(
+          "Logout error:",
+          error
+        )
+      );
 
   }
 );
 
 
 /* =========================================================
-   PRAYERS
+   ADMIN PRAYERS
 ========================================================= */
 
 function loadAdminPrayers() {
@@ -358,8 +336,7 @@ function loadAdminPrayers() {
   if (!adminPrayers) return;
 
 
-  adminPrayers.innerHTML =
-    "";
+  adminPrayers.innerHTML = "";
 
 
   onChildAdded(
@@ -380,7 +357,6 @@ function loadAdminPrayers() {
       const wrapper =
         document.createElement("div");
 
-
       wrapper.className =
         "admin-prayer";
 
@@ -388,14 +364,12 @@ function loadAdminPrayers() {
       const text =
         document.createElement("p");
 
-
       text.textContent =
         data.text || "";
 
 
       const deleteButton =
         document.createElement("button");
-
 
       deleteButton.type =
         "button";
@@ -408,13 +382,11 @@ function loadAdminPrayers() {
         "click",
         async () => {
 
-          const confirmed =
-            confirm(
+          if (
+            !confirm(
               "Delete this Sankalp?"
-            );
-
-
-          if (!confirmed) return;
+            )
+          ) return;
 
 
           try {
@@ -434,7 +406,7 @@ function loadAdminPrayers() {
           catch (error) {
 
             console.error(
-              "Prayer delete error:",
+              "Delete error:",
               error
             );
 
@@ -444,25 +416,17 @@ function loadAdminPrayers() {
       );
 
 
-      wrapper.appendChild(
-        text
-      );
+      wrapper.appendChild(text);
+      wrapper.appendChild(deleteButton);
 
-      wrapper.appendChild(
-        deleteButton
-      );
-
-
-      adminPrayers.prepend(
-        wrapper
-      );
+      adminPrayers.prepend(wrapper);
 
     },
 
     error => {
 
       console.error(
-        "Prayer listener error:",
+        "Admin prayer error:",
         error
       );
 
@@ -492,24 +456,18 @@ announcementForm?.addEventListener(
 
     if (!title || !message) {
 
-      if (announcementStatus) {
-
+      if (announcementStatus)
         announcementStatus.textContent =
-          "Enter announcement title and message.";
-
-      }
+          "Enter title and message.";
 
       return;
 
     }
 
 
-    if (announcementStatus) {
-
+    if (announcementStatus)
       announcementStatus.textContent =
-        "Publishing announcement...";
-
-    }
+        "Publishing...";
 
 
     try {
@@ -526,13 +484,10 @@ announcementForm?.addEventListener(
       await set(
         announcementRef,
         {
-          title: title,
-
-          message: message,
-
+          title,
+          message,
           createdAt:
             serverTimestamp(),
-
           author:
             auth.currentUser.uid
         }
@@ -542,12 +497,9 @@ announcementForm?.addEventListener(
       announcementForm.reset();
 
 
-      if (announcementStatus) {
-
+      if (announcementStatus)
         announcementStatus.textContent =
-          "Announcement published successfully.";
-
-      }
+          "Announcement published.";
 
     }
 
@@ -559,13 +511,10 @@ announcementForm?.addEventListener(
       );
 
 
-      if (announcementStatus) {
-
+      if (announcementStatus)
         announcementStatus.textContent =
           "Error: " +
           error.message;
-
-      }
 
     }
 
@@ -574,7 +523,7 @@ announcementForm?.addEventListener(
 
 
 /* =========================================================
-   CHECK CURRENT BROADCAST
+   EXISTING BROADCAST
 ========================================================= */
 
 function loadExistingBroadcast() {
@@ -591,38 +540,20 @@ function loadExistingBroadcast() {
         snapshot.val();
 
 
-      if (
-        data?.active === true
-      ) {
-
-        broadcasting =
-          true;
+      broadcasting =
+        data?.active === true;
 
 
-        updateBroadcastUI(
-          true
-        );
-
-      }
-
-      else {
-
-        broadcasting =
-          false;
-
-
-        updateBroadcastUI(
-          false
-        );
-
-      }
+      updateBroadcastUI(
+        broadcasting
+      );
 
     },
 
     error => {
 
       console.error(
-        "Broadcast status error:",
+        "Broadcast listener:",
         error
       );
 
@@ -644,18 +575,17 @@ startBroadcastBtn?.addEventListener(
 
 async function startBroadcast() {
 
-  if (broadcasting) {
-
+  if (broadcasting)
     return;
 
-  }
 
-
-  if (!navigator.mediaDevices ||
-      !navigator.mediaDevices.getUserMedia) {
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
 
     showBroadcastMessage(
-      "Camera access is not supported in this browser."
+      "Camera is not supported here. Use HTTPS."
     );
 
     return;
@@ -664,7 +594,7 @@ async function startBroadcast() {
 
 
   showBroadcastMessage(
-    "Requesting camera permission..."
+    "Requesting camera and microphone..."
   );
 
 
@@ -703,11 +633,7 @@ async function startBroadcast() {
       true;
 
 
-    /*
-      IMPORTANT:
-      Tell the public website that
-      the broadcast is LIVE.
-    */
+    /* PUBLIC LIVE FLAG */
 
     await set(
       ref(
@@ -716,7 +642,6 @@ async function startBroadcast() {
       ),
       {
         active: true,
-
         startedAt:
           serverTimestamp()
       }
@@ -729,19 +654,17 @@ async function startBroadcast() {
 
 
     showBroadcastMessage(
-      "Live Darshan is now LIVE."
+      "Live Darshan is LIVE."
     );
 
 
     /*
-      Restart the viewer listener so
-      viewers who were already on the
-      website can connect.
+      Important:
+      restart viewer detection.
     */
 
     viewersListenerStarted =
       false;
-
 
     listenForViewers();
 
@@ -750,7 +673,7 @@ async function startBroadcast() {
   catch (error) {
 
     console.error(
-      "START BROADCAST ERROR:",
+      "Start broadcast error:",
       error
     );
 
@@ -789,16 +712,11 @@ stopBroadcastBtn?.addEventListener(
 
 async function stopBroadcast() {
 
+  broadcasting =
+    false;
+
+
   try {
-
-    broadcasting =
-      false;
-
-
-    /*
-      Tell public website
-      that the stream is offline.
-    */
 
     await set(
       ref(
@@ -807,67 +725,9 @@ async function stopBroadcast() {
       ),
       {
         active: false,
-
         stoppedAt:
           serverTimestamp()
       }
-    );
-
-
-    /*
-      Tell every viewer connection
-      to close.
-    */
-
-    for (
-      const viewerId
-      of viewerPeers.keys()
-    ) {
-
-      await set(
-        ref(
-          database,
-          `pandal/signals/${viewerId}/closed`
-        ),
-        true
-      )
-      .catch(() => {});
-
-    }
-
-
-    /*
-      Close peer connections.
-    */
-
-    viewerPeers.forEach(
-      peer => {
-
-        try {
-
-          peer.close();
-
-        }
-
-        catch (_) {}
-
-      }
-    );
-
-
-    viewerPeers.clear();
-
-
-    stopLocalCamera();
-
-
-    updateBroadcastUI(
-      false
-    );
-
-
-    showBroadcastMessage(
-      "Live Darshan stopped."
     );
 
   }
@@ -875,57 +735,96 @@ async function stopBroadcast() {
   catch (error) {
 
     console.error(
-      "STOP BROADCAST ERROR:",
+      "Broadcast status error:",
       error
     );
 
+  }
 
-    showBroadcastMessage(
-      "Stop error: " +
-      error.message
-    );
+
+  /*
+    Notify viewers.
+  */
+
+  for (
+    const viewerId
+    of viewerPeers.keys()
+  ) {
+
+    await set(
+      ref(
+        database,
+        `pandal/signals/${viewerId}/closed`
+      ),
+      true
+    )
+    .catch(() => {});
 
   }
+
+
+  /*
+    Close peers.
+  */
+
+  viewerPeers.forEach(
+    peer => {
+
+      try {
+        peer.close();
+      }
+      catch (_) {}
+
+    }
+  );
+
+
+  viewerPeers.clear();
+
+
+  stopLocalCamera();
+
+
+  updateBroadcastUI(
+    false
+  );
+
+
+  showBroadcastMessage(
+    "Live Darshan stopped."
+  );
 
 }
 
 
 /* =========================================================
-   CAMERA STOP
+   CAMERA
 ========================================================= */
 
 function stopLocalCamera() {
 
-  if (!localStream) return;
+  if (!localStream)
+    return;
 
 
   localStream
     .getTracks()
     .forEach(
-      track => {
-
-        track.stop();
-
-      }
+      track => track.stop()
     );
 
 
-  localStream =
-    null;
+  localStream = null;
 
 
-  if (preview) {
-
-    preview.srcObject =
-      null;
-
-  }
+  if (preview)
+    preview.srcObject = null;
 
 }
 
 
 /* =========================================================
-   BROADCAST UI
+   UI
 ========================================================= */
 
 function updateBroadcastUI(
@@ -947,37 +846,25 @@ function updateBroadcastUI(
   }
 
 
-  if (startBroadcastBtn) {
-
+  if (startBroadcastBtn)
     startBroadcastBtn.disabled =
       live;
 
-  }
 
-
-  if (stopBroadcastBtn) {
-
+  if (stopBroadcastBtn)
     stopBroadcastBtn.disabled =
       !live;
 
-  }
-
 }
 
-
-/* =========================================================
-   BROADCAST MESSAGE
-========================================================= */
 
 function showBroadcastMessage(
   message
 ) {
 
-  if (!broadcastMessage) return;
-
-
-  broadcastMessage.textContent =
-    message;
+  if (broadcastMessage)
+    broadcastMessage.textContent =
+      message;
 
 }
 
@@ -990,11 +877,8 @@ function listenForViewers() {
 
   if (
     viewersListenerStarted
-  ) {
-
+  )
     return;
-
-  }
 
 
   viewersListenerStarted =
@@ -1014,39 +898,24 @@ function listenForViewers() {
 
     snapshot => {
 
-      if (!broadcasting) {
-
-        console.log(
-          "Viewer ignored because broadcast is OFF."
-        );
-
+      if (!broadcasting)
         return;
-
-      }
 
 
       const viewerId =
         snapshot.key;
 
 
-      if (!viewerId) return;
+      if (!viewerId)
+        return;
 
 
       if (
         viewerPeers.has(
           viewerId
         )
-      ) {
-
+      )
         return;
-
-      }
-
-
-      console.log(
-        "New viewer:",
-        viewerId
-      );
 
 
       createViewerConnection(
@@ -1058,7 +927,7 @@ function listenForViewers() {
     error => {
 
       console.error(
-        "Viewer listener error:",
+        "Viewer listener:",
         error
       );
 
@@ -1069,25 +938,15 @@ function listenForViewers() {
 
 
 /* =========================================================
-   CREATE PEER FOR VIEWER
+   VIEWER CONNECTION
 ========================================================= */
 
 async function createViewerConnection(
   viewerId
 ) {
 
-  if (!broadcasting) return;
-
-
-  if (
-    viewerPeers.has(
-      viewerId
-    )
-  ) {
-
+  if (!broadcasting)
     return;
-
-  }
 
 
   try {
@@ -1114,8 +973,7 @@ async function createViewerConnection(
 
 
     /*
-      Add camera + microphone
-      tracks to the peer.
+      CAMERA + AUDIO
     */
 
     if (localStream) {
@@ -1137,8 +995,7 @@ async function createViewerConnection(
 
 
     /*
-      Send broadcaster ICE
-      candidates to viewer.
+      BROADCASTER ICE
     */
 
     peer.onicecandidate =
@@ -1146,11 +1003,8 @@ async function createViewerConnection(
 
         if (
           !event.candidate
-        ) {
-
+        )
           return;
-
-        }
 
 
         push(
@@ -1161,30 +1015,25 @@ async function createViewerConnection(
           event.candidate.toJSON()
         )
         .catch(
-          error => {
-
+          error =>
             console.error(
-              "Broadcaster ICE write error:",
+              "ICE write error:",
               error
-            );
-
-          }
+            )
         );
 
       };
 
 
     /*
-      Connection state.
+      STATE
     */
 
     peer.onconnectionstatechange =
       () => {
 
         console.log(
-          "Viewer",
           viewerId,
-          "state:",
           peer.connectionState
         );
 
@@ -1210,7 +1059,7 @@ async function createViewerConnection(
 
 
     /*
-      Listen for viewer's answer.
+      VIEWER ANSWER
     */
 
     onValue(
@@ -1225,7 +1074,8 @@ async function createViewerConnection(
           snapshot.val();
 
 
-        if (!answer) return;
+        if (!answer)
+          return;
 
 
         try {
@@ -1241,12 +1091,6 @@ async function createViewerConnection(
                   answer
                 )
               );
-
-
-            console.log(
-              "Viewer answer received:",
-              viewerId
-            );
 
           }
 
@@ -1266,18 +1110,14 @@ async function createViewerConnection(
 
 
     /*
-      Listen for viewer ICE.
+      VIEWER ICE
     */
 
-    const candidatesRef =
+    onChildAdded(
       ref(
         database,
         `pandal/signals/${viewerId}/viewerCandidates`
-      );
-
-
-    onChildAdded(
-      candidatesRef,
+      ),
 
       async snapshot => {
 
@@ -1285,7 +1125,8 @@ async function createViewerConnection(
           snapshot.val();
 
 
-        if (!candidate) return;
+        if (!candidate)
+          return;
 
 
         try {
@@ -1302,7 +1143,7 @@ async function createViewerConnection(
         catch (error) {
 
           console.error(
-            "Viewer ICE candidate error:",
+            "Viewer ICE error:",
             error
           );
 
@@ -1313,22 +1154,20 @@ async function createViewerConnection(
 
 
     /*
-      Create offer.
+      CREATE OFFER
     */
 
     const offer =
-      await peer
-        .createOffer();
+      await peer.createOffer();
 
 
-    await peer
-      .setLocalDescription(
-        offer
-      );
+    await peer.setLocalDescription(
+      offer
+    );
 
 
     /*
-      Write offer.
+      WRITE OFFER
     */
 
     await set(
@@ -1347,7 +1186,7 @@ async function createViewerConnection(
 
 
     console.log(
-      "Offer sent to:",
+      "Offer sent:",
       viewerId
     );
 
@@ -1356,7 +1195,7 @@ async function createViewerConnection(
   catch (error) {
 
     console.error(
-      "Viewer connection error:",
+      "Create viewer error:",
       error
     );
 
@@ -1387,11 +1226,8 @@ async function removeViewer(
   if (peer) {
 
     try {
-
       peer.close();
-
     }
-
     catch (_) {}
 
   }
@@ -1402,24 +1238,19 @@ async function removeViewer(
   );
 
 
-  try {
-
-    await remove(
-      ref(
-        database,
-        `pandal/viewers/${viewerId}`
-      )
-    );
-
-  }
-
-  catch (_) {}
+  await remove(
+    ref(
+      database,
+      `pandal/viewers/${viewerId}`
+    )
+  )
+  .catch(() => {});
 
 }
 
 
 /* =========================================================
-   PAGE EXIT
+   EXIT
 ========================================================= */
 
 window.addEventListener(
@@ -1430,11 +1261,8 @@ window.addEventListener(
       peer => {
 
         try {
-
           peer.close();
-
         }
-
         catch (_) {}
 
       }
@@ -1444,10 +1272,6 @@ window.addEventListener(
 );
 
 
-/* =========================================================
-   INITIAL MESSAGE
-========================================================= */
-
 console.log(
-  "Ganesh Pandal Admin loaded successfully."
+  "Admin JavaScript loaded."
 );
