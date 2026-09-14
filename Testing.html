@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Firebase Test</title>
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #0d0d0d;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .box {
+      width: min(500px, 100%);
+      background: #1a1111;
+      padding: 25px;
+      border-radius: 18px;
+    }
+
+    h1 {
+      color: #cba153;
+    }
+
+    #status {
+      padding: 15px;
+      border-radius: 10px;
+      background: #111;
+      white-space: pre-wrap;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 14px;
+      border: 0;
+      border-radius: 10px;
+      background: #cba153;
+      color: #111;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h1>Firebase RTDB Test</h1>
+
+  <div id="status">
+    Starting test...
+  </div>
+
+  <button id="test">
+    TEST DATABASE
+  </button>
+
+</div>
+
+
+<script type="module">
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  get
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+
+const firebaseConfig = {
+
+  apiKey:
+    "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
+
+  authDomain:
+    "ganpati-5f24e.firebaseapp.com",
+
+  databaseURL:
+    "https://ganpati-5f24e-default-rtdb.firebaseio.com",
+
+  projectId:
+    "ganpati-5f24e",
+
+  storageBucket:
+    "ganpati-5f24e.firebasestorage.app",
+
+  messagingSenderId:
+    "512949354669",
+
+  appId:
+    "1:512949354669:web:f561488c630203a9ae4624"
+};
+
+
+const status =
+  document.getElementById("status");
+
+const button =
+  document.getElementById("test");
+
+
+function show(message) {
+
+  status.textContent =
+    message;
+
+}
+
+
+let database;
+
+
+try {
+
+  show(
+    "Initializing Firebase..."
+  );
+
+
+  const app =
+    initializeApp(
+      firebaseConfig
+    );
+
+
+  database =
+    getDatabase(app);
+
+
+  show(
+    "Firebase initialized.\n\n" +
+    "Click TEST DATABASE."
+  );
+
+}
+
+catch (error) {
+
+  show(
+    "INITIALIZATION ERROR\n\n" +
+    error.message
+  );
+
+}
+
+
+button.addEventListener(
+  "click",
+  async () => {
+
+    button.disabled =
+      true;
+
+
+    show(
+      "Testing Realtime Database...\n\n" +
+      "Please wait..."
+    );
+
+
+    try {
+
+      const testRef =
+        ref(
+          database,
+          "firebase_test_connection"
+        );
+
+
+      const data = {
+
+        message:
+          "Firebase connection test",
+
+        time:
+          Date.now()
+
+      };
+
+
+      show(
+        "1/2 Writing to Firebase..."
+      );
+
+
+      await Promise.race([
+
+        set(
+          testRef,
+          data
+        ),
+
+        new Promise(
+          (_, reject) => {
+
+            setTimeout(
+              () => {
+
+                reject(
+                  new Error(
+                    "DATABASE TIMEOUT — Firebase Realtime Database did not respond within 10 seconds."
+                  )
+                );
+
+              },
+              10000
+            );
+
+          }
+        )
+
+      ]);
+
+
+      show(
+        "2/2 Reading from Firebase..."
+      );
+
+
+      const result =
+        await Promise.race([
+
+          get(testRef),
+
+          new Promise(
+            (_, reject) => {
+
+              setTimeout(
+                () => {
+
+                  reject(
+                    new Error(
+                      "READ TIMEOUT"
+                    )
+                  );
+
+                },
+                10000
+              );
+
+            }
+          )
+
+        ]);
+
+
+      if (result.exists()) {
+
+        show(
+          "✅ FIREBASE REALTIME DATABASE WORKS!\n\n" +
+          JSON.stringify(
+            result.val(),
+            null,
+            2
+          )
+        );
+
+      }
+
+      else {
+
+        show(
+          "❌ Write completed, but data could not be read."
+        );
+
+      }
+
+    }
+
+    catch (error) {
+
+      console.error(
+        error
+      );
+
+
+      show(
+        "❌ FIREBASE DATABASE ERROR\n\n" +
+        error.message
+      );
+
+    }
+
+    finally {
+
+      button.disabled =
+        false;
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>
