@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0D0D0D">
   <meta name="description" content="Ganpati Bappa Morya — Digital Darshan, Sankalp and Aarti.">
 
@@ -17,6 +17,33 @@
   >
 
   <link rel="stylesheet" href="./style.css">
+
+  <!-- Emergency preloader controller.
+       This works independently from app.js. -->
+  <script>
+    (function () {
+      function removePreloader() {
+        const preloader = document.getElementById("preloader");
+
+        if (!preloader) return;
+
+        preloader.classList.add("done");
+
+        setTimeout(function () {
+          if (preloader && preloader.parentNode) {
+            preloader.remove();
+          }
+        }, 900);
+      }
+
+      window.addEventListener("load", function () {
+        setTimeout(removePreloader, 700);
+      });
+
+      /* Absolute fallback */
+      setTimeout(removePreloader, 2500);
+    })();
+  </script>
 </head>
 
 <body>
@@ -26,23 +53,40 @@
     <div class="om-loader">ॐ</div>
   </div>
 
+
   <!-- HEADER -->
   <header class="site-header">
 
     <a href="./index.html" class="brand">
-      <span class="brand-symbol">ॐ</span>
+
+      <span class="brand-symbol">
+        ॐ
+      </span>
 
       <span class="brand-text">
         <strong>GANPATI</strong>
         <small>Digital Darshan</small>
       </span>
+
     </a>
 
-    <nav class="desktop-nav">
-      <a href="#darshan">Darshan</a>
-      <a href="#sankalp">Sankalp</a>
-      <a href="#aarti">Aarti</a>
+
+    <nav class="desktop-nav" aria-label="Main navigation">
+
+      <a href="#darshan">
+        Darshan
+      </a>
+
+      <a href="#sankalp">
+        Sankalp
+      </a>
+
+      <a href="#aarti">
+        Aarti
+      </a>
+
     </nav>
+
 
     <a href="./admin.html" class="admin-link">
       Admin
@@ -58,20 +102,27 @@
 
       <div class="hero-background"></div>
 
-      <div class="hero-mandala">
+      <div class="hero-mandala" aria-hidden="true">
         ॐ
       </div>
 
-      <div class="hero-art">
+
+      <div class="hero-art" aria-hidden="true">
 
         <div class="ganesha-aura"></div>
 
         <div class="ganesha-placeholder">
+
           <span>ॐ</span>
-          <small>श्री गणेशाय नमः</small>
+
+          <small>
+            श्री गणेशाय नमः
+          </small>
+
         </div>
 
       </div>
+
 
       <div class="hero-content">
 
@@ -79,21 +130,28 @@
           WITH DEVOTION • WITH GRATITUDE
         </p>
 
+
         <h1>
           GANPATI<br>
           BAPPA <em>MORYA</em>
         </h1>
+
 
         <p class="hero-description">
           May every prayer find peace, every home find happiness,
           and every new beginning receive Bappa's blessings.
         </p>
 
+
         <div class="hero-buttons">
 
-          <a href="#darshan" class="btn btn-gold">
+          <a
+            href="#darshan"
+            class="btn btn-gold"
+          >
             Live Darshan
           </a>
+
 
           <button
             id="heroSankalp"
@@ -105,8 +163,13 @@
 
         </div>
 
+
         <!-- COUNTDOWN -->
-        <div id="countdown" class="countdown">
+        <div
+          id="countdown"
+          class="countdown"
+          aria-live="polite"
+        >
 
           <div class="count-item">
             <strong id="days">00</strong>
@@ -136,7 +199,10 @@
 
 
     <!-- LIVE DARSHAN -->
-    <section id="darshan" class="section">
+    <section
+      id="darshan"
+      class="section"
+    >
 
       <div class="section-heading">
 
@@ -157,10 +223,17 @@
       </div>
 
 
-      <div id="darshan-container" class="darshan-container">
+      <div
+        id="darshan-container"
+        class="darshan-container"
+      >
 
         <!-- ACTIVE STREAM -->
-        <div id="active-stream-ui" class="stream-ui hidden">
+
+        <div
+          id="active-stream-ui"
+          class="stream-ui hidden"
+        >
 
           <div class="live-badge">
             <span></span>
@@ -171,25 +244,35 @@
             id="liveVideo"
             autoplay
             playsinline
+            muted
           ></video>
 
         </div>
 
 
         <!-- OFFLINE -->
-        <div id="offline-stream-ui" class="offline-ui">
+
+        <div
+          id="offline-stream-ui"
+          class="offline-ui"
+        >
 
           <div class="diya">
 
             <svg viewBox="0 0 120 120">
 
-              <path d="M25 74c12 15 58 15 70 0-3 28-67 28-70 0Z"></path>
+              <path
+                d="M25 74c12 15 58 15 70 0-3 28-67 28-70 0Z"
+              ></path>
 
-              <path d="M60 20c-15 19 4 25 0 42 18-15 12-31 0-42Z"></path>
+              <path
+                d="M60 20c-15 19 4 25 0 42 18-15 12-31 0-42Z"
+              ></path>
 
             </svg>
 
           </div>
+
 
           <h3>
             Darshan will appear here
@@ -207,7 +290,10 @@
 
 
     <!-- SANKALP -->
-    <section id="sankalp" class="section sankalp-section">
+    <section
+      id="sankalp"
+      class="section sankalp-section"
+    >
 
       <div class="section-heading centered">
 
@@ -228,11 +314,18 @@
       </div>
 
 
-      <form id="prayerForm" class="prayer-form">
+      <form
+        id="prayerForm"
+        class="prayer-form"
+      >
 
-        <label for="prayerInput" class="sr-only">
+        <label
+          for="prayerInput"
+          class="sr-only"
+        >
           Your prayer
         </label>
+
 
         <input
           id="prayerInput"
@@ -243,6 +336,7 @@
           required
         >
 
+
         <button
           class="btn btn-gold"
           type="submit"
@@ -251,6 +345,7 @@
         </button>
 
       </form>
+
 
       <p
         id="prayerStatus"
@@ -269,7 +364,10 @@
 
 
     <!-- AARTI -->
-    <section id="aarti" class="section">
+    <section
+      id="aarti"
+      class="section"
+    >
 
       <div class="section-heading">
 
@@ -293,6 +391,7 @@
             ॐ
           </div>
 
+
           <div class="track-information">
 
             <strong id="trackTitle">
@@ -305,13 +404,16 @@
 
           </div>
 
+
           <button
             id="playPause"
             class="play-button"
             type="button"
             aria-label="Play"
           >
-            <span id="playIcon">▶</span>
+            <span id="playIcon">
+              ▶
+            </span>
           </button>
 
         </div>
@@ -325,6 +427,7 @@
             min="0"
             max="100"
             value="0"
+            aria-label="Audio progress"
           >
 
         </div>
@@ -371,9 +474,11 @@
     <span>ॐ</span>
   </button>
 
+
   <canvas
     id="petalCanvas"
     class="petal-canvas"
+    aria-hidden="true"
   ></canvas>
 
 
@@ -388,9 +493,15 @@
   <footer class="site-footer">
 
     <div class="footer-brand">
+
       <span>ॐ</span>
-      <strong>Ganpati Bappa Morya</strong>
+
+      <strong>
+        Ganpati Bappa Morya
+      </strong>
+
     </div>
+
 
     <p>
       Made with devotion.
@@ -399,7 +510,10 @@
   </footer>
 
 
-  <script type="module" src="./app.js"></script>
+  <script
+    type="module"
+    src="./app.js"
+  ></script>
 
 </body>
 </html>
