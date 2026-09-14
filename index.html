@@ -4,22 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0D0D0D">
-  <meta name="description" content="Ganesh Chaturthi Pandal — devotion, music, darshan and celebration.">
-  <title>Ganesh Chaturthi Pandal</title>
+  <meta name="description" content="Ganesh Chaturthi Pandal - Live Darshan, Aarti, Events and Gallery">
+
+  <title>Ganpati Bappa Morya | [Pandal Name Placeholder]</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href=".css/style.css">
 </head>
+
 <body>
-  <canvas id="dustCanvas" aria-hidden="true"></canvas>
+
+  <!-- ================= NAVIGATION ================= -->
 
   <header class="site-header">
-    <a class="brand" href="#home" aria-label="Home">ॐ</a>
-    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mainNav">
-      <span></span><span></span><span></span>
+    <a href="#home" class="brand">
+      <span class="brand-mark">ॐ</span>
+      <span>
+        <strong>[Pandal Name]</strong>
+        <small>GANESH CHATURTHI</small>
+      </span>
+    </a>
+
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+      <span></span>
+      <span></span>
+      <span></span>
     </button>
-    <nav id="mainNav" class="main-nav">
+
+    <nav class="main-nav" id="mainNav">
       <a href="#home">Home</a>
       <a href="#darshan">Darshan</a>
       <a href="#aarti">Aarti</a>
@@ -28,103 +43,344 @@
     </nav>
   </header>
 
+  <!-- ================= HERO ================= -->
+
   <main>
-    <section id="home" class="hero">
+
+    <section class="hero" id="home">
+
+      <canvas id="dustCanvas"></canvas>
+
+      <div class="hero-vignette"></div>
+
       <div class="hero-image-wrap">
-        <img src="./assets/images/ganesha-placeholder.jpg" alt="Ganesh idol" class="hero-image"
-             onerror="this.style.display='none';this.parentElement.classList.add('fallback-ganesha')">
-        <div class="ganesha-symbol" aria-hidden="true">ॐ</div>
+        <img
+          src="./assets/ganesha.jpg"
+          alt="Ganesha"
+          class="hero-image"
+        >
       </div>
-      <div class="hero-copy">
-        <p class="eyebrow">GANESH CHATURTHI • [Year Placeholder]</p>
-        <h1>GANPATI<br>BAPPA<br><em>MORYA</em></h1>
-        <p class="hero-subtitle">A sacred space of devotion, music, community and celebration.</p>
+
+      <div class="hero-content" id="heroContent">
+
+        <p class="eyebrow">
+          [Pandal Name Placeholder]
+        </p>
+
+        <h1>
+          GANPATI<br>
+          <span> BAPPA MORYA</span>
+        </h1>
+
+        <p class="hero-description">
+          A sacred space of devotion, celebration,
+          music and togetherness.
+        </p>
+
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#darshan">Explore Our Pandal</a>
-          <a class="btn btn-ghost" href="#darshan"><span class="live-dot"></span> Live Darshan</a>
+
+          <a href="#darshan" class="btn btn-primary">
+            Explore Our Pandal
+          </a>
+
+          <a href="#darshan" class="btn btn-live">
+            <span class="live-dot"></span>
+            Live Darshan
+          </a>
+
         </div>
+
+        <div class="hero-meta">
+          <span>[Date Placeholder]</span>
+          <i></i>
+          <span>[Location Placeholder]</span>
+        </div>
+
       </div>
-      <div class="scroll-cue">SCROLL TO EXPLORE <span>↓</span></div>
+
+      <div class="scroll-indicator">
+        <span>SCROLL</span>
+        <div></div>
+      </div>
+
     </section>
 
-    <section id="darshan" class="section darshan-section">
+    <!-- ================= LIVE DARSHAN ================= -->
+
+    <section class="section darshan-section" id="darshan">
+
       <div class="section-heading">
-        <p class="eyebrow">LIVE EXPERIENCE</p>
+        <p class="eyebrow">LIVE FROM THE PANDAL</p>
         <h2>Live Darshan</h2>
-        <p>Be a part of the celebration, wherever you are.</p>
+        <p>
+          Join us virtually and experience the divine presence
+          wherever you are.
+        </p>
       </div>
-      <div class="video-shell">
-        <div id="liveBadge" class="live-badge" hidden><span></span> LIVE</div>
-        <div id="viewerCount" class="viewer-count" hidden>● [Viewer count]</div>
-        <video id="liveVideo" class="live-video" autoplay muted playsinline controls hidden></video>
-        <div id="offlineState" class="offline-state">
-          <div class="diya" aria-hidden="true">
-            <svg viewBox="0 0 120 120"><path d="M27 69h66c-4 18-17 29-33 29S31 87 27 69Z"/><path d="M60 18c12 17 7 27 0 35-7-8-12-18 0-35Z"/><path d="M60 52c-7-7-9-14-4-23 10 10 13 18 4 23Z"/></svg>
+
+      <div class="live-player">
+
+        <div class="live-topbar">
+
+          <div class="live-status" id="liveStatus">
+            <span class="status-dot"></span>
+            <span id="liveStatusText">OFFLINE</span>
           </div>
-          <h3>Awaiting Darshan</h3>
-          <p>Next stream begins at <strong>[Time Placeholder]</strong></p>
+
+          <div class="viewer-count">
+            <span>●</span>
+            <span id="viewerCount">[Viewers]</span>
+          </div>
+
         </div>
+
+        <div class="video-container" id="videoContainer">
+
+          <div class="offline-screen" id="offlineScreen">
+
+            <div class="diya">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <path d="M22 61 Q50 76 78 61 Q74 86 50 90 Q26 86 22 61Z"/>
+                <path d="M50 61 C42 51 48 42 50 34 C54 43 61 50 50 61Z"/>
+              </svg>
+            </div>
+
+            <h3>Awaiting Darshan</h3>
+
+            <p>
+              Next stream begins at
+              <strong>[Time Placeholder]</strong>
+            </p>
+
+          </div>
+
+          <iframe
+            id="liveIframe"
+            title="Live Darshan"
+            src=""
+            allow="autoplay; fullscreen"
+            allowfullscreen
+          ></iframe>
+
+        </div>
+
       </div>
+
     </section>
 
-    <section id="aarti" class="section aarti-section">
+    <!-- ================= AARTI ================= -->
+
+    <section class="section aarti-section" id="aarti">
+
       <div class="section-heading">
-        <p class="eyebrow">DEVOTIONAL MUSIC</p>
-        <h2>Aarti & Bhajans</h2>
-      </div>
-      <div class="player-card">
-        <div class="player-main">
-          <div class="album-art"><img src="./assets/images/ganesha-placeholder.jpg" alt="" onerror="this.style.display='none';this.parentElement.classList.add('art-fallback')"><span>ॐ</span></div>
-          <div class="track-meta"><span id="currentCategory">TRADITIONAL AARTIS</span><h3 id="currentTrack">Sukhkarta Dukhaharta</h3></div>
-          <button class="play-btn" id="playBtn" aria-label="Play"><span class="play-icon">▶</span></button>
-        </div>
-        <div class="progress-wrap"><div id="progressBar"></div></div>
-        <audio id="audioPlayer" preload="metadata"></audio>
+        <p class="eyebrow">DEVOTIONAL SOUND</p>
+        <h2>Aarti & Music</h2>
+        <p>
+          Let the chants and melodies become part of your celebration.
+        </p>
       </div>
 
-      <div class="track-columns">
-        <div class="track-group">
-          <h3>TRADITIONAL AARTIS</h3>
-          <ol id="traditionalList"></ol>
+      <div class="aarti-player">
+
+        <div class="player-main">
+
+          <div class="track-art">
+            <img
+              src="./assets/ganesha-thumb.jpg"
+              alt="Ganesha"
+              id="trackImage"
+            >
+          </div>
+
+          <div class="track-info">
+            <span id="trackCategory">TRADITIONAL AARTIS</span>
+            <h3 id="trackTitle">Sukhkarta Dukhaharta</h3>
+            <p id="trackTime">00:00 / 00:00</p>
+          </div>
+
+          <button
+            class="play-button"
+            id="playButton"
+            aria-label="Play audio"
+          >
+            <svg class="play-icon" viewBox="0 0 24 24">
+              <path d="M8 5L19 12L8 19Z"/>
+            </svg>
+
+            <svg class="pause-icon" viewBox="0 0 24 24">
+              <path d="M7 5H10V19H7Z"/>
+              <path d="M14 5H17V19H14Z"/>
+            </svg>
+          </button>
+
         </div>
-        <div class="track-group">
-          <h3>FESTIVAL ANTHEMS</h3>
-          <ol id="anthemList"></ol>
+
+        <div class="progress-wrapper">
+          <div class="progress-track">
+            <div class="progress-fill" id="audioProgress"></div>
+          </div>
         </div>
+
+        <audio id="audioPlayer" preload="metadata"></audio>
+
       </div>
+
+      <div class="tracklists">
+
+        <div class="track-category">
+
+          <h3>TRADITIONAL AARTIS</h3>
+
+          <div id="traditionalTracks"></div>
+
+        </div>
+
+        <div class="track-category">
+
+          <h3>FESTIVAL ANTHEMS</h3>
+
+          <div id="anthemTracks"></div>
+
+        </div>
+
+      </div>
+
     </section>
 
-    <section id="events" class="section events-section">
+    <!-- ================= EVENTS ================= -->
+
+    <section class="section events-section" id="events">
+
       <div class="section-heading">
         <p class="eyebrow">CELEBRATION SCHEDULE</p>
         <h2>Event Timeline</h2>
       </div>
-      <div id="timeline" class="timeline"></div>
+
+      <div class="timeline">
+
+        <article class="timeline-item active">
+          <div class="timeline-node"></div>
+
+          <div class="timeline-card">
+            <span>[Time Placeholder]</span>
+            <h3>[Event Name Placeholder]</h3>
+            <p>[Event Description Placeholder]</p>
+          </div>
+        </article>
+
+        <article class="timeline-item">
+          <div class="timeline-node"></div>
+
+          <div class="timeline-card">
+            <span>[Time Placeholder]</span>
+            <h3>[Event Name Placeholder]</h3>
+            <p>[Event Description Placeholder]</p>
+          </div>
+        </article>
+
+        <article class="timeline-item">
+          <div class="timeline-node"></div>
+
+          <div class="timeline-card">
+            <span>[Time Placeholder]</span>
+            <h3>[Event Name Placeholder]</h3>
+            <p>[Event Description Placeholder]</p>
+          </div>
+        </article>
+
+        <article class="timeline-item">
+          <div class="timeline-node"></div>
+
+          <div class="timeline-card">
+            <span>[Time Placeholder]</span>
+            <h3>[Event Name Placeholder]</h3>
+            <p>[Event Description Placeholder]</p>
+          </div>
+        </article>
+
+      </div>
+
     </section>
 
-    <section id="gallery" class="section gallery-section">
+    <!-- ================= GALLERY ================= -->
+
+    <section class="section gallery-section" id="gallery">
+
       <div class="section-heading">
-        <p class="eyebrow">MOMENTS</p>
+        <p class="eyebrow">MOMENTS OF DEVOTION</p>
         <h2>Gallery</h2>
       </div>
+
       <div class="gallery-grid">
-        <button class="gallery-item tall" data-image="./assets/images/gallery-1.jpg"><img src="./assets/images/gallery-1.jpg" alt="Pandal moment" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
-        <button class="gallery-item" data-image="./assets/images/gallery-2.jpg"><img src="./assets/images/gallery-2.jpg" alt="Festival moment" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
-        <button class="gallery-item wide" data-image="./assets/images/gallery-3.jpg"><img src="./assets/images/gallery-3.jpg" alt="Celebration" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
-        <button class="gallery-item" data-image="./assets/images/gallery-4.jpg"><img src="./assets/images/gallery-4.jpg" alt="Decoration" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
-        <button class="gallery-item tall" data-image="./assets/images/gallery-5.jpg"><img src="./assets/images/gallery-5.jpg" alt="Darshan" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
-        <button class="gallery-item" data-image="./assets/images/gallery-6.jpg"><img src="./assets/images/gallery-6.jpg" alt="Community" onerror="this.style.display='none';this.parentElement.classList.add('gallery-fallback')"><span>ॐ</span></button>
+
+        <button class="gallery-item tall">
+          <img src="./assets/gallery-1.jpg" alt="Pandal">
+        </button>
+
+        <button class="gallery-item">
+          <img src="./assets/gallery-2.jpg" alt="Ganesh Celebration">
+        </button>
+
+        <button class="gallery-item wide">
+          <img src="./assets/gallery-3.jpg" alt="Celebration">
+        </button>
+
+        <button class="gallery-item">
+          <img src="./assets/gallery-4.jpg" alt="Decoration">
+        </button>
+
+        <button class="gallery-item tall">
+          <img src="./assets/gallery-5.jpg" alt="Ganpati">
+        </button>
+
+        <button class="gallery-item">
+          <img src="./assets/gallery-6.jpg" alt="Pandal Event">
+        </button>
+
       </div>
+
     </section>
+
   </main>
 
-  <footer><span>ॐ GANPATI BAPPA MORYA</span><span>Contact: [Contact Placeholder]</span></footer>
+  <!-- ================= LIGHTBOX ================= -->
 
-  <div class="lightbox" id="lightbox" aria-hidden="true">
-    <button id="lightboxClose" aria-label="Close">×</button>
-    <img id="lightboxImage" src="" alt="">
+  <div class="lightbox" id="lightbox">
+
+    <button class="lightbox-close" id="lightboxClose">
+      ×
+    </button>
+
+    <img id="lightboxImage" src="" alt="Gallery preview">
+
   </div>
 
-  <script type="module" src="./js/app.js"></script>
+  <!-- ================= FOOTER ================= -->
+
+  <footer>
+
+    <div class="footer-symbol">ॐ</div>
+
+    <h2>Ganpati Bappa Morya</h2>
+
+    <p>
+      [Pandal Name Placeholder]
+    </p>
+
+    <div class="footer-meta">
+      <span>[Location Placeholder]</span>
+      <span>•</span>
+      <span>[Contact Placeholder]</span>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© [Year Placeholder] [Pandal Name Placeholder]</span>
+      <a href="./admin.html">Admin</a>
+    </div>
+
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+
 </body>
 </html>
