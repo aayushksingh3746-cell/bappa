@@ -13,8 +13,7 @@ import {
   set,
   onValue,
   onChildAdded,
-  remove,
-  serverTimestamp
+  remove
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 
@@ -23,12 +22,14 @@ import {
 ========================================================= */
 
 const firebaseConfig = {
-
   apiKey:
     "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
 
   authDomain:
     "ganpati-5f24e.firebaseapp.com",
+
+  databaseURL:
+    "https://ganpati-5f24e-default-rtdb.firebaseio.com",
 
   projectId:
     "ganpati-5f24e",
@@ -41,15 +42,20 @@ const firebaseConfig = {
 
   appId:
     "1:512949354669:web:f561488c630203a9ae4624"
-
 };
 
+
+/* =========================================================
+   INITIALIZE FIREBASE
+========================================================= */
 
 const app =
   initializeApp(firebaseConfig);
 
 const database =
   getDatabase(app);
+
+console.log("Firebase initialized");
 
 
 /* =========================================================
@@ -69,9 +75,7 @@ function hidePreloader() {
   const preloader =
     $("preloader");
 
-  if (!preloader) {
-    return;
-  }
+  if (!preloader) return;
 
   preloader.classList.add("done");
 
@@ -81,12 +85,10 @@ function hidePreloader() {
 window.addEventListener(
   "load",
   () => {
-
     setTimeout(
       hidePreloader,
       400
     );
-
   }
 );
 
@@ -107,14 +109,7 @@ const countdown =
 
 function updateCountdown() {
 
-  if (!countdown) {
-    return;
-  }
-
-  /*
-    24 September 2026
-    00:00:00 IST
-  */
+  if (!countdown) return;
 
   const target =
     new Date(
@@ -143,57 +138,39 @@ function updateCountdown() {
   const days =
     Math.floor(
       difference /
-      (1000 * 60 * 60 * 24)
+      86400000
     );
 
   const hours =
     Math.floor(
-      (difference /
-        (1000 * 60 * 60)) %
-        24
+      (difference / 3600000) % 24
     );
 
   const minutes =
     Math.floor(
-      (difference /
-        (1000 * 60)) %
-        60
+      (difference / 60000) % 60
     );
 
   const seconds =
     Math.floor(
-      (difference / 1000) %
-        60
+      (difference / 1000) % 60
     );
 
 
-  const dayElement =
-    $("days");
-
-  const hourElement =
-    $("hours");
-
-  const minuteElement =
-    $("minutes");
-
-  const secondElement =
-    $("seconds");
-
-
-  if (dayElement)
-    dayElement.textContent =
+  if ($("days"))
+    $("days").textContent =
       String(days).padStart(2, "0");
 
-  if (hourElement)
-    hourElement.textContent =
+  if ($("hours"))
+    $("hours").textContent =
       String(hours).padStart(2, "0");
 
-  if (minuteElement)
-    minuteElement.textContent =
+  if ($("minutes"))
+    $("minutes").textContent =
       String(minutes).padStart(2, "0");
 
-  if (secondElement)
-    secondElement.textContent =
+  if ($("seconds"))
+    $("seconds").textContent =
       String(seconds).padStart(2, "0");
 
 }
@@ -208,7 +185,7 @@ setInterval(
 
 
 /* =========================================================
-   SANKALP / PRAYER WALL
+   SANKALP
 ========================================================= */
 
 const prayerForm =
@@ -234,40 +211,39 @@ if (prayerForm) {
 
 
       const text =
-        prayerInput
-          ?.value
-          .trim();
+        prayerInput?.value.trim();
 
 
       if (!text) {
 
-        if (prayerStatus) {
-          prayerStatus.textContent =
-            "Please write your Sankalp.";
-        }
+        prayerStatus.textContent =
+          "Please write your Sankalp.";
 
         return;
+
       }
 
 
       if (text.length > 50) {
 
-        if (prayerStatus) {
-          prayerStatus.textContent =
-            "Maximum 50 characters allowed.";
-        }
+        prayerStatus.textContent =
+          "Maximum 50 characters allowed.";
 
         return;
+
       }
 
 
-      if (prayerStatus) {
-        prayerStatus.textContent =
-          "Offering your Sankalp...";
-      }
+      prayerStatus.textContent =
+        "Offering your Sankalp...";
 
 
       try {
+
+        console.log(
+          "Submitting Sankalp..."
+        );
+
 
         const prayerRef =
           push(
@@ -278,37 +254,66 @@ if (prayerForm) {
           );
 
 
-        await set(
-          prayerRef,
-          {
-            text: text,
-            createdAt: serverTimestamp()
-          }
+        await Promise.race([
+
+          set(
+            prayerRef,
+            {
+              text: text,
+              createdAt: Date.now()
+            }
+          ),
+
+          new Promise(
+            (_, reject) => {
+
+              setTimeout(
+                () => {
+
+                  reject(
+                    new Error(
+                      "Firebase connection timed out."
+                    )
+                  );
+
+                },
+                10000
+              );
+
+            }
+          )
+
+        ]);
+
+
+        console.log(
+          "Sankalp saved:",
+          prayerRef.key
         );
 
 
         prayerForm.reset();
 
 
-        if (prayerStatus) {
-          prayerStatus.textContent =
-            "Your Sankalp has been offered 🙏";
-        }
+        prayerStatus.textContent =
+          "Your Sankalp has been offered 🙏";
 
       }
 
       catch (error) {
 
         console.error(
-          "Prayer error:",
+          "SANKALP ERROR:",
           error
         );
 
 
-        if (prayerStatus) {
-          prayerStatus.textContent =
-            "Unable to submit Sankalp. Please try again.";
-        }
+        prayerStatus.textContent =
+          "Firebase error: " +
+          (
+            error.message ||
+            "Unable to connect."
+          );
 
       }
 
@@ -319,7 +324,7 @@ if (prayerForm) {
 
 
 /* =========================================================
-   PRAYER WALL REALTIME
+   PRAYER WALL
 ========================================================= */
 
 if (prayerWall) {
@@ -336,9 +341,7 @@ if (prayerWall) {
         snapshot.val();
 
 
-      if (!prayer) {
-        return;
-      }
+      if (!prayer) return;
 
 
       const item =
@@ -357,10 +360,14 @@ if (prayerWall) {
         prayer.text || "";
 
 
-      item.appendChild(text);
+      item.appendChild(
+        text
+      );
 
 
-      prayerWall.prepend(item);
+      prayerWall.prepend(
+        item
+      );
 
 
       while (
@@ -370,6 +377,15 @@ if (prayerWall) {
         prayerWall.lastElementChild.remove();
 
       }
+
+    },
+
+    error => {
+
+      console.error(
+        "Prayer wall error:",
+        error
+      );
 
     }
   );
@@ -381,11 +397,11 @@ if (prayerWall) {
    ANNOUNCEMENTS
 ========================================================= */
 
-const announcementsContainer =
+const announcements =
   $("announcements");
 
 
-if (announcementsContainer) {
+if (announcements) {
 
   onChildAdded(
     ref(
@@ -395,13 +411,11 @@ if (announcementsContainer) {
 
     snapshot => {
 
-      const announcement =
+      const data =
         snapshot.val();
 
 
-      if (!announcement) {
-        return;
-      }
+      if (!data) return;
 
 
       const article =
@@ -417,7 +431,7 @@ if (announcementsContainer) {
 
 
       title.textContent =
-        announcement.title || "Announcement";
+        data.title || "Announcement";
 
 
       const message =
@@ -425,15 +439,30 @@ if (announcementsContainer) {
 
 
       message.textContent =
-        announcement.message || "";
+        data.message || "";
 
 
-      article.appendChild(title);
-      article.appendChild(message);
+      article.appendChild(
+        title
+      );
 
 
-      announcementsContainer.prepend(
+      article.appendChild(
+        message
+      );
+
+
+      announcements.prepend(
         article
+      );
+
+    },
+
+    error => {
+
+      console.error(
+        "Announcement error:",
+        error
       );
 
     }
@@ -459,6 +488,7 @@ if (heroSankalp) {
       const section =
         $("sankalp");
 
+
       if (section) {
 
         section.scrollIntoView({
@@ -467,11 +497,10 @@ if (heroSankalp) {
 
       }
 
+
       setTimeout(
         () => {
-
           prayerInput?.focus();
-
         },
         600
       );
@@ -557,22 +586,76 @@ const playIcon =
 const progress =
   $("progress");
 
-const currentTimeElement =
+const currentTime =
   $("currentTime");
 
-const durationElement =
+const duration =
   $("duration");
 
 
-let currentTrack =
-  0;
+let currentTrack = 0;
+
+
+function formatTime(seconds) {
+
+  if (
+    !Number.isFinite(seconds) ||
+    seconds < 0
+  ) {
+
+    return "0:00";
+
+  }
+
+
+  const minutes =
+    Math.floor(
+      seconds / 60
+    );
+
+
+  const secondsPart =
+    Math.floor(
+      seconds % 60
+    );
+
+
+  return (
+    minutes +
+    ":" +
+    String(secondsPart)
+      .padStart(2, "0")
+  );
+
+}
+
+
+function updateTrackList() {
+
+  if (!trackList) return;
+
+
+  trackList
+    .querySelectorAll("[data-track]")
+    .forEach(
+      button => {
+
+        button.classList.toggle(
+          "active",
+          Number(
+            button.dataset.track
+          ) === currentTrack
+        );
+
+      }
+    );
+
+}
 
 
 function loadTrack(index) {
 
-  if (!audio) {
-    return;
-  }
+  if (!audio) return;
 
 
   currentTrack =
@@ -605,23 +688,22 @@ function loadTrack(index) {
 
   if (progress) {
 
-    progress.value =
-      0;
+    progress.value = 0;
 
   }
 
 
-  if (currentTimeElement) {
+  if (currentTime) {
 
-    currentTimeElement.textContent =
+    currentTime.textContent =
       "0:00";
 
   }
 
 
-  if (durationElement) {
+  if (duration) {
 
-    durationElement.textContent =
+    duration.textContent =
       "0:00";
 
   }
@@ -631,56 +713,6 @@ function loadTrack(index) {
 
 }
 
-
-function updateTrackList() {
-
-  if (!trackList) {
-    return;
-  }
-
-
-  trackList
-    .querySelectorAll("[data-track]")
-    .forEach(item => {
-
-      item.classList.toggle(
-        "active",
-        Number(
-          item.dataset.track
-        ) === currentTrack
-      );
-
-    });
-
-}
-
-
-function formatTime(seconds) {
-
-  if (!Number.isFinite(seconds)) {
-    return "0:00";
-  }
-
-
-  const minutes =
-    Math.floor(
-      seconds / 60
-    );
-
-  const remaining =
-    Math.floor(
-      seconds % 60
-    );
-
-
-  return `${minutes}:${String(
-    remaining
-  ).padStart(2, "0")}`;
-
-}
-
-
-/* Generate track list */
 
 if (trackList) {
 
@@ -716,16 +748,26 @@ if (trackList) {
 
           loadTrack(index);
 
+
           audio
             ?.play()
             .then(() => {
 
               if (playIcon) {
-                playIcon.textContent = "❚❚";
+
+                playIcon.textContent =
+                  "❚❚";
+
               }
 
             })
-            .catch(() => {});
+            .catch(
+              error =>
+                console.error(
+                  "Audio error:",
+                  error
+                )
+            );
 
         }
       );
@@ -745,9 +787,7 @@ playPause?.addEventListener(
   "click",
   () => {
 
-    if (!audio) {
-      return;
-    }
+    if (!audio) return;
 
 
     if (audio.paused) {
@@ -757,19 +797,20 @@ playPause?.addEventListener(
         .then(() => {
 
           if (playIcon) {
+
             playIcon.textContent =
               "❚❚";
+
           }
 
         })
-        .catch(error => {
-
-          console.error(
-            "Audio play error:",
-            error
-          );
-
-        });
+        .catch(
+          error =>
+            console.error(
+              "Audio play error:",
+              error
+            )
+        );
 
     }
 
@@ -795,9 +836,9 @@ audio?.addEventListener(
   "loadedmetadata",
   () => {
 
-    if (durationElement) {
+    if (duration) {
 
-      durationElement.textContent =
+      duration.textContent =
         formatTime(
           audio.duration
         );
@@ -812,9 +853,9 @@ audio?.addEventListener(
   "timeupdate",
   () => {
 
-    if (currentTimeElement) {
+    if (currentTime) {
 
-      currentTimeElement.textContent =
+      currentTime.textContent =
         formatTime(
           audio.currentTime
         );
@@ -824,7 +865,9 @@ audio?.addEventListener(
 
     if (
       progress &&
-      Number.isFinite(audio.duration) &&
+      Number.isFinite(
+        audio.duration
+      ) &&
       audio.duration > 0
     ) {
 
@@ -832,7 +875,8 @@ audio?.addEventListener(
         (
           audio.currentTime /
           audio.duration
-        ) * 100;
+        ) *
+        100;
 
     }
 
@@ -846,7 +890,9 @@ progress?.addEventListener(
 
     if (
       audio &&
-      Number.isFinite(audio.duration)
+      Number.isFinite(
+        audio.duration
+      )
     ) {
 
       audio.currentTime =
@@ -867,10 +913,16 @@ audio?.addEventListener(
   () => {
 
     currentTrack =
-      (currentTrack + 1) %
+      (
+        currentTrack + 1
+      ) %
       tracks.length;
 
-    loadTrack(currentTrack);
+
+    loadTrack(
+      currentTrack
+    );
+
 
     audio
       .play()
@@ -884,7 +936,7 @@ loadTrack(0);
 
 
 /* =========================================================
-   PUSHANJALI
+   PUSHPANJALI
 ========================================================= */
 
 const pushpanjali =
@@ -900,15 +952,27 @@ const bellAudio =
 let petalContext =
   null;
 
-let petals =
-  [];
+let petals = [];
+
+
+function resizePetalCanvas() {
+
+  if (!petalCanvas) return;
+
+
+  petalCanvas.width =
+    window.innerWidth;
+
+
+  petalCanvas.height =
+    window.innerHeight;
+
+}
 
 
 function setupPetals() {
 
-  if (!petalCanvas) {
-    return;
-  }
+  if (!petalCanvas) return;
 
 
   petalContext =
@@ -926,23 +990,10 @@ function setupPetals() {
 }
 
 
-function resizePetalCanvas() {
-
-  if (!petalCanvas) {
-    return;
-  }
-
-
-  petalCanvas.width =
-    window.innerWidth;
-
-  petalCanvas.height =
-    window.innerHeight;
-
-}
-
-
 function createPetals() {
+
+  if (!petalCanvas) return;
+
 
   petals = [];
 
@@ -993,9 +1044,7 @@ function createPetals() {
 
 function animatePetals() {
 
-  if (!petalContext) {
-    return;
-  }
+  if (!petalContext) return;
 
 
   petalContext.clearRect(
@@ -1012,8 +1061,10 @@ function animatePetals() {
       petal.y +=
         petal.speed;
 
+
       petal.x +=
         petal.drift;
+
 
       petal.rotation +=
         petal.rotationSpeed;
@@ -1031,10 +1082,12 @@ function animatePetals() {
 
       petalContext.save();
 
+
       petalContext.translate(
         petal.x,
         petal.y
       );
+
 
       petalContext.rotate(
         petal.rotation
@@ -1047,6 +1100,7 @@ function animatePetals() {
 
       petalContext.beginPath();
 
+
       petalContext.ellipse(
         0,
         0,
@@ -1057,7 +1111,9 @@ function animatePetals() {
         Math.PI * 2
       );
 
+
       petalContext.fill();
+
 
       petalContext.restore();
 
@@ -1076,11 +1132,13 @@ pushpanjali?.addEventListener(
   "click",
   () => {
 
-    bellAudio?.play()
+    bellAudio
+      ?.play()
       .catch(() => {});
 
 
     createPetals();
+
 
     petalCanvas?.classList.add(
       "active"
@@ -1129,59 +1187,32 @@ let viewerId =
 let viewerPeer =
   null;
 
-let candidateQueue =
-  [];
+let viewerSignalsStarted =
+  false;
 
 let remoteDescriptionSet =
   false;
 
-let viewerSignalsStarted =
-  false;
+let candidateQueue = [];
 
 let currentBroadcastActive =
   false;
 
 
 /* =========================================================
-   CREATE VIEWER ID
-========================================================= */
-
-function createViewerId() {
-
-  return (
-    "viewer_" +
-    Date.now() +
-    "_" +
-    Math.random()
-      .toString(36)
-      .substring(2, 10)
-  );
-
-}
-
-
-/* =========================================================
-   SHOW OFFLINE
+   UI
 ========================================================= */
 
 function showOffline() {
 
-  if (activeStreamUI) {
-
-    activeStreamUI.classList.add(
-      "hidden"
-    );
-
-  }
+  activeStreamUI
+    ?.classList
+    .add("hidden");
 
 
-  if (offlineStreamUI) {
-
-    offlineStreamUI.classList.remove(
-      "hidden"
-    );
-
-  }
+  offlineStreamUI
+    ?.classList
+    .remove("hidden");
 
 
   if (liveVideo) {
@@ -1194,28 +1225,16 @@ function showOffline() {
 }
 
 
-/* =========================================================
-   SHOW LIVE
-========================================================= */
-
 function showLive() {
 
-  if (offlineStreamUI) {
-
-    offlineStreamUI.classList.add(
-      "hidden"
-    );
-
-  }
+  offlineStreamUI
+    ?.classList
+    .add("hidden");
 
 
-  if (activeStreamUI) {
-
-    activeStreamUI.classList.remove(
-      "hidden"
-    );
-
-  }
+  activeStreamUI
+    ?.classList
+    .remove("hidden");
 
 }
 
@@ -1244,6 +1263,12 @@ onValue(
       active;
 
 
+    console.log(
+      "Broadcast status:",
+      active
+    );
+
+
     if (active) {
 
       showLive();
@@ -1260,8 +1285,37 @@ onValue(
 
     }
 
+  },
+
+  error => {
+
+    console.error(
+      "Broadcast listener error:",
+      error
+    );
+
+    showOffline();
+
   }
 );
+
+
+/* =========================================================
+   CREATE VIEWER ID
+========================================================= */
+
+function createViewerId() {
+
+  return (
+    "viewer_" +
+    Date.now() +
+    "_" +
+    Math.random()
+      .toString(36)
+      .slice(2, 10)
+  );
+
+}
 
 
 /* =========================================================
@@ -1280,143 +1334,167 @@ async function startViewer() {
   }
 
 
-  viewerId =
-    createViewerId();
+  try {
+
+    viewerId =
+      createViewerId();
 
 
-  candidateQueue = [];
-
-  remoteDescriptionSet =
-    false;
+    viewerSignalsStarted =
+      false;
 
 
-  viewerPeer =
-    new RTCPeerConnection({
+    remoteDescriptionSet =
+      false;
 
-      iceServers: [
 
-        {
-          urls:
-            "stun:stun.l.google.com:19302"
+    candidateQueue = [];
+
+
+    viewerPeer =
+      new RTCPeerConnection({
+
+        iceServers: [
+
+          {
+            urls:
+              "stun:stun.l.google.com:19302"
+          }
+
+        ]
+
+      });
+
+
+    viewerPeer.ontrack =
+      event => {
+
+        if (
+          liveVideo &&
+          event.streams?.[0]
+        ) {
+
+          liveVideo.srcObject =
+            event.streams[0];
+
+
+          liveVideo.autoplay =
+            true;
+
+
+          liveVideo.playsInline =
+            true;
+
+
+          liveVideo.play()
+            .catch(() => {});
+
+
+          showLive();
+
         }
 
-      ]
-
-    });
+      };
 
 
-  viewerPeer.ontrack =
-    event => {
+    viewerPeer.onicecandidate =
+      event => {
 
-      if (
-        liveVideo &&
-        event.streams &&
-        event.streams[0]
-      ) {
+        if (
+          !event.candidate ||
+          !viewerId
+        ) {
 
-        liveVideo.srcObject =
-          event.streams[0];
+          return;
 
-
-        liveVideo.muted =
-          true;
+        }
 
 
-        liveVideo.play()
-          .catch(() => {});
+        push(
+          ref(
+            database,
+            `pandal/signals/${viewerId}/viewerCandidates`
+          ),
+          event.candidate.toJSON()
+        )
+        .catch(
+          error =>
+            console.error(
+              "Viewer ICE error:",
+              error
+            )
+        );
+
+      };
 
 
-        showLive();
+    viewerPeer.onconnectionstatechange =
+      () => {
 
+        if (!viewerPeer) return;
+
+
+        const state =
+          viewerPeer.connectionState;
+
+
+        console.log(
+          "Viewer WebRTC:",
+          state
+        );
+
+
+        if (
+          state === "failed" ||
+          state === "closed"
+        ) {
+
+          closeViewer();
+
+        }
+
+      };
+
+
+    await set(
+      ref(
+        database,
+        `pandal/viewers/${viewerId}`
+      ),
+      {
+        createdAt:
+          Date.now()
       }
-
-    };
-
-
-  viewerPeer.onicecandidate =
-    event => {
-
-      if (
-        !event.candidate ||
-        !viewerId
-      ) {
-
-        return;
-
-      }
+    );
 
 
-      push(
-        ref(
-          database,
-          `pandal/signals/${viewerId}/viewerCandidates`
-        ),
-        event.candidate.toJSON()
-      )
-      .catch(
-        error =>
-          console.error(
-            "Viewer candidate error:",
-            error
-          )
-      );
-
-    };
+    console.log(
+      "Viewer registered:",
+      viewerId
+    );
 
 
-  viewerPeer.onconnectionstatechange =
-    () => {
+    listenForViewerSignals();
 
-      if (!viewerPeer) {
-        return;
-      }
+  }
 
+  catch (error) {
 
-      const state =
-        viewerPeer.connectionState;
-
-
-      console.log(
-        "Viewer connection:",
-        state
-      );
+    console.error(
+      "Viewer startup error:",
+      error
+    );
 
 
-      if (
-        state === "failed" ||
-        state === "closed"
-      ) {
+    closeViewer();
 
-        closeViewer();
-
-      }
-
-    };
-
-
-  /*
-    Tell admin that this viewer exists.
-  */
-
-  await set(
-    ref(
-      database,
-      `pandal/viewers/${viewerId}`
-    ),
-    {
-      createdAt:
-        serverTimestamp()
-    }
-  );
-
-
-  listenForViewerSignals();
+  }
 
 }
 
 
 /* =========================================================
-   LISTEN FOR ADMIN SIGNALS
+   LISTEN FOR SIGNALS
 ========================================================= */
 
 function listenForViewerSignals() {
@@ -1439,9 +1517,9 @@ function listenForViewerSignals() {
     `pandal/signals/${viewerId}`;
 
 
-  /*
-    OFFER
-  */
+  /* -------------------------
+     OFFER
+  ------------------------- */
 
   onValue(
     ref(
@@ -1467,10 +1545,6 @@ function listenForViewerSignals() {
 
       try {
 
-        /*
-          Prevent processing the same offer repeatedly.
-        */
-
         if (
           viewerPeer.signalingState !==
           "stable"
@@ -1493,11 +1567,6 @@ function listenForViewerSignals() {
           true;
 
 
-        /*
-          Add candidates which arrived
-          before the offer.
-        */
-
         for (
           const candidate
           of candidateQueue
@@ -1519,10 +1588,6 @@ function listenForViewerSignals() {
 
         candidateQueue = [];
 
-
-        /*
-          Create answer.
-        */
 
         const answer =
           await viewerPeer
@@ -1549,12 +1614,17 @@ function listenForViewerSignals() {
           }
         );
 
+
+        console.log(
+          "Answer sent"
+        );
+
       }
 
       catch (error) {
 
         console.error(
-          "Offer processing error:",
+          "Offer error:",
           error
         );
 
@@ -1564,9 +1634,9 @@ function listenForViewerSignals() {
   );
 
 
-  /*
-    BROADCASTER ICE CANDIDATES
-  */
+  /* -------------------------
+     BROADCASTER ICE
+  ------------------------- */
 
   onChildAdded(
     ref(
@@ -1580,13 +1650,20 @@ function listenForViewerSignals() {
         snapshot.val();
 
 
-      if (!data || !viewerPeer) {
+      if (
+        !data ||
+        !viewerPeer
+      ) {
+
         return;
+
       }
 
 
       const candidate =
-        new RTCIceCandidate(data);
+        new RTCIceCandidate(
+          data
+        );
 
 
       if (!remoteDescriptionSet) {
@@ -1612,7 +1689,7 @@ function listenForViewerSignals() {
       catch (error) {
 
         console.error(
-          "ICE candidate error:",
+          "Broadcaster ICE error:",
           error
         );
 
@@ -1622,9 +1699,9 @@ function listenForViewerSignals() {
   );
 
 
-  /*
-    ADMIN CLOSED THE CONNECTION
-  */
+  /* -------------------------
+     ADMIN CLOSED
+  ------------------------- */
 
   onValue(
     ref(
@@ -1666,14 +1743,11 @@ async function closeViewer() {
     false;
 
 
-  currentBroadcastActive =
+  remoteDescriptionSet =
     false;
 
 
   candidateQueue = [];
-
-  remoteDescriptionSet =
-    false;
 
 
   if (viewerPeer) {
@@ -1701,10 +1775,6 @@ async function closeViewer() {
   }
 
 
-  /*
-    Remove viewer from Firebase.
-  */
-
   if (oldViewerId) {
 
     await remove(
@@ -1723,24 +1793,23 @@ async function closeViewer() {
 
 
 /* =========================================================
-   PAGE EXIT
+   CLEANUP
 ========================================================= */
 
 window.addEventListener(
   "beforeunload",
   () => {
 
-    if (viewerId) {
+    if (!viewerId) return;
 
-      remove(
-        ref(
-          database,
-          `pandal/viewers/${viewerId}`
-        )
+
+    remove(
+      ref(
+        database,
+        `pandal/viewers/${viewerId}`
       )
-      .catch(() => {});
-
-    }
+    )
+    .catch(() => {});
 
   }
 );
