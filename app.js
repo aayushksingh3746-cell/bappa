@@ -1,5 +1,5 @@
 /* =========================================================
-   GANESH CHATURTHI PANDAL — PUBLIC APP
+   GANPATI DIGITAL DARSHAN — PUBLIC APP
    Firebase RTDB + Sankalp + Announcements + Aarti + WebRTC
 ========================================================= */
 
@@ -24,45 +24,59 @@ import {
 
 const firebaseConfig = {
   apiKey: "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
-  authDomain: "ganpati-5f24e.firebaseapp.com",
+
+  authDomain:
+    "ganpati-5f24e.firebaseapp.com",
 
   databaseURL:
     "https://ganpati-5f24e-default-rtdb.asia-southeast1.firebasedatabase.app",
 
-  projectId: "ganpati-5f24e",
-  storageBucket: "ganpati-5f24e.firebasestorage.app",
-  messagingSenderId: "512949354669",
-  appId: "1:512949354669:web:f561488c630203a9ae4624"
+  projectId:
+    "ganpati-5f24e",
+
+  storageBucket:
+    "ganpati-5f24e.firebasestorage.app",
+
+  messagingSenderId:
+    "512949354669",
+
+  appId:
+    "1:512949354669:web:f561488c630203a9ae4624"
 };
 
 
 /* =========================================================
-   INITIALIZE
+   INITIALIZE FIREBASE
 ========================================================= */
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-console.log("Ganesh Pandal app initialized");
+console.log("Ganpati Digital Darshan initialized");
 
 
 /* =========================================================
    HELPER
 ========================================================= */
 
-const $ = id =>
-  document.getElementById(id);
+const $ = id => document.getElementById(id);
 
 
 /* =========================================================
    PRELOADER
 ========================================================= */
 
+let preloaderHidden = false;
+
 function hidePreloader() {
+
+  if (preloaderHidden) return;
 
   const preloader = $("preloader");
 
   if (!preloader) return;
+
+  preloaderHidden = true;
 
   preloader.classList.add("done");
 
@@ -97,6 +111,15 @@ setTimeout(
    COUNTDOWN
 ========================================================= */
 
+/*
+  Change this date if your countdown should target
+  another Ganpati event / visarjan date.
+*/
+
+const COUNTDOWN_DATE =
+  "2026-09-24T00:00:00+05:30";
+
+
 function updateCountdown() {
 
   const countdown = $("countdown");
@@ -104,9 +127,7 @@ function updateCountdown() {
   if (!countdown) return;
 
   const target =
-    new Date(
-      "2026-09-24T00:00:00+05:30"
-    ).getTime();
+    new Date(COUNTDOWN_DATE).getTime();
 
   const difference =
     target - Date.now();
@@ -116,7 +137,7 @@ function updateCountdown() {
 
     countdown.innerHTML = `
       <div class="countdown-finished">
-        Ganpati Bappa Pudhchya Varshi Lavkar Ya
+        Ganpati Bappa Pudhchya Varshi Lavkar Ya 🙏
       </div>
     `;
 
@@ -146,31 +167,42 @@ function updateCountdown() {
     );
 
 
-  if ($("days"))
-    $("days").textContent =
+  const daysEl = $("days");
+  const hoursEl = $("hours");
+  const minutesEl = $("minutes");
+  const secondsEl = $("seconds");
+
+
+  if (daysEl) {
+    daysEl.textContent =
       String(days).padStart(2, "0");
+  }
 
-  if ($("hours"))
-    $("hours").textContent =
+  if (hoursEl) {
+    hoursEl.textContent =
       String(hours).padStart(2, "0");
+  }
 
-  if ($("minutes"))
-    $("minutes").textContent =
+  if (minutesEl) {
+    minutesEl.textContent =
       String(minutes).padStart(2, "0");
+  }
 
-  if ($("seconds"))
-    $("seconds").textContent =
+  if (secondsEl) {
+    secondsEl.textContent =
       String(seconds).padStart(2, "0");
+  }
 
 }
 
 
 updateCountdown();
 
-setInterval(
-  updateCountdown,
-  1000
-);
+const countdownTimer =
+  setInterval(
+    updateCountdown,
+    1000
+  );
 
 
 /* =========================================================
@@ -190,6 +222,16 @@ const prayerWall =
   $("prayerWall");
 
 
+function setPrayerStatus(message) {
+
+  if (prayerStatus) {
+    prayerStatus.textContent =
+      message;
+  }
+
+}
+
+
 if (prayerForm) {
 
   prayerForm.addEventListener(
@@ -205,12 +247,11 @@ if (prayerForm) {
 
       if (!text) {
 
-        if (prayerStatus) {
+        setPrayerStatus(
+          "Please write your Sankalp."
+        );
 
-          prayerStatus.textContent =
-            "Please write your Sankalp.";
-
-        }
+        prayerInput?.focus();
 
         return;
 
@@ -219,24 +260,18 @@ if (prayerForm) {
 
       if (text.length > 50) {
 
-        if (prayerStatus) {
-
-          prayerStatus.textContent =
-            "Maximum 50 characters allowed.";
-
-        }
+        setPrayerStatus(
+          "Maximum 50 characters allowed."
+        );
 
         return;
 
       }
 
 
-      if (prayerStatus) {
-
-        prayerStatus.textContent =
-          "Offering your Sankalp...";
-
-      }
+      setPrayerStatus(
+        "Offering your Sankalp..."
+      );
 
 
       try {
@@ -250,47 +285,36 @@ if (prayerForm) {
           );
 
 
-        await Promise.race([
-
-          set(
-            prayerRef,
-            {
-              text: text,
-              createdAt: Date.now()
-            }
-          ),
-
-          new Promise(
-            (_, reject) => {
-
-              setTimeout(
-                () => {
-
-                  reject(
-                    new Error(
-                      "Firebase connection timed out."
-                    )
-                  );
-
-                },
-                10000
-              );
-
-            }
-          )
-
-        ]);
+        await set(
+          prayerRef,
+          {
+            text,
+            createdAt: Date.now()
+          }
+        );
 
 
         prayerForm.reset();
 
 
-        if (prayerStatus) {
+        setPrayerStatus(
+          "Your Sankalp has been offered 🙏"
+        );
 
-          prayerStatus.textContent =
-            "Your Sankalp has been offered 🙏";
 
-        }
+        setTimeout(() => {
+
+          if (
+            prayerStatus &&
+            prayerStatus.textContent ===
+              "Your Sankalp has been offered 🙏"
+          ) {
+
+            prayerStatus.textContent = "";
+
+          }
+
+        }, 3500);
 
       }
 
@@ -302,13 +326,9 @@ if (prayerForm) {
         );
 
 
-        if (prayerStatus) {
-
-          prayerStatus.textContent =
-            "Firebase error: " +
-            error.message;
-
-        }
+        setPrayerStatus(
+          "Unable to offer your Sankalp right now. Please try again."
+        );
 
       }
 
@@ -321,6 +341,10 @@ if (prayerForm) {
 /* =========================================================
    SANKALP WALL
 ========================================================= */
+
+const prayerIds =
+  new Set();
+
 
 if (prayerWall) {
 
@@ -339,11 +363,28 @@ if (prayerWall) {
       if (!data) return;
 
 
+      if (
+        prayerIds.has(snapshot.key)
+      ) {
+
+        return;
+
+      }
+
+
+      prayerIds.add(snapshot.key);
+
+
       const item =
-        document.createElement("div");
+        document.createElement("article");
+
+      /*
+        Keep both classes so this works with
+        your existing CSS and the new naming.
+      */
 
       item.className =
-        "prayer-item";
+        "prayer-card prayer-item";
 
 
       const text =
@@ -353,7 +394,16 @@ if (prayerWall) {
         data.text || "";
 
 
+      const label =
+        document.createElement("small");
+
+      label.textContent =
+        "🙏 Sankalp";
+
+
       item.appendChild(text);
+      item.appendChild(label);
+
 
       prayerWall.prepend(item);
 
@@ -382,7 +432,7 @@ if (prayerWall) {
 
 
 /* =========================================================
-   HERO SANKALP
+   HERO SANKALP BUTTON
 ========================================================= */
 
 $("heroSankalp")?.addEventListener(
@@ -393,19 +443,20 @@ $("heroSankalp")?.addEventListener(
       $("sankalp");
 
 
-    if (section) {
-
-      section.scrollIntoView({
-        behavior: "smooth"
-      });
-
-    }
+    if (!section) return;
 
 
-    setTimeout(
-      () => prayerInput?.focus(),
-      600
-    );
+    section.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+
+    setTimeout(() => {
+
+      prayerInput?.focus();
+
+    }, 650);
 
   }
 );
@@ -420,6 +471,10 @@ const announcements =
 
 
 if (announcements) {
+
+  const announcementIds =
+    new Set();
+
 
   onChildAdded(
     ref(
@@ -436,6 +491,20 @@ if (announcements) {
       if (!data) return;
 
 
+      if (
+        announcementIds.has(snapshot.key)
+      ) {
+
+        return;
+
+      }
+
+
+      announcementIds.add(
+        snapshot.key
+      );
+
+
       const article =
         document.createElement("article");
 
@@ -447,7 +516,8 @@ if (announcements) {
         document.createElement("h3");
 
       title.textContent =
-        data.title || "Announcement";
+        data.title ||
+        "Announcement";
 
 
       const message =
@@ -484,59 +554,82 @@ if (announcements) {
    AARTI PLAYER
 ========================================================= */
 
+/*
+  Playlist order follows the tracks you supplied.
+*/
+
 const tracks = [
 
   {
-    title: "Gajanana",
-    src: "assets/Gajanana.mp3"
-  },
+    title:
+      "Sukhkarta Dukhharta",
 
-  {
-    title: "Ganpati Bappa Moriya",
-    src:
-      "assets/Ganpati Bappa Moriya Humse Badhkar Kaun 128 Kbps.mp3"
-  },
-
-  {
-    title: "Jalwa Mera Hi Jalwa",
-    src:
-      "assets/Jalwa Mera Hi Jalwa Wanted 128 Kbps.mp3"
-  },
-
-  {
-    title: "Sukhkarta Dukhharta",
     src:
       "assets/Keshav_Kumar_-_Sukhkarta_Dukhharta_(mp3.pm).mp3"
   },
 
   {
-    title: "Jai Ganesh Jai Ganesh Deva",
+    title:
+      "Jai Ganesh Deva",
+
     src:
       "assets/Kumar_Vishu_Vandana_Vajpai_-_Jai_Ganesh_Jai_Ganesh_Deva_(mp3.pm).mp3"
   },
 
   {
-    title: "Maurya Re",
-    src:
-      "assets/Maurya Re Don 2006 128 Kbps.mp3"
-  },
+    title:
+      "Shendur Laal Chadhayo",
 
-  {
-    title: "Shendur Laal Chadhayo",
     src:
       "assets/Shendur Laal Chadhayo Aarti 128 Kbps.mp3"
   },
 
   {
-    title: "Suno Ganpati Bappa Morya",
+    title:
+      "Shree Ganeshay Dheemahi",
+
     src:
-      "assets/Suno Ganpati Bappa Morya Judwaa 2 128 Kbps.mp3"
+      "assets/Viruddh_-_Shree_Ganeshay_Dheemahi_(mp3.pm).mp3"
   },
 
   {
-    title: "Shree Ganeshay Dheemahi",
+    title:
+      "Gajanana",
+
     src:
-      "assets/Viruddh_-_Shree_Ganeshay_Dheemahi_(mp3.pm).mp3"
+      "assets/Gajanana.mp3"
+  },
+
+  {
+    title:
+      "Deva Ho Deva",
+
+    src:
+      "assets/Ganpati Bappa Moriya Humse Badhkar Kaun 128 Kbps.mp3"
+  },
+
+  {
+    title:
+      "Jalwa",
+
+    src:
+      "assets/Jalwa Mera Hi Jalwa Wanted 128 Kbps.mp3"
+  },
+
+  {
+    title:
+      "Morya Re (Don)",
+
+    src:
+      "assets/Maurya Re Don 2006 128 Kbps.mp3"
+  },
+
+  {
+    title:
+      "Suno Ganpati Bappa Morya",
+
+    src:
+      "assets/Suno Ganpati Bappa Morya Judwaa 2 128 Kbps.mp3"
   }
 
 ];
@@ -585,18 +678,48 @@ function formatTime(seconds) {
   }
 
 
-  const min =
+  const minutes =
     Math.floor(seconds / 60);
 
-  const sec =
+  const secondsPart =
     Math.floor(seconds % 60);
 
 
   return (
-    min +
+    minutes +
     ":" +
-    String(sec).padStart(2, "0")
+    String(secondsPart).padStart(2, "0")
   );
+
+}
+
+
+/* =========================================================
+   AUDIO UI
+========================================================= */
+
+function setPlayingUI(isPlaying) {
+
+  if (playIcon) {
+
+    playIcon.textContent =
+      isPlaying
+        ? "❚❚"
+        : "▶";
+
+  }
+
+
+  if (playPause) {
+
+    playPause.setAttribute(
+      "aria-label",
+      isPlaying
+        ? "Pause"
+        : "Play"
+    );
+
+  }
 
 }
 
@@ -610,10 +733,21 @@ function updateTrackList() {
     .querySelectorAll("[data-track]")
     .forEach(button => {
 
+      const isActive =
+        Number(button.dataset.track) ===
+        currentTrack;
+
+
       button.classList.toggle(
         "active",
-        Number(button.dataset.track) ===
-          currentTrack
+        isActive
+      );
+
+      button.setAttribute(
+        "aria-current",
+        isActive
+          ? "true"
+          : "false"
       );
 
     });
@@ -621,9 +755,26 @@ function updateTrackList() {
 }
 
 
-function loadTrack(index) {
+/* =========================================================
+   LOAD TRACK
+========================================================= */
+
+function loadTrack(
+  index,
+  autoplay = false
+) {
 
   if (!audio) return;
+
+
+  if (
+    index < 0 ||
+    index >= tracks.length
+  ) {
+
+    index = 0;
+
+  }
 
 
   currentTrack =
@@ -631,39 +782,90 @@ function loadTrack(index) {
 
 
   const track =
-    tracks[index];
+    tracks[currentTrack];
+
+
+  audio.pause();
 
 
   audio.src =
     track.src;
 
 
-  if (trackTitle)
+  audio.load();
+
+
+  if (trackTitle) {
+
     trackTitle.textContent =
       track.title;
 
+  }
 
-  if (trackNumber)
+
+  if (trackNumber) {
+
     trackNumber.textContent =
-      `${index + 1} / ${tracks.length}`;
+      `${currentTrack + 1} / ${tracks.length}`;
+
+  }
 
 
-  if (progress)
+  if (progress) {
+
     progress.value = 0;
 
-
-  if (currentTime)
-    currentTime.textContent = "0:00";
+  }
 
 
-  if (duration)
-    duration.textContent = "0:00";
+  if (currentTime) {
 
+    currentTime.textContent =
+      "0:00";
+
+  }
+
+
+  if (duration) {
+
+    duration.textContent =
+      "0:00";
+
+  }
+
+
+  setPlayingUI(false);
 
   updateTrackList();
 
+
+  if (autoplay) {
+
+    audio.play()
+      .then(() => {
+
+        setPlayingUI(true);
+
+      })
+      .catch(error => {
+
+        console.warn(
+          "Autoplay/playback blocked:",
+          error
+        );
+
+        setPlayingUI(false);
+
+      });
+
+  }
+
 }
 
+
+/* =========================================================
+   BUILD TRACK LIST
+========================================================= */
 
 if (trackList) {
 
@@ -680,11 +882,14 @@ if (trackList) {
       button.type =
         "button";
 
+
       button.className =
         "track-item";
 
+
       button.dataset.track =
         index;
+
 
       button.textContent =
         `${index + 1}. ${track.title}`;
@@ -694,24 +899,18 @@ if (trackList) {
         "click",
         () => {
 
-          loadTrack(index);
-
-          audio
-            ?.play()
-            .then(() => {
-
-              if (playIcon)
-                playIcon.textContent =
-                  "❚❚";
-
-            })
-            .catch(() => {});
+          loadTrack(
+            index,
+            true
+          );
 
         }
       );
 
 
-      trackList.appendChild(button);
+      trackList.appendChild(
+        button
+      );
 
     }
   );
@@ -719,40 +918,43 @@ if (trackList) {
 }
 
 
+/* =========================================================
+   PLAY / PAUSE
+========================================================= */
+
 playPause?.addEventListener(
   "click",
-  () => {
+  async () => {
 
     if (!audio) return;
 
 
-    if (audio.paused) {
+    try {
 
-      audio.play()
-        .then(() => {
+      if (audio.paused) {
 
-          if (playIcon)
-            playIcon.textContent =
-              "❚❚";
+        await audio.play();
 
-        })
-        .catch(
-          error =>
-            console.error(
-              "Audio error:",
-              error
-            )
-        );
+        setPlayingUI(true);
+
+      }
+
+      else {
+
+        audio.pause();
+
+        setPlayingUI(false);
+
+      }
 
     }
 
-    else {
+    catch (error) {
 
-      audio.pause();
-
-      if (playIcon)
-        playIcon.textContent =
-          "▶";
+      console.error(
+        "Audio playback error:",
+        error
+      );
 
     }
 
@@ -760,13 +962,20 @@ playPause?.addEventListener(
 );
 
 
+/* =========================================================
+   AUDIO EVENTS
+========================================================= */
+
 audio?.addEventListener(
   "loadedmetadata",
   () => {
 
-    if (duration)
+    if (duration) {
+
       duration.textContent =
         formatTime(audio.duration);
+
+    }
 
   }
 );
@@ -776,13 +985,19 @@ audio?.addEventListener(
   "timeupdate",
   () => {
 
-    if (currentTime)
+    if (currentTime) {
+
       currentTime.textContent =
-        formatTime(audio.currentTime);
+        formatTime(
+          audio.currentTime
+        );
+
+    }
 
 
     if (
       progress &&
+      Number.isFinite(audio.duration) &&
       audio.duration > 0
     ) {
 
@@ -798,48 +1013,96 @@ audio?.addEventListener(
 );
 
 
-progress?.addEventListener(
-  "input",
+audio?.addEventListener(
+  "play",
   () => {
 
-    if (
-      audio &&
-      audio.duration > 0
-    ) {
-
-      audio.currentTime =
-        (
-          Number(progress.value) /
-          100
-        ) *
-        audio.duration;
-
-    }
+    setPlayingUI(true);
 
   }
 );
 
 
 audio?.addEventListener(
-  "ended",
+  "pause",
   () => {
 
-    currentTrack =
-      (currentTrack + 1) %
-      tracks.length;
-
-
-    loadTrack(
-      currentTrack
-    );
-
-
-    audio.play()
-      .catch(() => {});
+    setPlayingUI(false);
 
   }
 );
 
+
+audio?.addEventListener(
+  "error",
+  () => {
+
+    console.error(
+      "Unable to load audio:",
+      tracks[currentTrack]?.src
+    );
+
+    setPlayingUI(false);
+
+  }
+);
+
+
+/* =========================================================
+   PROGRESS SEEK
+========================================================= */
+
+progress?.addEventListener(
+  "input",
+  () => {
+
+    if (
+      !audio ||
+      !Number.isFinite(audio.duration) ||
+      audio.duration <= 0
+    ) {
+
+      return;
+
+    }
+
+
+    audio.currentTime =
+      (
+        Number(progress.value) /
+        100
+      ) *
+      audio.duration;
+
+  }
+);
+
+
+/* =========================================================
+   AUTO NEXT TRACK
+========================================================= */
+
+audio?.addEventListener(
+  "ended",
+  () => {
+
+    const nextTrack =
+      (
+        currentTrack + 1
+      ) %
+      tracks.length;
+
+
+    loadTrack(
+      nextTrack,
+      true
+    );
+
+  }
+);
+
+
+/* Initial track */
 
 loadTrack(0);
 
@@ -860,6 +1123,8 @@ const bellAudio =
 
 let petalContext = null;
 let petals = [];
+let petalAnimationFrame = null;
+let petalAnimationTimeout = null;
 
 
 function resizePetalCanvas() {
@@ -867,11 +1132,39 @@ function resizePetalCanvas() {
   if (!petalCanvas) return;
 
 
+  const ratio =
+    Math.min(
+      window.devicePixelRatio || 1,
+      2
+    );
+
+
   petalCanvas.width =
-    window.innerWidth;
+    window.innerWidth * ratio;
 
   petalCanvas.height =
-    window.innerHeight;
+    window.innerHeight * ratio;
+
+
+  petalCanvas.style.width =
+    `${window.innerWidth}px`;
+
+  petalCanvas.style.height =
+    `${window.innerHeight}px`;
+
+
+  if (petalContext) {
+
+    petalContext.setTransform(
+      ratio,
+      0,
+      0,
+      ratio,
+      0,
+      0
+    );
+
+  }
 
 }
 
@@ -914,11 +1207,11 @@ function createPetals() {
 
       x:
         Math.random() *
-        petalCanvas.width,
+        window.innerWidth,
 
       y:
         -Math.random() *
-        petalCanvas.height,
+        window.innerHeight,
 
       size:
         5 + Math.random() * 8,
@@ -928,15 +1221,18 @@ function createPetals() {
 
       rotation:
         Math.random() *
-        Math.PI * 2,
+        Math.PI *
+        2,
 
       rotationSpeed:
         -0.04 +
-        Math.random() * 0.08,
+        Math.random() *
+        0.08,
 
       drift:
         -0.8 +
-        Math.random() * 1.6
+        Math.random() *
+        1.6
 
     });
 
@@ -945,34 +1241,78 @@ function createPetals() {
 }
 
 
+function stopPetalAnimation() {
+
+  if (petalAnimationFrame) {
+
+    cancelAnimationFrame(
+      petalAnimationFrame
+    );
+
+    petalAnimationFrame =
+      null;
+
+  }
+
+  petals = [];
+
+  if (petalContext) {
+
+    petalContext.clearRect(
+      0,
+      0,
+      window.innerWidth,
+      window.innerHeight
+    );
+
+  }
+
+}
+
+
 function animatePetals() {
 
-  if (!petalContext) return;
+  if (
+    !petalContext ||
+    petals.length === 0
+  ) {
+
+    petalAnimationFrame =
+      null;
+
+    return;
+
+  }
 
 
   petalContext.clearRect(
     0,
     0,
-    petalCanvas.width,
-    petalCanvas.height
+    window.innerWidth,
+    window.innerHeight
   );
 
 
   petals.forEach(
     petal => {
 
-      petal.y += petal.speed;
-      petal.x += petal.drift;
+      petal.y +=
+        petal.speed;
+
+      petal.x +=
+        petal.drift;
+
       petal.rotation +=
         petal.rotationSpeed;
 
 
       if (
         petal.y >
-        petalCanvas.height + 20
+        window.innerHeight + 20
       ) {
 
-        petal.y = -20;
+        petal.y =
+          -20;
 
       }
 
@@ -1018,9 +1358,10 @@ function animatePetals() {
   );
 
 
-  requestAnimationFrame(
-    animatePetals
-  );
+  petalAnimationFrame =
+    requestAnimationFrame(
+      animatePetals
+    );
 
 }
 
@@ -1029,9 +1370,15 @@ pushpanjali?.addEventListener(
   "click",
   () => {
 
-    bellAudio
-      ?.play()
-      .catch(() => {});
+    if (bellAudio) {
+
+      bellAudio.currentTime =
+        0;
+
+      bellAudio.play()
+        .catch(() => {});
+
+    }
 
 
     createPetals();
@@ -1042,25 +1389,37 @@ pushpanjali?.addEventListener(
     );
 
 
-    setTimeout(
-      () => {
+    if (!petalAnimationFrame) {
 
-        petalCanvas?.classList.remove(
-          "active"
-        );
+      animatePetals();
 
-      },
-      5000
+    }
+
+
+    clearTimeout(
+      petalAnimationTimeout
     );
+
+
+    petalAnimationTimeout =
+      setTimeout(
+        () => {
+
+          petalCanvas?.classList.remove(
+            "active"
+          );
+
+          stopPetalAnimation();
+
+        },
+        5000
+      );
 
   }
 );
 
 
 setupPetals();
-
-if (petalCanvas)
-  animatePetals();
 
 
 /* =========================================================
@@ -1079,11 +1438,22 @@ const offlineStreamUI =
 
 let viewerId = null;
 let viewerPeer = null;
-let viewerSignalsStarted = false;
-let remoteDescriptionSet = false;
-let candidateQueue = [];
-let currentBroadcastActive = false;
 
+let viewerSignalsStarted =
+  false;
+
+let remoteDescriptionSet =
+  false;
+
+let candidateQueue = [];
+
+let currentBroadcastActive =
+  false;
+
+
+/* =========================================================
+   SHOW / HIDE STREAM
+========================================================= */
 
 function showOffline() {
 
@@ -1094,8 +1464,14 @@ function showOffline() {
     ?.classList.remove("hidden");
 
 
-  if (liveVideo)
-    liveVideo.srcObject = null;
+  if (liveVideo) {
+
+    liveVideo.pause();
+
+    liveVideo.srcObject =
+      null;
+
+  }
 
 }
 
@@ -1127,8 +1503,22 @@ onValue(
       snapshot.val();
 
 
-    currentBroadcastActive =
+    const isActive =
       data?.active === true;
+
+
+    if (
+      isActive ===
+      currentBroadcastActive
+    ) {
+
+      return;
+
+    }
+
+
+    currentBroadcastActive =
+      isActive;
 
 
     if (currentBroadcastActive) {
@@ -1156,6 +1546,10 @@ onValue(
       error
     );
 
+
+    currentBroadcastActive =
+      false;
+
     showOffline();
 
   }
@@ -1163,7 +1557,7 @@ onValue(
 
 
 /* =========================================================
-   VIEWER ID
+   CREATE VIEWER ID
 ========================================================= */
 
 function createViewerId() {
@@ -1226,7 +1620,15 @@ async function startViewer() {
       });
 
 
-    viewerPeer.ontrack =
+    const peer =
+      viewerPeer;
+
+
+    /* -----------------------------------------------------
+       REMOTE VIDEO
+    ----------------------------------------------------- */
+
+    peer.ontrack =
       event => {
 
         const stream =
@@ -1234,9 +1636,16 @@ async function startViewer() {
 
 
         if (
-          liveVideo &&
-          stream
+          !stream ||
+          viewerPeer !== peer
         ) {
+
+          return;
+
+        }
+
+
+        if (liveVideo) {
 
           liveVideo.srcObject =
             stream;
@@ -1250,19 +1659,25 @@ async function startViewer() {
           liveVideo.play()
             .catch(() => {});
 
-          showLive();
-
         }
+
+
+        showLive();
 
       };
 
 
-    viewerPeer.onicecandidate =
+    /* -----------------------------------------------------
+       VIEWER ICE
+    ----------------------------------------------------- */
+
+    peer.onicecandidate =
       event => {
 
         if (
           !event.candidate ||
-          !viewerId
+          !viewerId ||
+          viewerPeer !== peer
         ) {
 
           return;
@@ -1277,26 +1692,40 @@ async function startViewer() {
           ),
           event.candidate.toJSON()
         )
-        .catch(
-          error =>
-            console.error(
-              "Viewer ICE error:",
-              error
-            )
-        );
+        .catch(error => {
+
+          console.error(
+            "Viewer ICE error:",
+            error
+          );
+
+        });
 
       };
 
 
-    viewerPeer.onconnectionstatechange =
+    /* -----------------------------------------------------
+       CONNECTION STATE
+    ----------------------------------------------------- */
+
+    peer.onconnectionstatechange =
       () => {
 
+        if (
+          viewerPeer !== peer
+        ) {
+
+          return;
+
+        }
+
+
         const state =
-          viewerPeer?.connectionState;
+          peer.connectionState;
 
 
         console.log(
-          "Viewer state:",
+          "Viewer connection:",
           state
         );
 
@@ -1313,13 +1742,18 @@ async function startViewer() {
       };
 
 
+    /* -----------------------------------------------------
+       REGISTER VIEWER
+    ----------------------------------------------------- */
+
     await set(
       ref(
         database,
         `pandal/viewers/${viewerId}`
       ),
       {
-        createdAt: Date.now()
+        createdAt:
+          Date.now()
       }
     );
 
@@ -1334,6 +1768,7 @@ async function startViewer() {
       "Viewer startup error:",
       error
     );
+
 
     closeViewer();
 
@@ -1366,7 +1801,9 @@ function listenForViewerSignals() {
     `pandal/signals/${viewerId}`;
 
 
-  /* OFFER */
+  /* =======================================================
+     OFFER
+  ======================================================= */
 
   onValue(
     ref(
@@ -1382,7 +1819,8 @@ function listenForViewerSignals() {
 
       if (
         !offer ||
-        !viewerPeer
+        !viewerPeer ||
+        remoteDescriptionSet
       ) {
 
         return;
@@ -1391,16 +1829,6 @@ function listenForViewerSignals() {
 
 
       try {
-
-        if (
-          viewerPeer.signalingState !==
-          "stable"
-        ) {
-
-          return;
-
-        }
-
 
         await viewerPeer
           .setRemoteDescription(
@@ -1413,6 +1841,11 @@ function listenForViewerSignals() {
         remoteDescriptionSet =
           true;
 
+
+        /*
+          ICE candidates received before
+          the offer are now safe to add.
+        */
 
         for (
           const candidate
@@ -1428,7 +1861,14 @@ function listenForViewerSignals() {
 
           }
 
-          catch (_) {}
+          catch (error) {
+
+            console.warn(
+              "Queued ICE candidate failed:",
+              error
+            );
+
+          }
 
         }
 
@@ -1466,7 +1906,7 @@ function listenForViewerSignals() {
       catch (error) {
 
         console.error(
-          "Offer error:",
+          "Offer handling error:",
           error
         );
 
@@ -1476,7 +1916,9 @@ function listenForViewerSignals() {
   );
 
 
-  /* BROADCASTER ICE */
+  /* =======================================================
+     BROADCASTER ICE
+  ======================================================= */
 
   onChildAdded(
     ref(
@@ -1500,24 +1942,24 @@ function listenForViewerSignals() {
       }
 
 
-      const candidate =
-        new RTCIceCandidate(
-          data
-        );
-
-
-      if (!remoteDescriptionSet) {
-
-        candidateQueue.push(
-          candidate
-        );
-
-        return;
-
-      }
-
-
       try {
+
+        const candidate =
+          new RTCIceCandidate(
+            data
+          );
+
+
+        if (!remoteDescriptionSet) {
+
+          candidateQueue.push(
+            candidate
+          );
+
+          return;
+
+        }
+
 
         await viewerPeer
           .addIceCandidate(
@@ -1539,7 +1981,9 @@ function listenForViewerSignals() {
   );
 
 
-  /* CLOSED */
+  /* =======================================================
+     CLOSED SIGNAL
+  ======================================================= */
 
   onValue(
     ref(
@@ -1573,38 +2017,88 @@ async function closeViewer() {
     viewerId;
 
 
-  viewerId = null;
-  viewerSignalsStarted = false;
-  remoteDescriptionSet = false;
+  viewerId =
+    null;
+
+  viewerSignalsStarted =
+    false;
+
+  remoteDescriptionSet =
+    false;
+
   candidateQueue = [];
 
 
-  if (viewerPeer) {
+  const peer =
+    viewerPeer;
+
+
+  viewerPeer =
+    null;
+
+
+  if (peer) {
 
     try {
-      viewerPeer.close();
+
+      peer.ontrack =
+        null;
+
+      peer.onicecandidate =
+        null;
+
+      peer.onconnectionstatechange =
+        null;
+
+      peer.close();
+
     }
+
     catch (_) {}
 
   }
 
 
-  viewerPeer = null;
+  if (liveVideo) {
 
+    liveVideo.pause();
 
-  if (liveVideo)
-    liveVideo.srcObject = null;
+    liveVideo.srcObject =
+      null;
+
+  }
 
 
   if (oldViewerId) {
 
-    await remove(
-      ref(
-        database,
-        `pandal/viewers/${oldViewerId}`
-      )
-    )
-    .catch(() => {});
+    try {
+
+      await remove(
+        ref(
+          database,
+          `pandal/viewers/${oldViewerId}`
+        )
+      );
+
+    }
+
+    catch (error) {
+
+      console.warn(
+        "Viewer cleanup failed:",
+        error
+      );
+
+    }
+
+  }
+
+
+  if (
+    !currentBroadcastActive
+  ) {
+
+    showOffline();
 
   }
 
@@ -1612,23 +2106,57 @@ async function closeViewer() {
 
 
 /* =========================================================
-   CLEANUP
+   CLEANUP ON PAGE EXIT
 ========================================================= */
 
 window.addEventListener(
   "beforeunload",
   () => {
 
-    if (!viewerId) return;
+    const id =
+      viewerId;
+
+
+    if (!id) return;
 
 
     remove(
       ref(
         database,
-        `pandal/viewers/${viewerId}`
+        `pandal/viewers/${id}`
       )
     )
     .catch(() => {});
+
+  }
+);
+
+
+/* =========================================================
+   PAGE VISIBILITY
+========================================================= */
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+
+    /*
+      Do not destroy WebRTC when the user
+      temporarily switches tabs. Browsers
+      can continue the connection in the
+      background.
+    */
+
+    if (
+      document.visibilityState ===
+      "visible" &&
+      currentBroadcastActive &&
+      !viewerPeer
+    ) {
+
+      startViewer();
+
+    }
 
   }
 );
