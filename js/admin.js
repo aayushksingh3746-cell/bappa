@@ -1,28 +1,32 @@
-// ============================================================
-// GANPATI PANDAL — ADMIN DASHBOARD
-// Simple Code-Based Admin Login
-// ============================================================
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 
-// Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
 import {
   getDatabase,
   ref,
-  onValue,
   set,
+  onValue,
   push,
-  remove
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+  query,
+  orderByChild
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 
-// ============================================================
-// FIREBASE CONFIG
-// ============================================================
+/* =========================================================
+   FIREBASE CONFIG
+========================================================= */
 
 const firebaseConfig = {
   apiKey: "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
   authDomain: "ganpati-5f24e.firebaseapp.com",
-  databaseURL: "https://ganpati-5f24e-default-rtdb.firebaseio.com",
   projectId: "ganpati-5f24e",
   storageBucket: "ganpati-5f24e.firebasestorage.app",
   messagingSenderId: "512949354669",
@@ -31,339 +35,293 @@ const firebaseConfig = {
 };
 
 
-// ============================================================
-// INITIALIZE FIREBASE
-// ============================================================
+/* =========================================================
+   INITIALIZE FIREBASE
+========================================================= */
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const firebaseApp =
+  initializeApp(firebaseConfig);
 
+const auth =
+  getAuth(firebaseApp);
 
-// ============================================================
-// ADMIN LOGIN
-// ============================================================
-
-// CHANGE THESE IF YOU WANT
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "Ganpati@2026";
+const db =
+  getDatabase(firebaseApp);
 
 
-// ============================================================
-// GET HTML ELEMENTS
-// ============================================================
+/* =========================================================
+   ELEMENTS
+========================================================= */
 
-const loginPanel = document.querySelector("#loginPanel");
-const dashboard = document.querySelector("#dashboard");
-const errorBox = document.querySelector("#loginError");
+const loginScreen =
+  document.getElementById("loginScreen");
 
-const loginForm = document.querySelector("#loginForm");
-const usernameInput = document.querySelector("#email");
-const passwordInput = document.querySelector("#password");
+const dashboardShell =
+  document.getElementById("dashboardShell");
 
-const logoutBtn = document.querySelector("#logoutBtn");
+const loginForm =
+  document.getElementById("loginForm");
+
+const authError =
+  document.getElementById("authError");
+
+const logoutButton =
+  document.getElementById("logoutButton");
+
+const liveToggle =
+  document.getElementById("liveToggle");
+
+const liveDashboardStatus =
+  document.getElementById(
+    "liveDashboardStatus"
+  );
+
+const adminUser =
+  document.getElementById("adminUser");
+
+const registrationCount =
+  document.getElementById(
+    "registrationCount"
+  );
+
+const helpCount =
+  document.getElementById(
+    "helpCount"
+  );
+
+const announcementForm =
+  document.getElementById(
+    "announcementForm"
+  );
+
+const announcementList =
+  document.getElementById(
+    "announcementList"
+  );
 
 
-// ============================================================
-// CHECK LOGIN STATUS
-// ============================================================
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
 
-function checkLogin() {
+onAuthStateChanged(
+  auth,
+  user => {
 
-  const loggedIn = sessionStorage.getItem("ganpatiAdminLoggedIn");
+    if (user) {
 
-  if (loggedIn === "true") {
+      loginScreen.style.display =
+        "none";
 
-    loginPanel.hidden = true;
-    dashboard.hidden = false;
+      dashboardShell.style.display =
+        "block";
 
-    loadDashboard();
+      adminUser.textContent =
+        user.email || "[Authenticated User]";
 
-  } else {
-
-    loginPanel.hidden = false;
-    dashboard.hidden = true;
-
-  }
-}
-
-
-// ============================================================
-// LOGIN
-// ============================================================
-
-if (loginForm) {
-
-  loginForm.onsubmit = (e) => {
-
-    e.preventDefault();
-
-    errorBox.textContent = "";
-
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
-
-    if (
-      username === ADMIN_USERNAME &&
-      password === ADMIN_PASSWORD
-    ) {
-
-      sessionStorage.setItem(
-        "ganpatiAdminLoggedIn",
-        "true"
-      );
-
-      loginPanel.hidden = true;
-      dashboard.hidden = false;
-
-      usernameInput.value = "";
-      passwordInput.value = "";
-
-      loadDashboard();
+      startDashboardListeners();
 
     } else {
 
-      errorBox.textContent =
-        "Invalid username or password.";
+      loginScreen.style.display =
+        "grid";
 
-      passwordInput.value = "";
-
-    }
-
-  };
-
-}
-
-
-// ============================================================
-// LOGOUT
-// ============================================================
-
-if (logoutBtn) {
-
-  logoutBtn.onclick = () => {
-
-    sessionStorage.removeItem(
-      "ganpatiAdminLoggedIn"
-    );
-
-    dashboard.hidden = true;
-    loginPanel.hidden = false;
-
-    if (errorBox) {
-      errorBox.textContent = "";
-    }
-
-  };
-
-}
-
-
-// ============================================================
-// LOAD DASHBOARD
-// ============================================================
-
-function loadDashboard() {
-
-  loadLiveDarshan();
-  loadEvents();
-
-}
-
-
-// ============================================================
-// LIVE DARSHAN
-// ============================================================
-
-function loadLiveDarshan() {
-
-  const liveRef = ref(db, "liveDarshan");
-
-  onValue(liveRef, (snap) => {
-
-    const data = snap.val() || {};
-
-    const online = Boolean(data.online);
-
-    const liveToggle =
-      document.querySelector("#liveToggle");
-
-    const liveStatusText =
-      document.querySelector("#liveStatusText");
-
-    if (liveToggle) {
-      liveToggle.checked = online;
-    }
-
-    if (liveStatusText) {
-
-      liveStatusText.textContent =
-        online ? "Online" : "Offline";
+      dashboardShell.style.display =
+        "none";
 
     }
 
-  });
+  }
+);
 
-}
 
+/* =========================================================
+   LOGIN
+========================================================= */
 
-// ============================================================
-// CHANGE LIVE STATUS
-// ============================================================
+loginForm.addEventListener(
+  "submit",
+  async event => {
 
-const liveToggle =
-  document.querySelector("#liveToggle");
+    event.preventDefault();
 
-if (liveToggle) {
+    authError.textContent = "";
 
-  liveToggle.onchange = async (e) => {
+    const email =
+      document.getElementById("email")
+        .value
+        .trim();
+
+    const password =
+      document.getElementById("password")
+        .value;
 
     try {
 
-      await set(
-        ref(db, "liveDarshan"),
-        {
-          online: e.target.checked,
-          updatedAt: Date.now()
-        }
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
 
     } catch (error) {
 
-      console.error(
-        "Unable to update Live Darshan:",
-        error
-      );
+      console.error(error);
 
-      e.target.checked = !e.target.checked;
+      authError.textContent =
+        getFriendlyAuthError(error);
 
     }
 
-  };
+  }
+);
 
-}
 
+/* =========================================================
+   LOGOUT
+========================================================= */
 
-// ============================================================
-// EVENT FORM
-// ============================================================
-
-const form =
-  document.querySelector("#eventForm");
-
-if (form) {
-
-  form.onsubmit = async (e) => {
-
-    e.preventDefault();
+logoutButton.addEventListener(
+  "click",
+  async () => {
 
     try {
 
-      const id =
-        document.querySelector("#eventId").value;
-
-      const data = {
-
-        title:
-          document
-            .querySelector("#eventTitle")
-            .value
-            .trim(),
-
-        time:
-          document
-            .querySelector("#eventTime")
-            .value
-            .trim(),
-
-        description:
-          document
-            .querySelector("#eventDescription")
-            .value
-            .trim(),
-
-        active:
-          document
-            .querySelector("#eventActive")
-            .checked,
-
-        order: Date.now()
-
-      };
-
-
-      const target = id
-        ? ref(db, `events/${id}`)
-        : push(ref(db, "events"));
-
-
-      await set(target, data);
-
-      resetForm();
+      await signOut(auth);
 
     } catch (error) {
 
       console.error(
-        "Unable to save event:",
+        "Logout error:",
         error
-      );
-
-      alert(
-        "Could not save the event. Check Firebase Database rules."
       );
 
     }
 
-  };
-
-}
-
-
-// ============================================================
-// CANCEL EDIT
-// ============================================================
-
-const cancelEdit =
-  document.querySelector("#cancelEdit");
-
-if (cancelEdit) {
-
-  cancelEdit.onclick = resetForm;
-
-}
-
-
-// ============================================================
-// RESET EVENT FORM
-// ============================================================
-
-function resetForm() {
-
-  if (form) {
-    form.reset();
   }
-
-  const eventId =
-    document.querySelector("#eventId");
-
-  if (eventId) {
-    eventId.value = "";
-  }
-
-}
+);
 
 
-// ============================================================
-// LOAD EVENTS
-// ============================================================
+/* =========================================================
+   LIVE STATE
+========================================================= */
 
-function loadEvents() {
+function startDashboardListeners() {
+
+  const liveRef =
+    ref(db, "live");
 
   onValue(
-    ref(db, "events"),
-    (snap) => {
+    liveRef,
+    snapshot => {
 
-      renderAdminEvents(
-        snap.val() || {}
+      const data =
+        snapshot.val() || {};
+
+      const isLive =
+        data.isLive === true;
+
+      liveToggle.checked =
+        isLive;
+
+      liveDashboardStatus.textContent =
+        isLive
+          ? "LIVE"
+          : "OFFLINE";
+
+    }
+  );
+
+
+  /* ================= REGISTRATIONS ================= */
+
+  const registrationsRef =
+    ref(db, "registrations");
+
+  onValue(
+    registrationsRef,
+    snapshot => {
+
+      const data =
+        snapshot.val() || {};
+
+      registrationCount.textContent =
+        Object.keys(data).length;
+
+    }
+  );
+
+
+  /* ================= HELP ================= */
+
+  const helpRef =
+    ref(db, "helpRequests");
+
+  onValue(
+    helpRef,
+    snapshot => {
+
+      const data =
+        snapshot.val() || {};
+
+      helpCount.textContent =
+        Object.keys(data).length;
+
+    }
+  );
+
+
+  /* ================= ANNOUNCEMENTS ================= */
+
+  const announcementsRef =
+    query(
+      ref(db, "announcements"),
+      orderByChild("createdAt")
+    );
+
+  onValue(
+    announcementsRef,
+    snapshot => {
+
+      announcementList.innerHTML = "";
+
+      const data =
+        snapshot.val() || {};
+
+      const announcements =
+        Object.values(data)
+          .reverse();
+
+      announcements.forEach(
+        announcement => {
+
+          const element =
+            document.createElement("article");
+
+          element.className =
+            "announcement";
+
+          element.innerHTML = `
+            <strong>
+              ${escapeHTML(
+                announcement.title ||
+                "[Announcement]"
+              )}
+            </strong>
+
+            <p>
+              ${escapeHTML(
+                announcement.message ||
+                ""
+              )}
+            </p>
+          `;
+
+          announcementList.appendChild(
+            element
+          );
+
+        }
       );
 
     }
@@ -372,232 +330,144 @@ function loadEvents() {
 }
 
 
-// ============================================================
-// RENDER EVENTS
-// ============================================================
+/* =========================================================
+   LIVE TOGGLE
+========================================================= */
 
-function renderAdminEvents(data) {
+liveToggle.addEventListener(
+  "change",
+  async () => {
 
-  const entries =
-    Object.entries(data)
-      .sort(
-        ([, a], [, b]) =>
-          (a.order ?? 0) -
-          (b.order ?? 0)
+    const isLive =
+      liveToggle.checked;
+
+    try {
+
+      await set(
+        ref(db, "live"),
+        {
+          isLive,
+          updatedAt: Date.now()
+        }
       );
 
+      liveDashboardStatus.textContent =
+        isLive
+          ? "LIVE"
+          : "OFFLINE";
 
-  const eventCount =
-    document.querySelector("#eventCount");
+    } catch (error) {
 
-  const eventList =
-    document.querySelector("#eventList");
+      console.error(
+        "Unable to update live status:",
+        error
+      );
 
+      liveToggle.checked =
+        !isLive;
 
-  if (eventCount) {
-
-    eventCount.textContent =
-      entries.length;
-
-  }
-
-
-  if (!eventList) {
-    return;
-  }
-
-
-  if (!entries.length) {
-
-    eventList.innerHTML =
-      "<p>No timeline nodes yet.</p>";
-
-    return;
+    }
 
   }
+);
 
 
-  eventList.innerHTML =
-    entries
-      .map(
-        ([id, x]) => `
+/* =========================================================
+   ANNOUNCEMENTS
+========================================================= */
 
-          <div class="admin-event">
+announcementForm.addEventListener(
+  "submit",
+  async event => {
 
-            <div>
+    event.preventDefault();
 
-              <strong>
-                ${esc(x.title)}
-              </strong>
+    const title =
+      document.getElementById(
+        "announcementTitle"
+      ).value.trim();
 
-              <small>
-                ${esc(x.time)}
-                ${x.active
-                  ? " • ACTIVE/NEXT"
-                  : ""}
-              </small>
+    const message =
+      document.getElementById(
+        "announcementMessage"
+      ).value.trim();
 
-              <small>
-                ${esc(x.description || "")}
-              </small>
+    if (!title || !message) {
+      return;
+    }
 
-            </div>
+    try {
 
-            <div class="event-actions">
-
-              <button
-                type="button"
-                data-edit="${id}">
-                Edit
-              </button>
-
-              <button
-                type="button"
-                data-delete="${id}">
-                Delete
-              </button>
-
-            </div>
-
-          </div>
-
-        `
-      )
-      .join("");
-
-
-  // EDIT BUTTONS
-
-  document
-    .querySelectorAll("[data-edit]")
-    .forEach((button) => {
-
-      button.onclick = () => {
-
-        const id =
-          button.dataset.edit;
-
-        editEvent(
-          id,
-          data[id]
-        );
-
-      };
-
-    });
-
-
-  // DELETE BUTTONS
-
-  document
-    .querySelectorAll("[data-delete]")
-    .forEach((button) => {
-
-      button.onclick = async () => {
-
-        const id =
-          button.dataset.delete;
-
-        if (
-          confirm(
-            "Delete this timeline event?"
-          )
-        ) {
-
-          try {
-
-            await remove(
-              ref(db, `events/${id}`)
-            );
-
-          } catch (error) {
-
-            console.error(
-              "Delete failed:",
-              error
-            );
-
-            alert(
-              "Could not delete event. Check Firebase Database rules."
-            );
-
-          }
-
+      await push(
+        ref(db, "announcements"),
+        {
+          title,
+          message,
+          createdAt: Date.now()
         }
+      );
 
-      };
+      announcementForm.reset();
 
-    });
+    } catch (error) {
+
+      console.error(
+        "Announcement error:",
+        error
+      );
+
+      alert(
+        "Unable to publish announcement."
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   SECURITY HELPERS
+========================================================= */
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 }
 
 
-// ============================================================
-// EDIT EVENT
-// ============================================================
+/* =========================================================
+   FIREBASE AUTH ERRORS
+========================================================= */
 
-function editEvent(id, x) {
+function getFriendlyAuthError(error) {
 
-  document.querySelector("#eventId").value =
-    id;
+  switch (error.code) {
 
-  document.querySelector("#eventTitle").value =
-    x.title || "";
+    case "auth/invalid-email":
+      return "Please enter a valid email address.";
 
-  document.querySelector("#eventTime").value =
-    x.time || "";
+    case "auth/invalid-credential":
+      return "Incorrect email or password.";
 
-  document.querySelector("#eventDescription").value =
-    x.description || "";
+    case "auth/user-not-found":
+      return "No admin account exists for this email.";
 
-  document.querySelector("#eventActive").checked =
-    !!x.active;
+    case "auth/wrong-password":
+      return "Incorrect password.";
 
+    case "auth/too-many-requests":
+      return "Too many attempts. Please try again later.";
 
-  const eventForm =
-    document.querySelector("#eventForm");
-
-  if (eventForm) {
-
-    window.scrollTo({
-
-      top:
-        eventForm.offsetTop - 100,
-
-      behavior: "smooth"
-
-    });
+    default:
+      return "Login failed. Please check your Firebase configuration.";
 
   }
 
 }
-
-
-// ============================================================
-// HTML ESCAPE
-// ============================================================
-
-function esc(value) {
-
-  return String(value ?? "")
-    .replace(
-      /[&<>"']/g,
-      (character) => ({
-
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-
-      }[character])
-    );
-
-}
-
-
-// ============================================================
-// START
-// ============================================================
-
-checkLogin();
