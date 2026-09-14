@@ -19,7 +19,6 @@ import {
   getDatabase,
   ref,
   set,
-  update,
   remove,
   push,
   onValue,
@@ -59,26 +58,6 @@ const ICE_SERVERS = [
       "stun:stun1.l.google.com:19302"
     ]
   }
-
-  /*
-  ============================================================
-  REAL TURN SERVER
-  ============================================================
-
-  Add a REAL TURN server here when available.
-
-  {
-    urls: [
-      "turn:YOUR-TURN-SERVER:3478?transport=udp",
-      "turn:YOUR-TURN-SERVER:3478?transport=tcp",
-      "turns:YOUR-TURN-SERVER:5349?transport=tcp"
-    ],
-    username: "YOUR_USERNAME",
-    credential: "YOUR_PASSWORD"
-  }
-
-  ============================================================
-  */
 ];
 
 
@@ -154,24 +133,19 @@ let broadcastId = null;
 
 let broadcasting = false;
 
-const peerConnections =
-  new Map();
-
-const viewerCandidateListeners =
-  new Map();
-
-const viewerAnswerListeners =
-  new Map();
-
-const recoveryTimers =
-  new Map();
-
-const viewerCreationLocks =
-  new Set();
-
 let viewerListener = null;
 
 let broadcastListener = null;
+
+const peerConnections = new Map();
+
+const viewerAnswerListeners = new Map();
+
+const viewerCandidateListeners = new Map();
+
+const recoveryTimers = new Map();
+
+const viewerCreationLocks = new Set();
 
 
 // ============================================================
@@ -202,11 +176,9 @@ function setLoginStatus(
     return;
   }
 
-  loginStatus.textContent =
-    message;
+  loginStatus.textContent = message;
 
-  loginStatus.className =
-    "";
+  loginStatus.className = "";
 
   if (type) {
     loginStatus.classList.add(type);
@@ -227,8 +199,7 @@ function setAnnouncementStatus(
   announcementStatus.textContent =
     message;
 
-  announcementStatus.className =
-    "";
+  announcementStatus.className = "";
 
   if (type) {
     announcementStatus.classList.add(type);
@@ -275,9 +246,7 @@ function removePreloader() {
       preloader &&
       preloader.parentNode
     ) {
-
       preloader.remove();
-
     }
 
   }, 700);
@@ -288,17 +257,13 @@ function removePreloader() {
 function updateBroadcastButtons() {
 
   if (startBroadcastBtn) {
-
     startBroadcastBtn.disabled =
       broadcasting;
-
   }
 
   if (stopBroadcastBtn) {
-
     stopBroadcastBtn.disabled =
       !broadcasting;
-
   }
 
 }
@@ -330,7 +295,6 @@ if (loginForm) {
         );
 
         return;
-
       }
 
       setLoginStatus(
@@ -464,7 +428,7 @@ async function getCameraStream() {
   ) {
 
     throw new Error(
-      "Camera API is not supported."
+      "Camera API is not supported by this browser."
     );
 
   }
@@ -519,7 +483,7 @@ async function getCameraStream() {
 
 
 // ============================================================
-// BROADCASTER ICE CANDIDATE
+// SEND BROADCASTER ICE CANDIDATE
 // ============================================================
 
 async function sendBroadcasterCandidate(
@@ -551,7 +515,7 @@ async function sendBroadcasterCandidate(
 
 
 // ============================================================
-// CLEANUP VIEWER LISTENERS
+// LISTENER CLEANUP
 // ============================================================
 
 function cleanupViewerListeners(
@@ -663,7 +627,7 @@ function closeViewerPeer(
 
 
 // ============================================================
-// VIEWER ANSWER LISTENER
+// VIEWER ANSWER
 // ============================================================
 
 function listenForViewerAnswer(
@@ -683,10 +647,7 @@ function listenForViewerAnswer(
       const answer =
         snapshot.val();
 
-      if (
-        !answer ||
-        !peer
-      ) {
+      if (!answer || !peer) {
         return;
       }
 
@@ -746,7 +707,7 @@ function listenForViewerAnswer(
 
 
 // ============================================================
-// VIEWER ICE CANDIDATE LISTENER
+// VIEWER ICE
 // ============================================================
 
 function listenForViewerCandidates(
@@ -795,7 +756,7 @@ function listenForViewerCandidates(
     error => {
 
       console.error(
-        "[WebRTC] Viewer candidate listener error:",
+        "[WebRTC] Candidate listener error:",
         error
       );
 
@@ -814,7 +775,7 @@ function listenForViewerCandidates(
 
 
 // ============================================================
-// VIEWER RECOVERY
+// RECOVERY
 // ============================================================
 
 function scheduleViewerRecovery(
@@ -853,16 +814,13 @@ function scheduleViewerRecovery(
               `pandal/viewers/${viewerId}`
             );
 
-          const viewerSnapshot =
+          const snapshot =
             await new Promise(
               resolve => {
 
                 onValue(
                   viewerRef,
-                  snapshot =>
-                    resolve(
-                      snapshot
-                    ),
+                  resolve,
                   {
                     onlyOnce: true
                   }
@@ -872,7 +830,7 @@ function scheduleViewerRecovery(
             );
 
           const viewer =
-            viewerSnapshot.val();
+            snapshot.val();
 
           if (
             !viewer ||
@@ -880,9 +838,7 @@ function scheduleViewerRecovery(
             viewer.broadcastId !==
               broadcastId
           ) {
-
             return;
-
           }
 
           await createViewerConnection(
@@ -892,7 +848,7 @@ function scheduleViewerRecovery(
         } catch (error) {
 
           console.error(
-            "[WebRTC] Recovery error:",
+            "[Recovery] Viewer recovery failed:",
             error
           );
 
@@ -911,7 +867,7 @@ function scheduleViewerRecovery(
 
 
 // ============================================================
-// CREATE VIEWER PEER CONNECTION
+// CREATE VIEWER CONNECTION
 // ============================================================
 
 async function createViewerConnection(
@@ -949,9 +905,7 @@ async function createViewerConnection(
       state === "connecting" ||
       state === "connected"
     ) {
-
       return;
-
     }
 
     closeViewerPeer(
@@ -972,7 +926,8 @@ async function createViewerConnection(
           iceServers:
             ICE_SERVERS,
 
-          iceCandidatePoolSize: 10,
+          iceCandidatePoolSize:
+            10,
 
           bundlePolicy:
             "max-bundle",
@@ -1005,9 +960,7 @@ async function createViewerConnection(
     peer.onicecandidate =
       async event => {
 
-        if (
-          !event.candidate
-        ) {
+        if (!event.candidate) {
           return;
         }
 
@@ -1037,9 +990,10 @@ async function createViewerConnection(
           peer.connectionState;
 
         console.log(
-          `[WebRTC] ${viewerId}:`,
+          `[WebRTC] Viewer ${viewerId}:`,
           state
         );
+
 
         if (
           state === "connected"
@@ -1053,17 +1007,7 @@ async function createViewerConnection(
 
 
         if (
-          state === "failed"
-        ) {
-
-          scheduleViewerRecovery(
-            viewerId
-          );
-
-        }
-
-
-        if (
+          state === "failed" ||
           state === "disconnected"
         ) {
 
@@ -1097,6 +1041,7 @@ async function createViewerConnection(
           `[WebRTC] ICE ${viewerId}:`,
           state
         );
+
 
         if (
           state === "failed"
@@ -1133,6 +1078,7 @@ async function createViewerConnection(
         }
       );
 
+
     await peer.setLocalDescription(
       offer
     );
@@ -1145,12 +1091,10 @@ async function createViewerConnection(
       ),
       {
         type:
-          peer.localDescription
-            .type,
+          peer.localDescription.type,
 
         sdp:
-          peer.localDescription
-            .sdp
+          peer.localDescription.sdp
       }
     );
 
@@ -1164,7 +1108,6 @@ async function createViewerConnection(
 
     console.error(
       "[WebRTC] Peer creation failed:",
-      viewerId,
       error
     );
 
@@ -1200,7 +1143,6 @@ function startViewerListener() {
     );
 
     return;
-
   }
 
   const viewersRef =
@@ -1218,8 +1160,9 @@ function startViewerListener() {
         const viewers =
           snapshot.val();
 
+
         console.log(
-          "[Viewer Listener] Snapshot received:",
+          "[Viewer Listener] Snapshot:",
           viewers
         );
 
@@ -1231,12 +1174,11 @@ function startViewerListener() {
 
         if (!viewers) {
 
-          console.log(
-            "[Viewer Listener] No viewers connected."
+          setBroadcastStatus(
+            "LIVE — waiting for viewers..."
           );
 
           return;
-
         }
 
 
@@ -1257,7 +1199,7 @@ function startViewerListener() {
           ) {
 
             console.log(
-              "[Viewer Listener] Active viewer:",
+              "[Viewer Listener] Viewer found:",
               viewerId
             );
 
@@ -1299,16 +1241,6 @@ function startViewerListener() {
           error
         );
 
-        console.error(
-          "[Viewer Listener] Error code:",
-          error?.code
-        );
-
-        console.error(
-          "[Viewer Listener] Error message:",
-          error?.message
-        );
-
       }
 
     };
@@ -1318,40 +1250,41 @@ function startViewerListener() {
     error => {
 
       console.error(
-        "======================================"
-      );
-
-      console.error(
-        "[Viewer Listener] FIREBASE ERROR"
-      );
-
-      console.error(
-        "Error object:",
+        "[Viewer Listener] FIREBASE ERROR:",
         error
       );
 
       console.error(
-        "Error code:",
+        "[Viewer Listener] Error code:",
         error?.code
       );
 
       console.error(
-        "Error message:",
+        "[Viewer Listener] Error message:",
         error?.message
       );
 
-      console.error(
-        "======================================"
-      );
 
+      if (
+        error?.code ===
+        "PERMISSION_DENIED"
+      ) {
 
-      setBroadcastStatus(
-        `Viewer listener error: ${
-          error?.code ||
-          error?.message ||
-          "Unknown Firebase error"
-        }`
-      );
+        setBroadcastStatus(
+          "Firebase permission denied for viewers."
+        );
+
+      } else {
+
+        setBroadcastStatus(
+          `Viewer listener error: ${
+            error?.message ||
+            error?.code ||
+            "Unknown error"
+          }`
+        );
+
+      }
 
     };
 
@@ -1365,13 +1298,12 @@ function startViewerListener() {
 
   viewerListener = {
     ref: viewersRef,
-    callback,
-    errorCallback
+    callback
   };
 
 
   console.log(
-    "[Viewer Listener] Started successfully."
+    "[Viewer Listener] Started."
   );
 
 }
@@ -1393,7 +1325,8 @@ function stopViewerListener() {
     viewerListener.callback
   );
 
-  viewerListener = null;
+  viewerListener =
+    null;
 
   console.log(
     "[Viewer Listener] Stopped."
@@ -1420,7 +1353,6 @@ async function startBroadcast() {
     );
 
     return;
-
   }
 
 
@@ -1434,7 +1366,6 @@ async function startBroadcast() {
     );
 
     return;
-
   }
 
 
@@ -1452,6 +1383,7 @@ async function startBroadcast() {
       createId(
         "broadcast"
       );
+
 
     broadcasting =
       true;
@@ -1501,11 +1433,13 @@ async function startBroadcast() {
       error
     );
 
+
     broadcasting =
       false;
 
     broadcastId =
       null;
+
 
     updateBroadcastButtons();
 
@@ -1525,7 +1459,7 @@ async function startBroadcast() {
     ) {
 
       setBroadcastStatus(
-        "No camera or microphone was found."
+        "Camera or microphone was not found."
       );
 
     } else if (
@@ -1534,7 +1468,7 @@ async function startBroadcast() {
     ) {
 
       setBroadcastStatus(
-        "Firebase permission denied. Check Realtime Database Rules."
+        "Firebase permission denied."
       );
 
     } else {
@@ -1580,7 +1514,6 @@ async function stopBroadcast() {
 
   peerConnections.clear();
 
-
   viewerCreationLocks.clear();
 
 
@@ -1606,7 +1539,7 @@ async function stopBroadcast() {
     } catch (error) {
 
       console.warn(
-        "[Broadcast] Unable to update broadcast state:",
+        "[Broadcast] Unable to update broadcast:",
         error
       );
 
@@ -1636,10 +1569,8 @@ async function stopBroadcast() {
 
 
   if (preview) {
-
     preview.srcObject =
       null;
-
   }
 
 
@@ -1659,7 +1590,7 @@ async function stopBroadcast() {
 
 
 // ============================================================
-// BROADCAST BUTTONS
+// BUTTONS
 // ============================================================
 
 if (startBroadcastBtn) {
@@ -1683,7 +1614,7 @@ if (stopBroadcastBtn) {
 
 
 // ============================================================
-// BROADCAST STATE WATCH
+// BROADCAST STATE
 // ============================================================
 
 function listenToBroadcastState() {
@@ -1778,7 +1709,6 @@ function loadPrayers() {
           "<p>No prayers yet.</p>";
 
         return;
-
       }
 
 
@@ -1838,13 +1768,11 @@ function loadPrayers() {
           "click",
           async () => {
 
-            const confirmed =
-              confirm(
+            if (
+              !confirm(
                 "Delete this prayer?"
-              );
-
-
-            if (!confirmed) {
+              )
+            ) {
               return;
             }
 
@@ -1861,7 +1789,7 @@ function loadPrayers() {
             } catch (error) {
 
               console.error(
-                "[Prayer] Deletion failed:",
+                "[Prayer] Delete failed:",
                 error
               );
 
@@ -1891,16 +1819,12 @@ function loadPrayers() {
     error => {
 
       console.error(
-        "[Prayer] Firebase listener error:",
+        "[Prayer] Listener error:",
         error
       );
 
-      if (adminPrayers) {
-
-        adminPrayers.innerHTML =
-          "<p>Unable to load prayers.</p>";
-
-      }
+      adminPrayers.innerHTML =
+        "<p>Unable to load prayers.</p>";
 
     }
   );
@@ -1929,7 +1853,6 @@ if (announcementForm) {
         );
 
         return;
-
       }
 
 
@@ -1949,7 +1872,6 @@ if (announcementForm) {
         );
 
         return;
-
       }
 
 
@@ -1972,9 +1894,9 @@ if (announcementForm) {
         await set(
           announcementRef,
           {
-            title,
+            title: title,
 
-            message,
+            message: message,
 
             createdAt:
               Date.now(),
@@ -1994,10 +1916,6 @@ if (announcementForm) {
           "success"
         );
 
-
-        console.log(
-          "[Announcements] Published."
-        );
 
       } catch (error) {
 
@@ -2024,7 +1942,7 @@ if (announcementForm) {
 
 
 // ============================================================
-// NETWORK RECOVERY
+// NETWORK
 // ============================================================
 
 window.addEventListener(
@@ -2032,24 +1950,42 @@ window.addEventListener(
   () => {
 
     console.log(
-      "[Network] Online."
+      "[Network] Browser reports ONLINE."
     );
 
 
-    if (broadcasting) {
-
-      for (
-        const viewerId
-        of peerConnections.keys()
-      ) {
-
-        scheduleViewerRecovery(
-          viewerId
-        );
-
-      }
-
+    if (!broadcasting) {
+      return;
     }
+
+
+    setBroadcastStatus(
+      "Connection restored — broadcast is live."
+    );
+
+
+    setTimeout(
+      () => {
+
+        if (!broadcasting) {
+          return;
+        }
+
+
+        for (
+          const viewerId
+          of peerConnections.keys()
+        ) {
+
+          scheduleViewerRecovery(
+            viewerId
+          );
+
+        }
+
+      },
+      1000
+    );
 
   }
 );
@@ -2059,14 +1995,24 @@ window.addEventListener(
   "offline",
   () => {
 
-    console.log(
-      "[Network] Offline."
+    console.warn(
+      "[Network] Browser reports OFFLINE."
     );
+
+
+    /*
+     * IMPORTANT:
+     * Do not stop the broadcast here.
+     *
+     * The browser can temporarily report
+     * offline while Firebase/WebRTC is
+     * reconnecting.
+     */
 
     if (broadcasting) {
 
       setBroadcastStatus(
-        "Network connection lost. Waiting for connection..."
+        "Connection interrupted — reconnecting..."
       );
 
     }
@@ -2090,7 +2036,7 @@ document.addEventListener(
     ) {
 
       console.log(
-        "[Visibility] Admin page active again."
+        "[Visibility] Admin page visible again."
       );
 
 
@@ -2158,16 +2104,14 @@ window.addEventListener(
 
 
 // ============================================================
-// INITIAL STATE
+// INITIALIZATION
 // ============================================================
 
 updateBroadcastButtons();
 
-
 setBroadcastStatus(
   "Broadcast offline."
 );
-
 
 listenToBroadcastState();
 
