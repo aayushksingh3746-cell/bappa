@@ -1,45 +1,50 @@
 /* =========================================================
    GANPATI PANDAL — ADMIN.JS
-   COMPLETE ADMIN JAVASCRIPT
-   Firebase Auth + Realtime Database + WebRTC
 ========================================================= */
 
 
 /* =========================================================
-   0. FORCE REMOVE PRELOADER
-   This happens BEFORE Firebase initialization.
+   PRELOADER
+   IMPORTANT:
+   This is deliberately placed BEFORE Firebase code.
 ========================================================= */
 
-(function removePreloaderImmediately() {
+(function () {
 
-    function remove() {
+    function removePreloader() {
 
         const preloader =
             document.getElementById("preloader");
 
         if (preloader) {
+
+            preloader.style.display = "none";
+            preloader.style.opacity = "0";
+            preloader.style.visibility = "hidden";
+            preloader.style.pointerEvents = "none";
+
             preloader.remove();
         }
 
-        document.documentElement.classList.remove("loading");
-
-        if (document.body) {
-            document.body.classList.remove("loading");
-        }
     }
 
-    remove();
 
-    setTimeout(remove, 50);
-    setTimeout(remove, 250);
-    setTimeout(remove, 1000);
-    setTimeout(remove, 3000);
+    // Remove immediately if DOM is already available
+    removePreloader();
+
+
+    // Extra safety
+    setTimeout(removePreloader, 100);
+    setTimeout(removePreloader, 500);
+    setTimeout(removePreloader, 1500);
+    setTimeout(removePreloader, 3000);
+
 
 })();
 
 
 /* =========================================================
-   1. FIREBASE IMPORTS
+   FIREBASE IMPORTS
 ========================================================= */
 
 import {
@@ -67,7 +72,7 @@ import {
 
 
 /* =========================================================
-   2. FIREBASE CONFIG
+   FIREBASE CONFIG
 ========================================================= */
 
 const firebaseConfig = {
@@ -97,7 +102,7 @@ const firebaseConfig = {
 
 
 /* =========================================================
-   3. FIREBASE INITIALIZATION
+   FIREBASE INITIALIZATION
 ========================================================= */
 
 let app = null;
@@ -113,13 +118,13 @@ try {
     database = getDatabase(app);
 
     console.log(
-        "Firebase initialized successfully."
+        "Firebase initialized."
     );
 
 } catch (error) {
 
     console.error(
-        "Firebase initialization failed:",
+        "Firebase initialization error:",
         error
     );
 
@@ -127,45 +132,45 @@ try {
 
 
 /* =========================================================
-   4. HELPER
+   ELEMENT HELPER
 ========================================================= */
 
-function getElement(id) {
+function el(id) {
     return document.getElementById(id);
 }
 
 
 /* =========================================================
-   5. ELEMENTS
+   LOGIN ELEMENTS
 ========================================================= */
 
 const loginPanel =
-    getElement("loginPanel");
+    el("loginPanel");
 
 const loginForm =
-    getElement("loginForm");
+    el("loginForm");
 
 const emailInput =
-    getElement("email");
+    el("email");
 
 const passwordInput =
-    getElement("password");
+    el("password");
 
 const loginStatus =
-    getElement("loginStatus");
+    el("loginStatus");
 
 const dashboard =
-    getElement("dashboard");
+    el("dashboard");
 
 const logoutBtn =
-    getElement("logoutBtn");
+    el("logoutBtn");
 
 const connectionState =
-    getElement("connectionState");
+    el("connectionState");
 
 
 /* =========================================================
-   6. LOGIN
+   LOGIN
 ========================================================= */
 
 if (loginForm) {
@@ -175,6 +180,7 @@ if (loginForm) {
         async function (event) {
 
             event.preventDefault();
+
 
             if (!auth) {
 
@@ -192,6 +198,7 @@ if (loginForm) {
                     ? emailInput.value.trim()
                     : "";
 
+
             const password =
                 passwordInput
                     ? passwordInput.value
@@ -202,7 +209,7 @@ if (loginForm) {
 
                 if (loginStatus) {
                     loginStatus.textContent =
-                        "Please enter email and password.";
+                        "Enter your email and password.";
                 }
 
                 return;
@@ -242,36 +249,51 @@ if (loginForm) {
                     "Login failed.";
 
 
-                switch (error.code) {
+                if (
+                    error.code ===
+                    "auth/invalid-credential"
+                ) {
 
-                    case "auth/invalid-credential":
-                        message =
-                            "Invalid email or password.";
-                        break;
+                    message =
+                        "Invalid email or password.";
 
-                    case "auth/user-not-found":
-                        message =
-                            "User account not found.";
-                        break;
+                }
 
-                    case "auth/wrong-password":
-                        message =
-                            "Incorrect password.";
-                        break;
+                else if (
+                    error.code ===
+                    "auth/user-not-found"
+                ) {
 
-                    case "auth/too-many-requests":
-                        message =
-                            "Too many attempts. Try again later.";
-                        break;
+                    message =
+                        "User not found.";
 
-                    case "auth/network-request-failed":
-                        message =
-                            "Network error. Check your internet.";
-                        break;
+                }
 
-                    default:
-                        message =
-                            error.message || "Login failed.";
+                else if (
+                    error.code ===
+                    "auth/wrong-password"
+                ) {
+
+                    message =
+                        "Incorrect password.";
+
+                }
+
+                else if (
+                    error.code ===
+                    "auth/network-request-failed"
+                ) {
+
+                    message =
+                        "Network error.";
+
+                }
+
+                else {
+
+                    message =
+                        error.message ||
+                        "Login failed.";
 
                 }
 
@@ -290,7 +312,7 @@ if (loginForm) {
 
 
 /* =========================================================
-   7. LOGOUT
+   LOGOUT
 ========================================================= */
 
 if (logoutBtn) {
@@ -321,7 +343,7 @@ if (logoutBtn) {
 
 
 /* =========================================================
-   8. AUTH STATE
+   AUTH STATE
 ========================================================= */
 
 if (auth) {
@@ -333,41 +355,68 @@ if (auth) {
             if (user) {
 
                 console.log(
-                    "Admin logged in:",
+                    "Logged in:",
                     user.email
                 );
 
 
                 if (loginPanel) {
-                    loginPanel.style.display =
-                        "none";
+
+                    loginPanel.classList.add(
+                        "hidden"
+                    );
+
                 }
 
 
                 if (dashboard) {
-                    dashboard.style.display =
-                        "block";
+
+                    dashboard.classList.remove(
+                        "hidden"
+                    );
+
                 }
 
 
-                startAdminDashboard();
+                if (logoutBtn) {
 
-            } else {
+                    logoutBtn.classList.remove(
+                        "hidden"
+                    );
 
-                console.log(
-                    "No authenticated admin."
-                );
+                }
 
+
+                initializeDashboard();
+
+            }
+
+            else {
 
                 if (loginPanel) {
-                    loginPanel.style.display =
-                        "block";
+
+                    loginPanel.classList.remove(
+                        "hidden"
+                    );
+
                 }
 
 
                 if (dashboard) {
-                    dashboard.style.display =
-                        "none";
+
+                    dashboard.classList.add(
+                        "hidden"
+                    );
+
+                }
+
+
+                if (logoutBtn) {
+
+                    logoutBtn.classList.add(
+                        "hidden"
+                    );
+
                 }
 
             }
@@ -379,15 +428,15 @@ if (auth) {
 
 
 /* =========================================================
-   9. FIREBASE CONNECTION
+   FIREBASE CONNECTION STATUS
 ========================================================= */
 
-function monitorFirebaseConnection() {
+function monitorConnection() {
 
     if (!database) return;
 
 
-    const connectionRef =
+    const connectedRef =
         ref(
             database,
             ".info/connected"
@@ -395,7 +444,8 @@ function monitorFirebaseConnection() {
 
 
     onValue(
-        connectionRef,
+        connectedRef,
+
         function (snapshot) {
 
             const connected =
@@ -420,7 +470,9 @@ function monitorFirebaseConnection() {
                     "offline"
                 );
 
-            } else {
+            }
+
+            else {
 
                 connectionState.textContent =
                     "Firebase Offline";
@@ -436,16 +488,20 @@ function monitorFirebaseConnection() {
             }
 
         },
+
         function (error) {
 
             console.error(
-                "Firebase connection error:",
+                "Connection error:",
                 error
             );
 
+
             if (connectionState) {
+
                 connectionState.textContent =
                     "Connection Error";
+
             }
 
         }
@@ -455,14 +511,14 @@ function monitorFirebaseConnection() {
 
 
 /* =========================================================
-   10. PRAYER WALL
+   PRAYER WALL
 ========================================================= */
 
 const adminPrayers =
-    getElement("adminPrayers");
+    el("adminPrayers");
 
 
-const prayerElements =
+const prayerCards =
     new Map();
 
 
@@ -481,40 +537,31 @@ function createPrayerCard(
         id;
 
 
-    const prayerText =
+    const text =
         document.createElement("div");
 
-    prayerText.className =
+    text.className =
         "admin-prayer-text";
 
-    prayerText.textContent =
+    text.textContent =
         prayer.text || "";
 
 
-    const prayerDate =
+    const date =
         document.createElement("div");
 
-    prayerDate.className =
+    date.className =
         "admin-prayer-meta";
 
 
     if (prayer.createdAt) {
 
-        try {
-
-            prayerDate.textContent =
-                new Date(
-                    prayer.createdAt
-                ).toLocaleString(
-                    "en-IN"
-                );
-
-        } catch {
-
-            prayerDate.textContent =
-                "";
-
-        }
+        date.textContent =
+            new Date(
+                prayer.createdAt
+            ).toLocaleString(
+                "en-IN"
+            );
 
     }
 
@@ -536,13 +583,11 @@ function createPrayerCard(
         "click",
         async function () {
 
-            const confirmed =
-                window.confirm(
+            if (
+                !window.confirm(
                     "Delete this Sankalp?"
-                );
-
-
-            if (!confirmed) {
+                )
+            ) {
                 return;
             }
 
@@ -561,13 +606,13 @@ function createPrayerCard(
             } catch (error) {
 
                 console.error(
-                    "Delete prayer error:",
+                    "Prayer deletion error:",
                     error
                 );
 
 
                 window.alert(
-                    "Could not delete the Sankalp."
+                    "Unable to delete prayer."
                 );
 
             }
@@ -576,17 +621,9 @@ function createPrayerCard(
     );
 
 
-    card.appendChild(
-        prayerText
-    );
-
-    card.appendChild(
-        prayerDate
-    );
-
-    card.appendChild(
-        deleteButton
-    );
+    card.appendChild(text);
+    card.appendChild(date);
+    card.appendChild(deleteButton);
 
 
     return card;
@@ -613,6 +650,7 @@ function loadPrayers() {
 
     onChildAdded(
         prayersRef,
+
         function (snapshot) {
 
             const id =
@@ -634,7 +672,7 @@ function loadPrayers() {
                 );
 
 
-            prayerElements.set(
+            prayerCards.set(
                 id,
                 card
             );
@@ -645,6 +683,7 @@ function loadPrayers() {
             );
 
         },
+
         function (error) {
 
             console.error(
@@ -654,7 +693,7 @@ function loadPrayers() {
 
 
             adminPrayers.textContent =
-                "Unable to load Sankalps.";
+                "Unable to load prayers.";
 
         }
     );
@@ -662,6 +701,7 @@ function loadPrayers() {
 
     onChildRemoved(
         prayersRef,
+
         function (snapshot) {
 
             const id =
@@ -669,7 +709,7 @@ function loadPrayers() {
 
 
             const card =
-                prayerElements.get(
+                prayerCards.get(
                     id
                 );
 
@@ -679,7 +719,7 @@ function loadPrayers() {
             }
 
 
-            prayerElements.delete(
+            prayerCards.delete(
                 id
             );
 
@@ -690,20 +730,20 @@ function loadPrayers() {
 
 
 /* =========================================================
-   11. ANNOUNCEMENTS
+   ANNOUNCEMENTS
 ========================================================= */
 
 const announcementForm =
-    getElement("announcementForm");
+    el("announcementForm");
 
 const announcementTitle =
-    getElement("announcementTitle");
+    el("announcementTitle");
 
 const announcementText =
-    getElement("announcementText");
+    el("announcementText");
 
 const announcementStatus =
-    getElement("announcementStatus");
+    el("announcementStatus");
 
 
 if (announcementForm) {
@@ -753,7 +793,7 @@ if (announcementForm) {
 
                 if (announcementStatus) {
                     announcementStatus.textContent =
-                        "Enter a title and message.";
+                        "Enter title and message.";
                 }
 
                 return;
@@ -768,7 +808,7 @@ if (announcementForm) {
 
             try {
 
-                const newAnnouncement =
+                const announcementRef =
                     push(
                         ref(
                             database,
@@ -778,7 +818,7 @@ if (announcementForm) {
 
 
                 await set(
-                    newAnnouncement,
+                    announcementRef,
                     {
 
                         title:
@@ -812,7 +852,7 @@ if (announcementForm) {
 
                 if (announcementStatus) {
                     announcementStatus.textContent =
-                        "Announcement published.";
+                        "Announcement published successfully.";
                 }
 
 
@@ -838,27 +878,27 @@ if (announcementForm) {
 
 
 /* =========================================================
-   12. BROADCAST ELEMENTS
+   BROADCAST ELEMENTS
 ========================================================= */
 
 const broadcastStatus =
-    getElement("broadcastStatus");
+    el("broadcastStatus");
 
 const preview =
-    getElement("preview");
+    el("preview");
 
 const startBroadcastButton =
-    getElement("startBroadcast");
+    el("startBroadcast");
 
 const stopBroadcastButton =
-    getElement("stopBroadcast");
+    el("stopBroadcast");
 
 const broadcastMessage =
-    getElement("broadcastMessage");
+    el("broadcastMessage");
 
 
 /* =========================================================
-   13. WEBRTC
+   WEBRTC VARIABLES
 ========================================================= */
 
 let localStream =
@@ -875,7 +915,7 @@ const peerConnections =
     new Map();
 
 
-const rtcConfiguration = {
+const rtcConfig = {
 
     iceServers: [
 
@@ -895,25 +935,7 @@ const rtcConfiguration = {
 
 
 /* =========================================================
-   14. BROADCAST MESSAGE
-========================================================= */
-
-function broadcastMessageShow(
-    message
-) {
-
-    if (broadcastMessage) {
-
-        broadcastMessage.textContent =
-            message;
-
-    }
-
-}
-
-
-/* =========================================================
-   15. BROADCAST STATUS
+   BROADCAST STATUS
 ========================================================= */
 
 function loadBroadcastStatus() {
@@ -930,6 +952,7 @@ function loadBroadcastStatus() {
 
     onValue(
         broadcastRef,
+
         function (snapshot) {
 
             const data =
@@ -946,7 +969,7 @@ function loadBroadcastStatus() {
                 broadcastStatus.textContent =
                     active
                         ? "LIVE"
-                        : "OFFLINE";
+                        : "Offline";
 
 
                 broadcastStatus.classList.toggle(
@@ -973,6 +996,7 @@ function loadBroadcastStatus() {
             }
 
         },
+
         function (error) {
 
             console.error(
@@ -987,10 +1011,28 @@ function loadBroadcastStatus() {
 
 
 /* =========================================================
-   16. CREATE BROADCASTER PEER
+   BROADCAST MESSAGE
 ========================================================= */
 
-async function createBroadcasterPeer(
+function showBroadcastMessage(
+    message
+) {
+
+    if (broadcastMessage) {
+
+        broadcastMessage.textContent =
+            message;
+
+    }
+
+}
+
+
+/* =========================================================
+   CREATE WEBRTC PEER
+========================================================= */
+
+async function createPeer(
     viewerId
 ) {
 
@@ -1014,7 +1056,7 @@ async function createBroadcasterPeer(
 
     const pc =
         new RTCPeerConnection(
-            rtcConfiguration
+            rtcConfig
         );
 
 
@@ -1024,7 +1066,7 @@ async function createBroadcasterPeer(
     );
 
 
-    /* Add camera + microphone */
+    /* Camera + microphone */
 
     if (localStream) {
 
@@ -1044,7 +1086,7 @@ async function createBroadcasterPeer(
     }
 
 
-    /* ICE candidates */
+    /* ICE */
 
     pc.onicecandidate =
         async function (event) {
@@ -1075,7 +1117,7 @@ async function createBroadcasterPeer(
             } catch (error) {
 
                 console.error(
-                    "Broadcaster ICE error:",
+                    "ICE error:",
                     error
                 );
 
@@ -1092,7 +1134,6 @@ async function createBroadcasterPeer(
             console.log(
                 "Viewer",
                 viewerId,
-                "connection:",
                 pc.connectionState
             );
 
@@ -1104,7 +1145,7 @@ async function createBroadcasterPeer(
                     "closed"
             ) {
 
-                closeViewer(
+                closePeer(
                     viewerId
                 );
 
@@ -1143,7 +1184,7 @@ async function createBroadcasterPeer(
     );
 
 
-    /* Wait for viewer answer */
+    /* Listen for answer */
 
     onValue(
         ref(
@@ -1152,6 +1193,7 @@ async function createBroadcasterPeer(
             viewerId +
             "/answer"
         ),
+
         async function (snapshot) {
 
             const answer =
@@ -1181,7 +1223,7 @@ async function createBroadcasterPeer(
             } catch (error) {
 
                 console.error(
-                    "Set remote answer error:",
+                    "Answer error:",
                     error
                 );
 
@@ -1191,7 +1233,7 @@ async function createBroadcasterPeer(
     );
 
 
-    /* Viewer ICE candidates */
+    /* Viewer ICE */
 
     onChildAdded(
         ref(
@@ -1200,6 +1242,7 @@ async function createBroadcasterPeer(
             viewerId +
             "/viewerCandidates"
         ),
+
         async function (snapshot) {
 
             const candidate =
@@ -1222,7 +1265,7 @@ async function createBroadcasterPeer(
             } catch (error) {
 
                 console.error(
-                    "Add viewer ICE error:",
+                    "Viewer candidate error:",
                     error
                 );
 
@@ -1237,10 +1280,10 @@ async function createBroadcasterPeer(
 
 
 /* =========================================================
-   17. CLOSE VIEWER
+   CLOSE PEER
 ========================================================= */
 
-async function closeViewer(
+async function closePeer(
     viewerId
 ) {
 
@@ -1283,7 +1326,7 @@ async function closeViewer(
     } catch (error) {
 
         console.error(
-            "Close viewer signal error:",
+            "Close peer error:",
             error
         );
 
@@ -1293,7 +1336,7 @@ async function closeViewer(
 
 
 /* =========================================================
-   18. LISTEN FOR VIEWERS
+   LISTEN FOR VIEWERS
 ========================================================= */
 
 function listenForViewers() {
@@ -1321,6 +1364,7 @@ function listenForViewers() {
 
     onChildAdded(
         viewersRef,
+
         async function (snapshot) {
 
             if (!broadcasting) {
@@ -1338,27 +1382,28 @@ function listenForViewers() {
 
 
             console.log(
-                "New viewer:",
+                "Viewer joined:",
                 viewerId
             );
 
 
             try {
 
-                await createBroadcasterPeer(
+                await createPeer(
                     viewerId
                 );
 
             } catch (error) {
 
                 console.error(
-                    "Viewer connection error:",
+                    "Peer creation error:",
                     error
                 );
 
             }
 
         },
+
         function (error) {
 
             console.error(
@@ -1372,6 +1417,7 @@ function listenForViewers() {
 
     onChildRemoved(
         viewersRef,
+
         function (snapshot) {
 
             const viewerId =
@@ -1380,7 +1426,7 @@ function listenForViewers() {
 
             if (viewerId) {
 
-                closeViewer(
+                closePeer(
                     viewerId
                 );
 
@@ -1393,7 +1439,7 @@ function listenForViewers() {
 
 
 /* =========================================================
-   19. START BROADCAST
+   START CAMERA BROADCAST
 ========================================================= */
 
 async function startBroadcast() {
@@ -1405,7 +1451,7 @@ async function startBroadcast() {
 
     if (!database) {
 
-        broadcastMessageShow(
+        showBroadcastMessage(
             "Firebase is unavailable."
         );
 
@@ -1418,7 +1464,7 @@ async function startBroadcast() {
         !navigator.mediaDevices.getUserMedia
     ) {
 
-        broadcastMessageShow(
+        showBroadcastMessage(
             "Camera is not supported."
         );
 
@@ -1426,7 +1472,7 @@ async function startBroadcast() {
     }
 
 
-    broadcastMessageShow(
+    showBroadcastMessage(
         "Requesting camera permission..."
     );
 
@@ -1484,18 +1530,6 @@ async function startBroadcast() {
             true;
 
 
-        if (broadcastStatus) {
-
-            broadcastStatus.textContent =
-                "LIVE";
-
-            broadcastStatus.classList.add(
-                "live"
-            );
-
-        }
-
-
         if (startBroadcastButton) {
 
             startBroadcastButton.disabled =
@@ -1508,6 +1542,18 @@ async function startBroadcast() {
 
             stopBroadcastButton.disabled =
                 false;
+
+        }
+
+
+        if (broadcastStatus) {
+
+            broadcastStatus.textContent =
+                "LIVE";
+
+            broadcastStatus.classList.add(
+                "live"
+            );
 
         }
 
@@ -1536,20 +1582,15 @@ async function startBroadcast() {
         listenForViewers();
 
 
-        broadcastMessageShow(
-            "Live Darshan is LIVE."
-        );
-
-
-        console.log(
-            "Broadcast started."
+        showBroadcastMessage(
+            "Live Darshan is now LIVE."
         );
 
 
     } catch (error) {
 
         console.error(
-            "Start broadcast error:",
+            "Broadcast error:",
             error
         );
 
@@ -1584,27 +1625,16 @@ async function startBroadcast() {
             "NotAllowedError"
         ) {
 
-            broadcastMessageShow(
+            showBroadcastMessage(
                 "Camera or microphone permission denied."
-            );
-
-        }
-
-        else if (
-            error.name ===
-            "NotFoundError"
-        ) {
-
-            broadcastMessageShow(
-                "Camera or microphone not found."
             );
 
         }
 
         else {
 
-            broadcastMessageShow(
-                "Could not start broadcast."
+            showBroadcastMessage(
+                "Could not start camera."
             );
 
         }
@@ -1615,7 +1645,7 @@ async function startBroadcast() {
 
 
 /* =========================================================
-   20. STOP BROADCAST
+   STOP BROADCAST
 ========================================================= */
 
 async function stopBroadcast() {
@@ -1624,7 +1654,7 @@ async function stopBroadcast() {
         false;
 
 
-    /* Stop local camera */
+    /* Stop camera */
 
     if (localStream) {
 
@@ -1647,7 +1677,7 @@ async function stopBroadcast() {
     }
 
 
-    /* Close all viewer connections */
+    /* Close peers */
 
     for (
         const [
@@ -1685,96 +1715,85 @@ async function stopBroadcast() {
     peerConnections.clear();
 
 
-    if (!database) {
-        return;
-    }
+    if (database) {
 
+        try {
 
-    try {
+            await set(
+                ref(
+                    database,
+                    "pandal/broadcast"
+                ),
+                {
 
-        await set(
-            ref(
-                database,
-                "pandal/broadcast"
-            ),
-            {
+                    active:
+                        false,
 
-                active:
-                    false,
+                    closed:
+                        true,
 
-                closed:
-                    true,
+                    stoppedAt:
+                        serverTimestamp()
 
-                stoppedAt:
-                    serverTimestamp()
+                }
+            );
 
-            }
-        );
+        } catch (error) {
 
-
-        if (broadcastStatus) {
-
-            broadcastStatus.textContent =
-                "OFFLINE";
-
-            broadcastStatus.classList.remove(
-                "live"
+            console.error(
+                "Broadcast stop Firebase error:",
+                error
             );
 
         }
 
-
-        if (startBroadcastButton) {
-
-            startBroadcastButton.disabled =
-                false;
-
-        }
+    }
 
 
-        if (stopBroadcastButton) {
+    if (broadcastStatus) {
 
-            stopBroadcastButton.disabled =
-                true;
+        broadcastStatus.textContent =
+            "Offline";
 
-        }
-
-
-        broadcastMessageShow(
-            "Live Darshan stopped."
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Stop broadcast error:",
-            error
-        );
-
-
-        broadcastMessageShow(
-            "Broadcast stopped locally."
+        broadcastStatus.classList.remove(
+            "live"
         );
 
     }
+
+
+    if (startBroadcastButton) {
+
+        startBroadcastButton.disabled =
+            false;
+
+    }
+
+
+    if (stopBroadcastButton) {
+
+        stopBroadcastButton.disabled =
+            true;
+
+    }
+
+
+    showBroadcastMessage(
+        "Live Darshan stopped."
+    );
 
 }
 
 
 /* =========================================================
-   21. BROADCAST BUTTONS
+   BUTTON EVENTS
 ========================================================= */
 
 if (startBroadcastButton) {
 
     startBroadcastButton.addEventListener(
         "click",
-        function () {
-
-            startBroadcast();
-
-        }
+        startBroadcast
     );
 
 }
@@ -1784,41 +1803,37 @@ if (stopBroadcastButton) {
 
     stopBroadcastButton.addEventListener(
         "click",
-        function () {
-
-            stopBroadcast();
-
-        }
+        stopBroadcast
     );
 
 }
 
 
 /* =========================================================
-   22. ADMIN DASHBOARD START
+   DASHBOARD INITIALIZATION
 ========================================================= */
 
-let dashboardStarted =
+let dashboardInitialized =
     false;
 
 
-function startAdminDashboard() {
+function initializeDashboard() {
 
-    if (dashboardStarted) {
+    if (dashboardInitialized) {
         return;
     }
 
 
-    dashboardStarted =
+    dashboardInitialized =
         true;
 
 
     console.log(
-        "Admin dashboard starting..."
+        "Initializing dashboard..."
     );
 
 
-    monitorFirebaseConnection();
+    monitorConnection();
 
     loadPrayers();
 
@@ -1826,14 +1841,14 @@ function startAdminDashboard() {
 
 
     console.log(
-        "Admin dashboard ready."
+        "Dashboard initialized."
     );
 
 }
 
 
 /* =========================================================
-   23. GLOBAL ERROR LOGGING
+   ERROR LOGGING
 ========================================================= */
 
 window.addEventListener(
@@ -1841,7 +1856,7 @@ window.addEventListener(
     function (event) {
 
         console.error(
-            "ADMIN JS ERROR:",
+            "ADMIN ERROR:",
             event.error ||
             event.message
         );
@@ -1863,40 +1878,6 @@ window.addEventListener(
 );
 
 
-/* =========================================================
-   24. FINAL PRELOADER SAFETY
-========================================================= */
-
-function finalPreloaderRemoval() {
-
-    const p =
-        document.getElementById(
-            "preloader"
-        );
-
-    if (p) {
-        p.remove();
-    }
-
-}
-
-
-setTimeout(
-    finalPreloaderRemoval,
-    100
-);
-
-setTimeout(
-    finalPreloaderRemoval,
-    1000
-);
-
-setTimeout(
-    finalPreloaderRemoval,
-    5000
-);
-
-
 console.log(
-    "GANPATI ADMIN.JS LOADED SUCCESSFULLY"
+    "ADMIN.JS LOADED"
 );
