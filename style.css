@@ -57,26 +57,36 @@ body::-webkit-scrollbar-track {
 
 
 body::-webkit-scrollbar-thumb {
+
   background: #3b2b1d;
+
   border-radius: 50px;
+
 }
 
 
 a {
+
   color: inherit;
+
   text-decoration: none;
+
 }
 
 
 button,
 input,
 textarea {
+
   font: inherit;
+
 }
 
 
 button {
+
   cursor: pointer;
+
 }
 
 
@@ -118,7 +128,9 @@ h2 {
 
 
 h3 {
+
   font-size: 2rem;
+
 }
 
 
@@ -132,7 +144,9 @@ em {
 
 
 .hidden {
+
   display: none !important;
+
 }
 
 
@@ -143,14 +157,23 @@ em {
   width: 1px;
   height: 1px;
 
+  padding: 0;
+  margin: -1px;
+
   overflow: hidden;
 
   clip: rect(0,0,0,0);
 
+  white-space: nowrap;
+
+  border: 0;
+
 }
 
 
-/* PRELOADER */
+/* =========================================================
+   PRELOADER
+========================================================= */
 
 .preloader {
 
@@ -158,13 +181,19 @@ em {
 
   inset: 0;
 
-  z-index: 99999;
+  z-index: 999999;
 
   display: grid;
 
   place-items: center;
 
   background: #0D0D0D;
+
+  opacity: 1;
+
+  visibility: visible;
+
+  pointer-events: auto;
 
   transition:
     opacity .8s ease,
@@ -179,6 +208,8 @@ em {
 
   visibility: hidden;
 
+  pointer-events: none;
+
 }
 
 
@@ -188,7 +219,7 @@ em {
 
   font-size: 7rem;
 
-  color: var(--gold);
+  color: #CBA153;
 
   text-shadow:
     0 0 25px rgba(203,161,83,.45);
@@ -201,19 +232,29 @@ em {
 
 @keyframes omPulse {
 
+  0%,
+  100% {
+
+    transform: scale(1);
+
+  }
+
   50% {
 
     transform: scale(1.1);
 
     text-shadow:
-      0 0 60px rgba(203,161,83,.8);
+      0 0 60px
+      rgba(203,161,83,.8);
 
   }
 
 }
 
 
-/* HEADER */
+/* =========================================================
+   HEADER
+========================================================= */
 
 .site-header {
 
@@ -237,7 +278,7 @@ em {
 
   background:
     linear-gradient(
-      rgba(13,13,13,.92),
+      rgba(13,13,13,.94),
       rgba(13,13,13,0)
     );
 
@@ -318,7 +359,7 @@ em {
 .desktop-nav a,
 .admin-link {
 
-  transition: color .25s;
+  transition: color .25s ease;
 
 }
 
@@ -333,14 +374,16 @@ em {
 
 .admin-link {
 
-  font-size: 12px;
-
   color: var(--muted);
+
+  font-size: 12px;
 
 }
 
 
-/* BUTTONS */
+/* =========================================================
+   BUTTONS
+========================================================= */
 
 .btn {
 
@@ -349,15 +392,14 @@ em {
   border-radius: 999px;
 
   padding:
-    13px
-    23px;
+    13px 23px;
 
   font-weight: 700;
 
   transition:
-    transform .25s,
-    box-shadow .25s,
-    border-color .25s;
+    transform .25s ease,
+    box-shadow .25s ease,
+    border-color .25s ease;
 
 }
 
@@ -406,7 +448,9 @@ em {
 }
 
 
-/* HERO */
+/* =========================================================
+   HERO
+========================================================= */
 
 .hero {
 
@@ -584,9 +628,9 @@ em {
 
   z-index: 5;
 
-  text-align: center;
-
   max-width: 1000px;
+
+  text-align: center;
 
 }
 
@@ -640,7 +684,8 @@ em {
 
   justify-content: center;
 
-  gap: clamp(15px,4vw,45px);
+  gap:
+    clamp(15px,4vw,45px);
 
   margin-top: 48px;
 
@@ -683,7 +728,9 @@ em {
 }
 
 
-/* SECTIONS */
+/* =========================================================
+   SECTIONS
+========================================================= */
 
 .section {
 
@@ -734,7 +781,9 @@ em {
 }
 
 
-/* DARSHAN */
+/* =========================================================
+   DARSHAN
+========================================================= */
 
 .darshan-container {
 
@@ -803,8 +852,7 @@ em {
 
   border-radius: 999px;
 
-  background:
-    #751919;
+  background: #751919;
 
   color: white;
 
@@ -855,9 +903,9 @@ em {
 
   align-content: center;
 
-  text-align: center;
-
   padding: 30px;
+
+  text-align: center;
 
 }
 
@@ -891,7 +939,9 @@ em {
 }
 
 
-/* SANKALP */
+/* =========================================================
+   SANKALP
+========================================================= */
 
 .sankalp-section {
 
@@ -1001,7 +1051,8 @@ em {
 
   max-width: 300px;
 
-  padding: 18px 20px;
+  padding:
+    18px 20px;
 
   border:
     1px solid var(--border);
@@ -1053,7 +1104,9 @@ em {
 }
 
 
-/* AARTI PLAYER */
+/* =========================================================
+   AARTI
+========================================================= */
 
 .player-card {
 
@@ -1209,7 +1262,8 @@ em {
 
 .track-list button {
 
-  padding: 7px 10px;
+  padding:
+    7px 10px;
 
   border:
     1px solid
@@ -1236,7 +1290,9 @@ em {
 }
 
 
-/* PUSHPANJALI */
+/* =========================================================
+   PUSHPANJALI
+========================================================= */
 
 .pushpanjali {
 
@@ -1298,7 +1354,9 @@ em {
 }
 
 
-/* FOOTER */
+/* =========================================================
+   FOOTER
+========================================================= */
 
 .site-footer {
 
@@ -1348,7 +1406,9 @@ em {
 }
 
 
-/* ADMIN */
+/* =========================================================
+   ADMIN
+========================================================= */
 
 .admin-main {
 
@@ -1432,7 +1492,8 @@ em {
 
   margin-top: 6px;
 
-  padding: 13px 15px;
+  padding:
+    13px 15px;
 
   outline: none;
 
@@ -1483,7 +1544,8 @@ em {
 
 .status-pill {
 
-  padding: 7px 10px;
+  padding:
+    7px 10px;
 
   border:
     1px solid var(--border);
@@ -1627,9 +1689,11 @@ em {
 }
 
 
-/* MOBILE */
+/* =========================================================
+   MOBILE
+========================================================= */
 
-@media(max-width:720px) {
+@media (max-width:720px) {
 
   .desktop-nav {
     display: none;
@@ -1637,22 +1701,30 @@ em {
 
 
   .hero {
+
     padding-top: 120px;
+
   }
 
 
   .hero-art {
+
     opacity: .75;
+
   }
 
 
   .countdown {
+
     gap: 10px;
+
   }
 
 
   .count-item {
+
     min-width: 48px;
+
   }
 
 
@@ -1684,17 +1756,23 @@ em {
 
 
   .prayer-form button {
+
     width: 100%;
+
   }
 
 
   .admin-grid {
+
     grid-template-columns: 1fr;
+
   }
 
 
   .broadcast-card {
+
     grid-column: auto;
+
   }
 
 
@@ -1703,6 +1781,26 @@ em {
     align-items: flex-start;
 
     flex-direction: column;
+
+  }
+
+
+  .auth-panel {
+
+    padding: 25px 20px;
+
+  }
+
+
+  .pushpanjali {
+
+    right: 16px;
+
+    bottom: 16px;
+
+    width: 58px;
+
+    height: 58px;
 
   }
 
