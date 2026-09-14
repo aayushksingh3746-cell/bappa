@@ -1,300 +1,167 @@
-// ============================================================
-// GANPATI DIGITAL DARSHAN
-// app.js
-//
-// Firebase Realtime Database
-// WebRTC Live Darshan
-// Sankalp / Prayer Wall
-// Aarti Player
-// Pushpanjali
-//
-// NO AGORA
-// NO TURN CREDENTIALS
-// ============================================================
+/* =========================================================
+   GANESH CHATURTHI PANDAL — PUBLIC APP
+   Firebase RTDB + Sankalp + Announcements + Aarti + WebRTC
+========================================================= */
 
-import { initializeApp } from
-  "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 
 import {
   getDatabase,
   ref,
-  set,
-  update,
   push,
+  set,
   onValue,
   onChildAdded,
-  onDisconnect,
-  serverTimestamp
-} from
-  "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+  remove
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 
-// ============================================================
-// FIREBASE
-// ============================================================
+/* =========================================================
+   FIREBASE CONFIG
+========================================================= */
 
 const firebaseConfig = {
   apiKey: "AIzaSyACsEZt2RsdAtGq17KOPNYZRD3m9pPuwBM",
   authDomain: "ganpati-5f24e.firebaseapp.com",
+
   databaseURL:
     "https://ganpati-5f24e-default-rtdb.asia-southeast1.firebasedatabase.app",
+
   projectId: "ganpati-5f24e",
   storageBucket: "ganpati-5f24e.firebasestorage.app",
   messagingSenderId: "512949354669",
   appId: "1:512949354669:web:f561488c630203a9ae4624"
 };
 
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const database = getDatabase(app);
+
+console.log("Ganesh Pandal app initialized");
 
 
-// ============================================================
-// DOM
-// ============================================================
+/* =========================================================
+   HELPER
+========================================================= */
 
-const liveVideo =
-  document.getElementById("liveVideo");
-
-const activeStreamUI =
-  document.getElementById("active-stream-ui");
-
-const offlineStreamUI =
-  document.getElementById("offline-stream-ui");
-
-const prayerForm =
-  document.getElementById("prayerForm");
-
-const prayerInput =
-  document.getElementById("prayerInput");
-
-const prayerStatus =
-  document.getElementById("prayerStatus");
-
-const prayerWall =
-  document.getElementById("prayerWall");
-
-const heroSankalp =
-  document.getElementById("heroSankalp");
-
-const daysEl =
-  document.getElementById("days");
-
-const hoursEl =
-  document.getElementById("hours");
-
-const minutesEl =
-  document.getElementById("minutes");
-
-const secondsEl =
-  document.getElementById("seconds");
-
-const pushpanjali =
-  document.getElementById("pushpanjali");
-
-const petalCanvas =
-  document.getElementById("petalCanvas");
-
-const bellAudio =
-  document.getElementById("bellAudio");
-
-const trackTitle =
-  document.getElementById("trackTitle");
-
-const trackNumber =
-  document.getElementById("trackNumber");
-
-const playPause =
-  document.getElementById("playPause");
-
-const playIcon =
-  document.getElementById("playIcon");
-
-const progress =
-  document.getElementById("progress");
-
-const currentTimeEl =
-  document.getElementById("currentTime");
-
-const durationEl =
-  document.getElementById("duration");
-
-const trackList =
-  document.getElementById("trackList");
-
-const aartiAudio =
-  document.getElementById("aartiAudio");
+const $ = id =>
+  document.getElementById(id);
 
 
-// ============================================================
-// HELPERS
-// ============================================================
+/* =========================================================
+   PRELOADER
+========================================================= */
 
-function escapeHTML(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+function hidePreloader() {
 
+  const preloader = $("preloader");
 
-function setText(element, text) {
-  if (element) {
-    element.textContent = text;
-  }
-}
+  if (!preloader) return;
 
+  preloader.classList.add("done");
 
-function formatTime(seconds) {
-  if (!Number.isFinite(seconds)) {
-    return "0:00";
-  }
+  setTimeout(() => {
 
-  const minutes =
-    Math.floor(seconds / 60);
-
-  const secs =
-    Math.floor(seconds % 60);
-
-  return `${minutes}:${String(secs).padStart(2, "0")}`;
-}
-
-
-// ============================================================
-// HERO SANKALP BUTTON
-// ============================================================
-
-if (heroSankalp) {
-  heroSankalp.addEventListener(
-    "click",
-    () => {
-      const sankalp =
-        document.getElementById("sankalp");
-
-      if (!sankalp) return;
-
-      sankalp.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-
-      setTimeout(() => {
-        if (prayerInput) {
-          prayerInput.focus();
-        }
-      }, 600);
+    if (preloader.parentNode) {
+      preloader.remove();
     }
-  );
+
+  }, 900);
+
 }
 
 
-// ============================================================
-// SMOOTH INTERNAL NAVIGATION
-// ============================================================
+window.addEventListener("load", () => {
 
-document
-  .querySelectorAll('a[href^="#"]')
-  .forEach((link) => {
+  setTimeout(
+    hidePreloader,
+    500
+  );
 
-    link.addEventListener(
-      "click",
-      () => {
-
-        const target =
-          link.getAttribute("href");
-
-        if (!target || target === "#") {
-          return;
-        }
-
-        const element =
-          document.querySelector(target);
-
-        if (element) {
-          element.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-          });
-        }
-      }
-    );
-  });
+});
 
 
-// ============================================================
-// COUNTDOWN
-// ============================================================
-//
-// Existing date supplied in the project:
-// 02 September 2026
-//
-// That date has passed, so this displays zero.
-// Change EVENT_DATE only when the actual future date
-// is decided.
-// ============================================================
+setTimeout(
+  hidePreloader,
+  2500
+);
 
-const EVENT_DATE =
-  new Date(
-    "2026-09-02T00:00:00+05:30"
-  ).getTime();
 
+/* =========================================================
+   COUNTDOWN
+========================================================= */
 
 function updateCountdown() {
 
-  const remaining =
-    EVENT_DATE - Date.now();
+  const countdown = $("countdown");
 
-  if (remaining <= 0) {
+  if (!countdown) return;
 
-    setText(daysEl, "00");
-    setText(hoursEl, "00");
-    setText(minutesEl, "00");
-    setText(secondsEl, "00");
+  const target =
+    new Date(
+      "2026-09-24T00:00:00+05:30"
+    ).getTime();
+
+  const difference =
+    target - Date.now();
+
+
+  if (difference <= 0) {
+
+    countdown.innerHTML = `
+      <div class="countdown-finished">
+        Ganpati Bappa Pudhchya Varshi Lavkar Ya
+      </div>
+    `;
 
     return;
+
   }
 
-  const totalSeconds =
-    Math.floor(remaining / 1000);
 
   const days =
     Math.floor(
-      totalSeconds / 86400
+      difference / 86400000
     );
 
   const hours =
     Math.floor(
-      (totalSeconds % 86400) / 3600
+      (difference / 3600000) % 24
     );
 
   const minutes =
     Math.floor(
-      (totalSeconds % 3600) / 60
+      (difference / 60000) % 60
     );
 
   const seconds =
-    totalSeconds % 60;
+    Math.floor(
+      (difference / 1000) % 60
+    );
 
-  setText(
-    daysEl,
-    String(days).padStart(2, "0")
-  );
 
-  setText(
-    hoursEl,
-    String(hours).padStart(2, "0")
-  );
+  if ($("days"))
+    $("days").textContent =
+      String(days).padStart(2, "0");
 
-  setText(
-    minutesEl,
-    String(minutes).padStart(2, "0")
-  );
+  if ($("hours"))
+    $("hours").textContent =
+      String(hours).padStart(2, "0");
 
-  setText(
-    secondsEl,
-    String(seconds).padStart(2, "0")
-  );
+  if ($("minutes"))
+    $("minutes").textContent =
+      String(minutes).padStart(2, "0");
+
+  if ($("seconds"))
+    $("seconds").textContent =
+      String(seconds).padStart(2, "0");
+
 }
 
 
@@ -306,891 +173,832 @@ setInterval(
 );
 
 
-// ============================================================
-// SANKALP / PRAYER WALL
-// ============================================================
+/* =========================================================
+   SANKALP
+========================================================= */
 
-const prayersRef =
-  ref(
-    db,
-    "pandal/prayers_wall"
-  );
+const prayerForm =
+  $("prayerForm");
+
+const prayerInput =
+  $("prayerInput");
+
+const prayerStatus =
+  $("prayerStatus");
+
+const prayerWall =
+  $("prayerWall");
 
 
-if (prayerForm && prayerInput) {
+if (prayerForm) {
 
   prayerForm.addEventListener(
     "submit",
-    async (event) => {
+    async event => {
 
       event.preventDefault();
 
+
       const text =
-        prayerInput.value
-          .trim()
-          .replace(/\s+/g, " ");
+        prayerInput?.value.trim();
+
 
       if (!text) {
 
-        setText(
-          prayerStatus,
-          "Please enter your Sankalp."
-        );
+        if (prayerStatus) {
+
+          prayerStatus.textContent =
+            "Please write your Sankalp.";
+
+        }
 
         return;
+
       }
+
 
       if (text.length > 50) {
 
-        setText(
-          prayerStatus,
-          "Sankalp must be 50 characters or less."
-        );
+        if (prayerStatus) {
+
+          prayerStatus.textContent =
+            "Maximum 50 characters allowed.";
+
+        }
 
         return;
+
       }
+
+
+      if (prayerStatus) {
+
+        prayerStatus.textContent =
+          "Offering your Sankalp...";
+
+      }
+
 
       try {
 
-        setText(
-          prayerStatus,
-          "Submitting..."
-        );
-
         const prayerRef =
-          push(prayersRef);
+          push(
+            ref(
+              database,
+              "pandal/prayers_wall"
+            )
+          );
 
-        await set(
-          prayerRef,
-          {
-            text: text,
-            createdAt:
-              serverTimestamp()
-          }
-        );
 
-        prayerInput.value = "";
+        await Promise.race([
 
-        setText(
-          prayerStatus,
-          "Your Sankalp has been received with devotion. 🙏"
-        );
+          set(
+            prayerRef,
+            {
+              text: text,
+              createdAt: Date.now()
+            }
+          ),
 
-        setTimeout(
-          () => {
-            setText(
-              prayerStatus,
-              ""
-            );
-          },
-          4000
-        );
+          new Promise(
+            (_, reject) => {
 
-      } catch (error) {
+              setTimeout(
+                () => {
+
+                  reject(
+                    new Error(
+                      "Firebase connection timed out."
+                    )
+                  );
+
+                },
+                10000
+              );
+
+            }
+          )
+
+        ]);
+
+
+        prayerForm.reset();
+
+
+        if (prayerStatus) {
+
+          prayerStatus.textContent =
+            "Your Sankalp has been offered 🙏";
+
+        }
+
+      }
+
+      catch (error) {
 
         console.error(
-          "Prayer submission error:",
+          "Sankalp error:",
           error
         );
 
-        setText(
-          prayerStatus,
-          "Unable to submit right now. Please try again."
-        );
+
+        if (prayerStatus) {
+
+          prayerStatus.textContent =
+            "Firebase error: " +
+            error.message;
+
+        }
+
       }
+
     }
   );
+
 }
 
 
-// ============================================================
-// RENDER PRAYER WALL
-// ============================================================
+/* =========================================================
+   SANKALP WALL
+========================================================= */
 
-function renderPrayerWall(data) {
+if (prayerWall) {
 
-  if (!prayerWall) {
-    return;
-  }
+  onChildAdded(
+    ref(
+      database,
+      "pandal/prayers_wall"
+    ),
 
-  const prayers = [];
+    snapshot => {
 
-  Object.entries(
-    data || {}
-  ).forEach(
-    ([id, prayer]) => {
+      const data =
+        snapshot.val();
 
-      if (
-        !prayer ||
-        typeof prayer !== "object"
+
+      if (!data) return;
+
+
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "prayer-item";
+
+
+      const text =
+        document.createElement("p");
+
+      text.textContent =
+        data.text || "";
+
+
+      item.appendChild(text);
+
+      prayerWall.prepend(item);
+
+
+      while (
+        prayerWall.children.length > 50
       ) {
-        return;
+
+        prayerWall.lastElementChild.remove();
+
       }
 
-      if (
-        typeof prayer.text !== "string"
-      ) {
-        return;
-      }
+    },
 
-      prayers.push({
-        id,
-        text: prayer.text,
-        createdAt:
-          typeof prayer.createdAt === "number"
-            ? prayer.createdAt
-            : 0
+    error => {
+
+      console.error(
+        "Prayer wall error:",
+        error
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   HERO SANKALP
+========================================================= */
+
+$("heroSankalp")?.addEventListener(
+  "click",
+  () => {
+
+    const section =
+      $("sankalp");
+
+
+    if (section) {
+
+      section.scrollIntoView({
+        behavior: "smooth"
       });
+
     }
-  );
-
-  prayers.sort(
-    (a, b) =>
-      b.createdAt - a.createdAt
-  );
-
-  const visiblePrayers =
-    prayers.slice(0, 40);
-
-  if (!visiblePrayers.length) {
-
-    prayerWall.innerHTML = `
-      <div class="empty-state">
-        Be the first to offer a Sankalp. 🙏
-      </div>
-    `;
-
-    return;
-  }
-
-  prayerWall.innerHTML =
-    visiblePrayers
-      .map(
-        (prayer) => `
-          <div
-            class="prayer-card"
-            data-prayer-id="${escapeHTML(prayer.id)}"
-          >
-            <p>${escapeHTML(prayer.text)}</p>
-          </div>
-        `
-      )
-      .join("");
-}
 
 
-onValue(
-  prayersRef,
-  (snapshot) => {
-    renderPrayerWall(
-      snapshot.val()
+    setTimeout(
+      () => prayerInput?.focus(),
+      600
     );
-  },
-  (error) => {
-    console.error(
-      "Prayer wall error:",
-      error
-    );
+
   }
 );
 
 
-// ============================================================
-// AARTI PLAYER
-// ============================================================
-//
-// EXACT TRACK PATHS SUPPLIED BY USER
-//
-// 5 Traditional Aartis
-// 5 Festival Anthems
-//
-// The fifth traditional track is using the placeholder path
-// supplied by the user.
-// ============================================================
+/* =========================================================
+   ANNOUNCEMENTS
+========================================================= */
 
-const aartiTracks = [
+const announcements =
+  $("announcements");
+
+
+if (announcements) {
+
+  onChildAdded(
+    ref(
+      database,
+      "pandal/announcements"
+    ),
+
+    snapshot => {
+
+      const data =
+        snapshot.val();
+
+
+      if (!data) return;
+
+
+      const article =
+        document.createElement("article");
+
+      article.className =
+        "announcement-item";
+
+
+      const title =
+        document.createElement("h3");
+
+      title.textContent =
+        data.title || "Announcement";
+
+
+      const message =
+        document.createElement("p");
+
+      message.textContent =
+        data.message || "";
+
+
+      article.appendChild(title);
+      article.appendChild(message);
+
+
+      announcements.prepend(
+        article
+      );
+
+    },
+
+    error => {
+
+      console.error(
+        "Announcements error:",
+        error
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   AARTI PLAYER
+========================================================= */
+
+const tracks = [
 
   {
-    title:
-      "Sukhkarta Dukhharta",
-
-    category:
-      "Traditional Aarti",
-
-    src:
-      "./assets/Keshav_Kumar_-_Sukhkarta_Dukhharta_(mp3.pm).mp3"
+    title: "Gajanana",
+    src: "assets/Gajanana.mp3"
   },
 
   {
-    title:
-      "Jai Ganesh Deva",
-
-    category:
-      "Traditional Aarti",
-
+    title: "Ganpati Bappa Moriya",
     src:
-      "./assets/Kumar_Vishu_Vandana_Vajpai_-_Jai_Ganesh_Jai_Ganesh_Deva_(mp3.pm).mp3"
+      "assets/Ganpati Bappa Moriya Humse Badhkar Kaun 128 Kbps.mp3"
   },
 
   {
-    title:
-      "Shendur Laal Chadhayo",
-
-    category:
-      "Traditional Aarti",
-
+    title: "Jalwa Mera Hi Jalwa",
     src:
-      "./assets/Shendur Laal Chadhayo Aarti 128 Kbps.mp3"
+      "assets/Jalwa Mera Hi Jalwa Wanted 128 Kbps.mp3"
   },
 
   {
-    title:
-      "Shree Ganeshay Dheemahi",
-
-    category:
-      "Traditional Aarti",
-
+    title: "Sukhkarta Dukhharta",
     src:
-      "./assets/Viruddh_-_Shree_Ganeshay_Dheemahi_(mp3.pm).mp3"
+      "assets/Keshav_Kumar_-_Sukhkarta_Dukhharta_(mp3.pm).mp3"
   },
 
   {
-    title:
-      "Prathama Tula Vandito",
-
-    category:
-      "Traditional Aarti",
-
+    title: "Jai Ganesh Jai Ganesh Deva",
     src:
-      "./assets/Prathama_Tula_Vandito.mp3"
+      "assets/Kumar_Vishu_Vandana_Vajpai_-_Jai_Ganesh_Jai_Ganesh_Deva_(mp3.pm).mp3"
   },
 
   {
-    title:
-      "Gajanana",
-
-    category:
-      "Festival Anthem",
-
+    title: "Maurya Re",
     src:
-      "./assets/Gajanana.mp3"
+      "assets/Maurya Re Don 2006 128 Kbps.mp3"
   },
 
   {
-    title:
-      "Deva Ho Deva",
-
-    category:
-      "Festival Anthem",
-
+    title: "Shendur Laal Chadhayo",
     src:
-      "./assets/Ganpati Bappa Moriya Humse Badhkar Kaun 128 Kbps.mp3"
+      "assets/Shendur Laal Chadhayo Aarti 128 Kbps.mp3"
   },
 
   {
-    title:
-      "Jalwa",
-
-    category:
-      "Festival Anthem",
-
+    title: "Suno Ganpati Bappa Morya",
     src:
-      "./assets/Jalwa Mera Hi Jalwa Wanted 128 Kbps.mp3"
+      "assets/Suno Ganpati Bappa Morya Judwaa 2 128 Kbps.mp3"
   },
 
   {
-    title:
-      "Morya Re (Don)",
-
-    category:
-      "Festival Anthem",
-
+    title: "Shree Ganeshay Dheemahi",
     src:
-      "./assets/Maurya Re Don 2006 128 Kbps.mp3"
-  },
-
-  {
-    title:
-      "Suno Ganpati Bappa Morya",
-
-    category:
-      "Festival Anthem",
-
-    src:
-      "./assets/Suno Ganpati Bappa Morya Judwaa 2 128 Kbps.mp3"
+      "assets/Viruddh_-_Shree_Ganeshay_Dheemahi_(mp3.pm).mp3"
   }
 
 ];
 
 
-let currentAartiIndex = 0;
-let aartiPlaying = false;
+const audio =
+  $("aartiAudio");
+
+const trackTitle =
+  $("trackTitle");
+
+const trackNumber =
+  $("trackNumber");
+
+const trackList =
+  $("trackList");
+
+const playPause =
+  $("playPause");
+
+const playIcon =
+  $("playIcon");
+
+const progress =
+  $("progress");
+
+const currentTime =
+  $("currentTime");
+
+const duration =
+  $("duration");
 
 
-// ============================================================
-// LOAD AARTI
-// ============================================================
+let currentTrack = 0;
 
-function loadAarti(
-  index,
-  autoplay = false
-) {
+
+function formatTime(seconds) {
 
   if (
-    !aartiAudio ||
-    !aartiTracks.length
+    !Number.isFinite(seconds) ||
+    seconds < 0
   ) {
-    return;
+
+    return "0:00";
+
   }
 
-  if (index < 0) {
-    index =
-      aartiTracks.length - 1;
-  }
 
-  if (
-    index >= aartiTracks.length
-  ) {
-    index = 0;
-  }
+  const min =
+    Math.floor(seconds / 60);
 
-  currentAartiIndex = index;
+  const sec =
+    Math.floor(seconds % 60);
 
-  const track =
-    aartiTracks[
-      currentAartiIndex
-    ];
 
-  aartiAudio.src =
-    track.src;
-
-  aartiAudio.load();
-
-  setText(
-    trackTitle,
-    track.title
+  return (
+    min +
+    ":" +
+    String(sec).padStart(2, "0")
   );
 
-  setText(
-    trackNumber,
-    `${currentAartiIndex + 1} / ${aartiTracks.length}`
-  );
-
-  if (progress) {
-    progress.value = 0;
-  }
-
-  setText(
-    currentTimeEl,
-    "0:00"
-  );
-
-  setText(
-    durationEl,
-    "0:00"
-  );
-
-  if (trackList) {
-
-    trackList
-      .querySelectorAll(
-        ".aarti-track"
-      )
-      .forEach(
-        (item, itemIndex) => {
-
-          item.classList.toggle(
-            "active",
-            itemIndex ===
-              currentAartiIndex
-          );
-        }
-      );
-  }
-
-  if (autoplay) {
-
-    aartiAudio
-      .play()
-      .then(
-        () => {
-
-          aartiPlaying = true;
-
-          updateAartiUI();
-        }
-      )
-      .catch(
-        (error) => {
-
-          console.warn(
-            "Aarti playback was blocked:",
-            error
-          );
-
-        }
-      );
-  }
 }
 
 
-// ============================================================
-// RENDER AARTI LIST
-// ============================================================
+function updateTrackList() {
 
-function renderAartiTrackList() {
+  if (!trackList) return;
 
-  if (!trackList) {
-    return;
-  }
+
+  trackList
+    .querySelectorAll("[data-track]")
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        Number(button.dataset.track) ===
+          currentTrack
+      );
+
+    });
+
+}
+
+
+function loadTrack(index) {
+
+  if (!audio) return;
+
+
+  currentTrack =
+    index;
+
+
+  const track =
+    tracks[index];
+
+
+  audio.src =
+    track.src;
+
+
+  if (trackTitle)
+    trackTitle.textContent =
+      track.title;
+
+
+  if (trackNumber)
+    trackNumber.textContent =
+      `${index + 1} / ${tracks.length}`;
+
+
+  if (progress)
+    progress.value = 0;
+
+
+  if (currentTime)
+    currentTime.textContent = "0:00";
+
+
+  if (duration)
+    duration.textContent = "0:00";
+
+
+  updateTrackList();
+
+}
+
+
+if (trackList) {
 
   trackList.innerHTML = "";
 
-  aartiTracks.forEach(
+
+  tracks.forEach(
     (track, index) => {
 
       const button =
-        document.createElement(
-          "button"
-        );
+        document.createElement("button");
+
 
       button.type =
         "button";
 
       button.className =
-        "aarti-track";
+        "track-item";
 
-      button.innerHTML = `
-        <span class="aarti-track-number">
-          ${String(index + 1).padStart(2, "0")}
-        </span>
+      button.dataset.track =
+        index;
 
-        <span class="aarti-track-info">
-          <strong>
-            ${escapeHTML(track.title)}
-          </strong>
+      button.textContent =
+        `${index + 1}. ${track.title}`;
 
-          <small>
-            ${escapeHTML(track.category)}
-          </small>
-        </span>
-
-        <span class="aarti-track-play">
-          ▶
-        </span>
-      `;
 
       button.addEventListener(
         "click",
         () => {
-          loadAarti(
-            index,
-            true
-          );
+
+          loadTrack(index);
+
+          audio
+            ?.play()
+            .then(() => {
+
+              if (playIcon)
+                playIcon.textContent =
+                  "❚❚";
+
+            })
+            .catch(() => {});
+
         }
       );
 
-      trackList.appendChild(
-        button
-      );
+
+      trackList.appendChild(button);
+
     }
   );
+
 }
 
 
-// ============================================================
-// AARTI UI
-// ============================================================
+playPause?.addEventListener(
+  "click",
+  () => {
 
-function updateAartiUI() {
+    if (!audio) return;
 
-  if (!aartiAudio) {
-    return;
+
+    if (audio.paused) {
+
+      audio.play()
+        .then(() => {
+
+          if (playIcon)
+            playIcon.textContent =
+              "❚❚";
+
+        })
+        .catch(
+          error =>
+            console.error(
+              "Audio error:",
+              error
+            )
+        );
+
+    }
+
+    else {
+
+      audio.pause();
+
+      if (playIcon)
+        playIcon.textContent =
+          "▶";
+
+    }
+
   }
+);
 
-  const duration =
-    aartiAudio.duration;
 
-  if (progress) {
+audio?.addEventListener(
+  "loadedmetadata",
+  () => {
+
+    if (duration)
+      duration.textContent =
+        formatTime(audio.duration);
+
+  }
+);
+
+
+audio?.addEventListener(
+  "timeupdate",
+  () => {
+
+    if (currentTime)
+      currentTime.textContent =
+        formatTime(audio.currentTime);
+
 
     if (
-      Number.isFinite(duration) &&
-      duration > 0
+      progress &&
+      audio.duration > 0
     ) {
 
       progress.value =
         (
-          aartiAudio.currentTime /
-          duration
+          audio.currentTime /
+          audio.duration
         ) * 100;
 
-    } else {
-
-      progress.value = 0;
     }
+
   }
-
-  setText(
-    currentTimeEl,
-    formatTime(
-      aartiAudio.currentTime
-    )
-  );
-
-  setText(
-    durationEl,
-    formatTime(duration)
-  );
-
-  if (playIcon) {
-
-    playIcon.textContent =
-      aartiPlaying
-        ? "❚❚"
-        : "▶";
-  }
-
-  if (playPause) {
-
-    playPause.setAttribute(
-      "aria-label",
-      aartiPlaying
-        ? "Pause"
-        : "Play"
-    );
-  }
-}
-
-
-// ============================================================
-// AARTI EVENTS
-// ============================================================
-
-if (aartiAudio) {
-
-  aartiAudio.addEventListener(
-    "loadedmetadata",
-    () => {
-      updateAartiUI();
-    }
-  );
-
-
-  aartiAudio.addEventListener(
-    "timeupdate",
-    updateAartiUI
-  );
-
-
-  aartiAudio.addEventListener(
-    "play",
-    () => {
-
-      aartiPlaying = true;
-
-      updateAartiUI();
-    }
-  );
-
-
-  aartiAudio.addEventListener(
-    "pause",
-    () => {
-
-      aartiPlaying = false;
-
-      updateAartiUI();
-    }
-  );
-
-
-  aartiAudio.addEventListener(
-    "ended",
-    () => {
-
-      aartiPlaying = false;
-
-      const nextIndex =
-        (
-          currentAartiIndex + 1
-        ) %
-        aartiTracks.length;
-
-      loadAarti(
-        nextIndex,
-        true
-      );
-    }
-  );
-
-
-  aartiAudio.addEventListener(
-    "error",
-    () => {
-
-      aartiPlaying = false;
-
-      const track =
-        aartiTracks[
-          currentAartiIndex
-        ];
-
-      console.error(
-        "Unable to load Aarti:",
-        track.src
-      );
-
-      setText(
-        trackNumber,
-        `${currentAartiIndex + 1} / ${aartiTracks.length} • File unavailable`
-      );
-
-      updateAartiUI();
-    }
-  );
-}
-
-
-// ============================================================
-// PLAY / PAUSE
-// ============================================================
-
-if (
-  playPause &&
-  aartiAudio
-) {
-
-  playPause.addEventListener(
-    "click",
-    async () => {
-
-      try {
-
-        if (
-          aartiAudio.paused
-        ) {
-
-          await aartiAudio.play();
-
-        } else {
-
-          aartiAudio.pause();
-        }
-
-      } catch (error) {
-
-        console.error(
-          "Aarti playback error:",
-          error
-        );
-      }
-    }
-  );
-}
-
-
-// ============================================================
-// AARTI PROGRESS
-// ============================================================
-
-if (
-  progress &&
-  aartiAudio
-) {
-
-  progress.addEventListener(
-    "input",
-    () => {
-
-      const duration =
-        aartiAudio.duration;
-
-      if (
-        !Number.isFinite(duration) ||
-        duration <= 0
-      ) {
-        return;
-      }
-
-      aartiAudio.currentTime =
-        (
-          Number(progress.value) /
-          100
-        ) * duration;
-    }
-  );
-}
-
-
-// ============================================================
-// INITIALISE AARTI
-// ============================================================
-
-renderAartiTrackList();
-
-loadAarti(
-  0,
-  false
 );
 
 
-// ============================================================
-// PUSHPANJALI
-// ============================================================
+progress?.addEventListener(
+  "input",
+  () => {
 
-let petalAnimationFrame =
-  null;
+    if (
+      audio &&
+      audio.duration > 0
+    ) {
 
+      audio.currentTime =
+        (
+          Number(progress.value) /
+          100
+        ) *
+        audio.duration;
+
+    }
+
+  }
+);
+
+
+audio?.addEventListener(
+  "ended",
+  () => {
+
+    currentTrack =
+      (currentTrack + 1) %
+      tracks.length;
+
+
+    loadTrack(
+      currentTrack
+    );
+
+
+    audio.play()
+      .catch(() => {});
+
+  }
+);
+
+
+loadTrack(0);
+
+
+/* =========================================================
+   PUSHPANJALI
+========================================================= */
+
+const pushpanjali =
+  $("pushpanjali");
+
+const petalCanvas =
+  $("petalCanvas");
+
+const bellAudio =
+  $("bellAudio");
+
+
+let petalContext = null;
 let petals = [];
 
 
 function resizePetalCanvas() {
 
-  if (!petalCanvas) {
-    return;
-  }
+  if (!petalCanvas) return;
 
-  const rect =
-    petalCanvas.getBoundingClientRect();
-
-  const dpr =
-    Math.min(
-      window.devicePixelRatio || 1,
-      2
-    );
 
   petalCanvas.width =
-    Math.floor(
-      rect.width * dpr
-    );
+    window.innerWidth;
 
   petalCanvas.height =
-    Math.floor(
-      rect.height * dpr
-    );
+    window.innerHeight;
 
-  const context =
-    petalCanvas.getContext(
-      "2d"
-    );
-
-  if (context) {
-
-    context.setTransform(
-      dpr,
-      0,
-      0,
-      dpr,
-      0,
-      0
-    );
-  }
 }
 
 
-function createPetal(
-  width,
-  height
-) {
+function setupPetals() {
 
-  return {
+  if (!petalCanvas) return;
 
-    x:
-      Math.random() * width,
 
-    y:
-      -20 -
-      Math.random() *
-        height *
-        0.2,
+  petalContext =
+    petalCanvas.getContext("2d");
 
-    size:
-      5 +
-      Math.random() * 8,
 
-    speed:
-      1 +
-      Math.random() * 2.5,
+  resizePetalCanvas();
 
-    rotation:
-      Math.random() *
-      Math.PI *
-      2,
 
-    rotationSpeed:
-      (
-        Math.random() - 0.5
-      ) * 0.08,
+  window.addEventListener(
+    "resize",
+    resizePetalCanvas
+  );
 
-    drift:
-      (
-        Math.random() - 0.5
-      ) * 0.7,
+}
 
-    opacity:
-      0.55 +
-      Math.random() * 0.4
-  };
+
+function createPetals() {
+
+  if (!petalCanvas) return;
+
+
+  petals = [];
+
+
+  for (
+    let i = 0;
+    i < 70;
+    i++
+  ) {
+
+    petals.push({
+
+      x:
+        Math.random() *
+        petalCanvas.width,
+
+      y:
+        -Math.random() *
+        petalCanvas.height,
+
+      size:
+        5 + Math.random() * 8,
+
+      speed:
+        1 + Math.random() * 3,
+
+      rotation:
+        Math.random() *
+        Math.PI * 2,
+
+      rotationSpeed:
+        -0.04 +
+        Math.random() * 0.08,
+
+      drift:
+        -0.8 +
+        Math.random() * 1.6
+
+    });
+
+  }
+
 }
 
 
 function animatePetals() {
 
-  if (!petalCanvas) {
-    return;
-  }
+  if (!petalContext) return;
 
-  const context =
-    petalCanvas.getContext(
-      "2d"
-    );
 
-  if (!context) {
-    return;
-  }
-
-  const width =
-    petalCanvas.clientWidth;
-
-  const height =
-    petalCanvas.clientHeight;
-
-  context.clearRect(
+  petalContext.clearRect(
     0,
     0,
-    width,
-    height
+    petalCanvas.width,
+    petalCanvas.height
   );
 
+
   petals.forEach(
-    (petal) => {
+    petal => {
 
-      petal.y +=
-        petal.speed;
-
-      petal.x +=
-        petal.drift;
-
+      petal.y += petal.speed;
+      petal.x += petal.drift;
       petal.rotation +=
         petal.rotationSpeed;
 
-      context.save();
 
-      context.translate(
+      if (
+        petal.y >
+        petalCanvas.height + 20
+      ) {
+
+        petal.y = -20;
+
+      }
+
+
+      petalContext.save();
+
+
+      petalContext.translate(
         petal.x,
         petal.y
       );
 
-      context.rotate(
+
+      petalContext.rotate(
         petal.rotation
       );
 
-      context.globalAlpha =
-        petal.opacity;
 
-      context.beginPath();
+      petalContext.fillStyle =
+        "rgba(203,161,83,.85)";
 
-      context.ellipse(
+
+      petalContext.beginPath();
+
+
+      petalContext.ellipse(
         0,
         0,
         petal.size,
@@ -1200,921 +1008,627 @@ function animatePetals() {
         Math.PI * 2
       );
 
-      context.fill();
 
-      context.restore();
+      petalContext.fill();
+
+
+      petalContext.restore();
+
     }
   );
 
-  petals =
-    petals.filter(
-      (petal) =>
-        petal.y <
-          height + 30 &&
-        petal.x >
-          -50 &&
-        petal.x <
-          width + 50
-    );
 
-  if (petals.length > 0) {
-
-    petalAnimationFrame =
-      requestAnimationFrame(
-        animatePetals
-      );
-
-  } else {
-
-    petalAnimationFrame =
-      null;
-  }
-}
-
-
-function startPetalEffect() {
-
-  if (!petalCanvas) {
-    return;
-  }
-
-  resizePetalCanvas();
-
-  const width =
-    petalCanvas.clientWidth;
-
-  const height =
-    petalCanvas.clientHeight;
-
-  for (
-    let i = 0;
-    i < 45;
-    i++
-  ) {
-
-    const petal =
-      createPetal(
-        width,
-        height
-      );
-
-    petal.y =
-      Math.random() *
-      height *
-      0.35;
-
-    petals.push(
-      petal
-    );
-  }
-
-  if (
-    !petalAnimationFrame
-  ) {
-
-    animatePetals();
-  }
-}
-
-
-if (pushpanjali) {
-
-  pushpanjali.addEventListener(
-    "click",
-    async () => {
-
-      startPetalEffect();
-
-      if (bellAudio) {
-
-        try {
-
-          bellAudio.currentTime = 0;
-
-          await bellAudio.play();
-
-        } catch (error) {
-
-          console.warn(
-            "Bell playback was blocked:",
-            error
-          );
-        }
-      }
-    }
+  requestAnimationFrame(
+    animatePetals
   );
+
 }
 
 
-window.addEventListener(
-  "resize",
-  resizePetalCanvas
+pushpanjali?.addEventListener(
+  "click",
+  () => {
+
+    bellAudio
+      ?.play()
+      .catch(() => {});
+
+
+    createPetals();
+
+
+    petalCanvas?.classList.add(
+      "active"
+    );
+
+
+    setTimeout(
+      () => {
+
+        petalCanvas?.classList.remove(
+          "active"
+        );
+
+      },
+      5000
+    );
+
+  }
 );
 
 
-// ============================================================
-// WEBRTC LIVE DARSHAN
-// ============================================================
+setupPetals();
 
-const broadcastRef =
+if (petalCanvas)
+  animatePetals();
+
+
+/* =========================================================
+   WEBRTC LIVE DARSHAN
+========================================================= */
+
+const liveVideo =
+  $("liveVideo");
+
+const activeStreamUI =
+  $("active-stream-ui");
+
+const offlineStreamUI =
+  $("offline-stream-ui");
+
+
+let viewerId = null;
+let viewerPeer = null;
+let viewerSignalsStarted = false;
+let remoteDescriptionSet = false;
+let candidateQueue = [];
+let currentBroadcastActive = false;
+
+
+function showOffline() {
+
+  activeStreamUI
+    ?.classList.add("hidden");
+
+  offlineStreamUI
+    ?.classList.remove("hidden");
+
+
+  if (liveVideo)
+    liveVideo.srcObject = null;
+
+}
+
+
+function showLive() {
+
+  offlineStreamUI
+    ?.classList.add("hidden");
+
+  activeStreamUI
+    ?.classList.remove("hidden");
+
+}
+
+
+/* =========================================================
+   BROADCAST STATUS
+========================================================= */
+
+onValue(
   ref(
-    db,
+    database,
     "pandal/broadcast"
-  );
+  ),
 
-let viewerId =
-  sessionStorage.getItem(
-    "ganpatiViewerId"
-  );
+  snapshot => {
+
+    const data =
+      snapshot.val();
 
 
-if (!viewerId) {
+    currentBroadcastActive =
+      data?.active === true;
 
-  viewerId =
+
+    if (currentBroadcastActive) {
+
+      showLive();
+
+      startViewer();
+
+    }
+
+    else {
+
+      showOffline();
+
+      closeViewer();
+
+    }
+
+  },
+
+  error => {
+
+    console.error(
+      "Broadcast status error:",
+      error
+    );
+
+    showOffline();
+
+  }
+);
+
+
+/* =========================================================
+   VIEWER ID
+========================================================= */
+
+function createViewerId() {
+
+  return (
     "viewer_" +
-    crypto.randomUUID();
-
-  sessionStorage.setItem(
-    "ganpatiViewerId",
-    viewerId
+    Date.now() +
+    "_" +
+    Math.random()
+      .toString(36)
+      .slice(2, 10)
   );
+
 }
 
 
-let currentBroadcastId =
-  null;
-
-let currentSessionId =
-  null;
-
-let peerConnection =
-  null;
-
-let viewerRef =
-  null;
-
-let signalRef =
-  null;
-
-let removeAnswerListener =
-  null;
-
-let removeClosedListener =
-  null;
-
-
-// ============================================================
-// WEBRTC CONFIGURATION
-// ============================================================
-
-const rtcConfiguration = {
-
-  iceServers: [
-    {
-      urls:
-        "stun:stun.l.google.com:19302"
-    }
-  ]
-
-};
-
-
-// ============================================================
-// STREAM UI
-// ============================================================
-
-function showOfflineStream() {
-
-  if (activeStreamUI) {
-
-    activeStreamUI.classList.add(
-      "hidden"
-    );
-
-    activeStreamUI.style.display =
-      "none";
-  }
-
-  if (offlineStreamUI) {
-
-    offlineStreamUI.style.display =
-      "";
-  }
-
-  if (liveVideo) {
-
-    liveVideo.srcObject =
-      null;
-  }
-}
-
-
-function showActiveStream() {
-
-  if (offlineStreamUI) {
-
-    offlineStreamUI.style.display =
-      "none";
-  }
-
-  if (activeStreamUI) {
-
-    activeStreamUI.classList.remove(
-      "hidden"
-    );
-
-    activeStreamUI.style.display =
-      "";
-  }
-}
-
-
-// ============================================================
-// CLEANUP WEBRTC SESSION
-// ============================================================
-
-async function cleanupViewerSession() {
-
-  const oldViewerRef =
-    viewerRef;
-
-  const oldSignalRef =
-    signalRef;
-
-  const oldSessionId =
-    currentSessionId;
-
-  currentBroadcastId =
-    null;
-
-  currentSessionId =
-    null;
-
-  viewerRef =
-    null;
-
-  signalRef =
-    null;
-
-
-  if (removeAnswerListener) {
-
-    removeAnswerListener();
-
-    removeAnswerListener =
-      null;
-  }
-
-
-  if (removeClosedListener) {
-
-    removeClosedListener();
-
-    removeClosedListener =
-      null;
-  }
-
-
-  if (peerConnection) {
-
-    try {
-
-      peerConnection.onicecandidate =
-        null;
-
-      peerConnection.ontrack =
-        null;
-
-      peerConnection.onconnectionstatechange =
-        null;
-
-      peerConnection.close();
-
-    } catch (error) {
-
-      console.warn(
-        "Peer cleanup error:",
-        error
-      );
-    }
-
-    peerConnection =
-      null;
-  }
-
-
-  if (liveVideo) {
-
-    liveVideo.srcObject =
-      null;
-  }
-
-
-  if (oldViewerRef) {
-
-    try {
-
-      await update(
-        oldViewerRef,
-        {
-          active: false
-        }
-      );
-
-    } catch (error) {
-
-      console.warn(
-        "Viewer cleanup failed:",
-        error
-      );
-    }
-  }
-
-
-  if (oldSignalRef && oldSessionId) {
-
-    try {
-
-      await update(
-        oldSignalRef,
-        {
-          closed: true
-        }
-      );
-
-    } catch (error) {
-
-      console.warn(
-        "Signal cleanup failed:",
-        error
-      );
-    }
-  }
-}
-
-
-// ============================================================
-// CONNECT VIEWER TO BROADCAST
-// ============================================================
-
-async function connectToBroadcast(
-  broadcastId
-) {
-
-  if (!broadcastId) {
-    return;
-  }
-
+/* =========================================================
+   START VIEWER
+========================================================= */
+
+async function startViewer() {
 
   if (
-    currentBroadcastId ===
-      broadcastId &&
-    peerConnection
+    viewerPeer ||
+    !currentBroadcastActive
   ) {
 
     return;
+
   }
-
-
-  await cleanupViewerSession();
-
-
-  currentBroadcastId =
-    broadcastId;
-
-  currentSessionId =
-    crypto.randomUUID();
-
-
-  const sessionId =
-    currentSessionId;
-
-
-  viewerRef =
-    ref(
-      db,
-      `pandal/viewers/${viewerId}`
-    );
-
-
-  signalRef =
-    ref(
-      db,
-      `pandal/signals/${viewerId}/${sessionId}`
-    );
 
 
   try {
 
-    // --------------------------------------------------------
-    // VIEWER PRESENCE
-    // --------------------------------------------------------
-
-    await set(
-      viewerRef,
-      {
-        active: true,
-        broadcastId:
-          broadcastId,
-        sessionId:
-          sessionId,
-        updatedAt:
-          serverTimestamp()
-      }
-    );
+    viewerId =
+      createViewerId();
 
 
-    await onDisconnect(
-      viewerRef
-    ).update({
-      active: false
-    });
+    viewerSignalsStarted =
+      false;
+
+    remoteDescriptionSet =
+      false;
+
+    candidateQueue = [];
 
 
-    // --------------------------------------------------------
-    // CREATE PEER CONNECTION
-    // --------------------------------------------------------
+    viewerPeer =
+      new RTCPeerConnection({
 
-    peerConnection =
-      new RTCPeerConnection(
-        rtcConfiguration
-      );
+        iceServers: [
+
+          {
+            urls:
+              "stun:stun.l.google.com:19302"
+          }
+
+        ]
+
+      });
 
 
-    const pc =
-      peerConnection;
+    viewerPeer.ontrack =
+      event => {
 
+        const stream =
+          event.streams?.[0];
 
-    // --------------------------------------------------------
-    // REMOTE VIDEO / AUDIO
-    // --------------------------------------------------------
-
-    pc.ontrack =
-      (event) => {
-
-        if (!liveVideo) {
-          return;
-        }
 
         if (
-          event.streams &&
-          event.streams[0]
+          liveVideo &&
+          stream
         ) {
 
           liveVideo.srcObject =
-            event.streams[0];
+            stream;
 
-          showActiveStream();
+          liveVideo.autoplay =
+            true;
 
-          liveVideo
-            .play()
-            .catch(
-              () => {}
-            );
+          liveVideo.playsInline =
+            true;
+
+          liveVideo.play()
+            .catch(() => {});
+
+          showLive();
+
         }
+
       };
 
 
-    // --------------------------------------------------------
-    // VIEWER ICE
-    // --------------------------------------------------------
-
-    pc.onicecandidate =
-      async (event) => {
+    viewerPeer.onicecandidate =
+      event => {
 
         if (
-          !event.candidate
+          !event.candidate ||
+          !viewerId
         ) {
+
           return;
+
         }
 
-        try {
 
-          const candidateRef =
-            push(
-              ref(
-                db,
-                `pandal/signals/${viewerId}/${sessionId}/viewerCandidates`
-              )
-            );
+        push(
+          ref(
+            database,
+            `pandal/signals/${viewerId}/viewerCandidates`
+          ),
+          event.candidate.toJSON()
+        )
+        .catch(
+          error =>
+            console.error(
+              "Viewer ICE error:",
+              error
+            )
+        );
 
-
-          await set(
-            candidateRef,
-            {
-              candidate:
-                event.candidate
-                  .candidate,
-
-              sdpMid:
-                event.candidate
-                  .sdpMid,
-
-              sdpMLineIndex:
-                event.candidate
-                  .sdpMLineIndex,
-
-              usernameFragment:
-                event.candidate
-                  .usernameFragment ||
-                null
-            }
-          );
-
-        } catch (error) {
-
-          console.error(
-            "Viewer ICE error:",
-            error
-          );
-        }
       };
 
 
-    // --------------------------------------------------------
-    // CONNECTION STATE
-    // --------------------------------------------------------
-
-    pc.onconnectionstatechange =
+    viewerPeer.onconnectionstatechange =
       () => {
 
+        const state =
+          viewerPeer?.connectionState;
+
+
         console.log(
-          "WebRTC:",
-          pc.connectionState
+          "Viewer state:",
+          state
         );
 
 
         if (
-          pc.connectionState ===
-            "failed" ||
-          pc.connectionState ===
-            "closed" ||
-          pc.connectionState ===
-            "disconnected"
+          state === "failed" ||
+          state === "closed"
         ) {
 
-          if (
-            currentSessionId ===
-            sessionId
-          ) {
+          closeViewer();
 
-            showOfflineStream();
-          }
         }
+
       };
 
-
-    // --------------------------------------------------------
-    // ADMIN ANSWER
-    // --------------------------------------------------------
-
-    const answerRef =
-      ref(
-        db,
-        `pandal/signals/${viewerId}/${sessionId}/answer`
-      );
-
-
-    removeAnswerListener =
-      onValue(
-        answerRef,
-        async (snapshot) => {
-
-          if (
-            !snapshot.exists()
-          ) {
-            return;
-          }
-
-
-          if (
-            currentSessionId !==
-              sessionId ||
-            !peerConnection
-          ) {
-
-            return;
-          }
-
-
-          const answer =
-            snapshot.val();
-
-
-          if (
-            !answer ||
-            !answer.sdp
-          ) {
-
-            return;
-          }
-
-
-          try {
-
-            if (
-              pc.signalingState ===
-              "have-local-offer"
-            ) {
-
-              await pc.setRemoteDescription(
-                new RTCSessionDescription(
-                  {
-                    type:
-                      "answer",
-
-                    sdp:
-                      answer.sdp
-                  }
-                )
-              );
-            }
-
-          } catch (error) {
-
-            console.error(
-              "WebRTC answer error:",
-              error
-            );
-          }
-        }
-      );
-
-
-    // --------------------------------------------------------
-    // BROADCASTER ICE
-    // --------------------------------------------------------
-
-    const broadcasterCandidatesRef =
-      ref(
-        db,
-        `pandal/signals/${viewerId}/${sessionId}/broadcasterCandidates`
-      );
-
-
-    onChildAdded(
-      broadcasterCandidatesRef,
-      async (snapshot) => {
-
-        if (
-          currentSessionId !==
-            sessionId ||
-          !peerConnection
-        ) {
-
-          return;
-        }
-
-
-        const candidate =
-          snapshot.val();
-
-
-        if (
-          !candidate ||
-          !candidate.candidate
-        ) {
-
-          return;
-        }
-
-
-        try {
-
-          await peerConnection
-            .addIceCandidate(
-              new RTCIceCandidate(
-                {
-                  candidate:
-                    candidate.candidate,
-
-                  sdpMid:
-                    candidate.sdpMid ??
-                    null,
-
-                  sdpMLineIndex:
-                    candidate.sdpMLineIndex ??
-                    null,
-
-                  usernameFragment:
-                    candidate.usernameFragment ??
-                    null
-                }
-              )
-            );
-
-        } catch (error) {
-
-          console.warn(
-            "Broadcaster ICE error:",
-            error
-          );
-        }
-      }
-    );
-
-
-    // --------------------------------------------------------
-    // CLOSED SIGNAL
-    // --------------------------------------------------------
-
-    const closedRef =
-      ref(
-        db,
-        `pandal/signals/${viewerId}/${sessionId}/closed`
-      );
-
-
-    removeClosedListener =
-      onValue(
-        closedRef,
-        async (snapshot) => {
-
-          if (
-            snapshot.val() === true &&
-            currentSessionId ===
-              sessionId
-          ) {
-
-            showOfflineStream();
-
-            await cleanupViewerSession();
-          }
-        }
-      );
-
-
-    // --------------------------------------------------------
-    // CREATE OFFER
-    // --------------------------------------------------------
-
-    const offer =
-      await pc.createOffer(
-        {
-          offerToReceiveAudio:
-            true,
-
-          offerToReceiveVideo:
-            true
-        }
-      );
-
-
-    await pc.setLocalDescription(
-      offer
-    );
-
-
-    // --------------------------------------------------------
-    // WRITE OFFER
-    // --------------------------------------------------------
 
     await set(
       ref(
-        db,
-        `pandal/signals/${viewerId}/${sessionId}/offer`
+        database,
+        `pandal/viewers/${viewerId}`
       ),
       {
-        type:
-          "offer",
-
-        sdp:
-          offer.sdp
+        createdAt: Date.now()
       }
     );
 
 
-    showActiveStream();
+    listenForViewerSignals();
 
+  }
 
-    console.log(
-      "Viewer WebRTC session:",
-      sessionId
-    );
-
-  } catch (error) {
+  catch (error) {
 
     console.error(
-      "WebRTC connection error:",
+      "Viewer startup error:",
       error
     );
 
-    showOfflineStream();
+    closeViewer();
 
-    await cleanupViewerSession();
   }
+
 }
 
 
-// ============================================================
-// BROADCAST LISTENER
-// ============================================================
+/* =========================================================
+   VIEWER SIGNALS
+========================================================= */
 
-onValue(
-  broadcastRef,
-  async (snapshot) => {
+function listenForViewerSignals() {
 
-    const broadcast =
-      snapshot.val();
+  if (
+    viewerSignalsStarted ||
+    !viewerId
+  ) {
+
+    return;
+
+  }
 
 
-    if (
-      !broadcast ||
-      broadcast.active !== true ||
-      !broadcast.broadcastId
-    ) {
+  viewerSignalsStarted =
+    true;
 
-      showOfflineStream();
+
+  const signalPath =
+    `pandal/signals/${viewerId}`;
+
+
+  /* OFFER */
+
+  onValue(
+    ref(
+      database,
+      `${signalPath}/offer`
+    ),
+
+    async snapshot => {
+
+      const offer =
+        snapshot.val();
 
 
       if (
-        currentBroadcastId ||
-        peerConnection
+        !offer ||
+        !viewerPeer
       ) {
 
-        await cleanupViewerSession();
+        return;
+
       }
 
-      return;
-    }
-
-
-    const broadcastId =
-      String(
-        broadcast.broadcastId
-      );
-
-
-    if (
-      currentBroadcastId ===
-        broadcastId &&
-      peerConnection
-    ) {
-
-      return;
-    }
-
-
-    await connectToBroadcast(
-      broadcastId
-    );
-  },
-  (error) => {
-
-    console.error(
-      "Broadcast listener error:",
-      error
-    );
-
-    showOfflineStream();
-  }
-);
-
-
-// ============================================================
-// INITIAL STATE
-// ============================================================
-
-showOfflineStream();
-
-
-// ============================================================
-// PAGE CLEANUP
-// ============================================================
-
-window.addEventListener(
-  "pagehide",
-  () => {
-
-    if (peerConnection) {
 
       try {
 
-        peerConnection.close();
+        if (
+          viewerPeer.signalingState !==
+          "stable"
+        ) {
 
-      } catch (error) {
+          return;
 
-        console.warn(
-          "Peer close error:",
+        }
+
+
+        await viewerPeer
+          .setRemoteDescription(
+            new RTCSessionDescription(
+              offer
+            )
+          );
+
+
+        remoteDescriptionSet =
+          true;
+
+
+        for (
+          const candidate
+          of candidateQueue
+        ) {
+
+          try {
+
+            await viewerPeer
+              .addIceCandidate(
+                candidate
+              );
+
+          }
+
+          catch (_) {}
+
+        }
+
+
+        candidateQueue = [];
+
+
+        const answer =
+          await viewerPeer
+            .createAnswer();
+
+
+        await viewerPeer
+          .setLocalDescription(
+            answer
+          );
+
+
+        await set(
+          ref(
+            database,
+            `${signalPath}/answer`
+          ),
+          {
+            type:
+              answer.type,
+
+            sdp:
+              answer.sdp
+          }
+        );
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Offer error:",
           error
         );
+
       }
+
     }
+  );
 
 
-    peerConnection =
-      null;
+  /* BROADCASTER ICE */
+
+  onChildAdded(
+    ref(
+      database,
+      `${signalPath}/broadcasterCandidates`
+    ),
+
+    async snapshot => {
+
+      const data =
+        snapshot.val();
 
 
-    if (liveVideo) {
+      if (
+        !data ||
+        !viewerPeer
+      ) {
 
-      liveVideo.srcObject =
-        null;
+        return;
+
+      }
+
+
+      const candidate =
+        new RTCIceCandidate(
+          data
+        );
+
+
+      if (!remoteDescriptionSet) {
+
+        candidateQueue.push(
+          candidate
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        await viewerPeer
+          .addIceCandidate(
+            candidate
+          );
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Broadcaster ICE error:",
+          error
+        );
+
+      }
+
     }
+  );
+
+
+  /* CLOSED */
+
+  onValue(
+    ref(
+      database,
+      `${signalPath}/closed`
+    ),
+
+    snapshot => {
+
+      if (
+        snapshot.val() === true
+      ) {
+
+        closeViewer();
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   CLOSE VIEWER
+========================================================= */
+
+async function closeViewer() {
+
+  const oldViewerId =
+    viewerId;
+
+
+  viewerId = null;
+  viewerSignalsStarted = false;
+  remoteDescriptionSet = false;
+  candidateQueue = [];
+
+
+  if (viewerPeer) {
+
+    try {
+      viewerPeer.close();
+    }
+    catch (_) {}
+
+  }
+
+
+  viewerPeer = null;
+
+
+  if (liveVideo)
+    liveVideo.srcObject = null;
+
+
+  if (oldViewerId) {
+
+    await remove(
+      ref(
+        database,
+        `pandal/viewers/${oldViewerId}`
+      )
+    )
+    .catch(() => {});
+
+  }
+
+}
+
+
+/* =========================================================
+   CLEANUP
+========================================================= */
+
+window.addEventListener(
+  "beforeunload",
+  () => {
+
+    if (!viewerId) return;
+
+
+    remove(
+      ref(
+        database,
+        `pandal/viewers/${viewerId}`
+      )
+    )
+    .catch(() => {});
+
   }
 );
-
-
-// ============================================================
-// END OF APP.JS
-// ============================================================
