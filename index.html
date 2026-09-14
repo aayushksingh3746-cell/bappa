@@ -4,242 +4,129 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0D0D0D">
-  <meta name="description" content="Ganesh Chaturthi Pandal - Live Darshan, Aarti, Events and Gallery">
+  <meta name="description" content="Ganpati Bappa Morya — Digital Darshan, Sankalp and Aarti.">
 
-  <title>Ganpati Bappa Morya | [Pandal Name Placeholder]</title>
+  <title>Ganpati Bappa Morya | Digital Darshan</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  >
 
   <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
-  <!-- ================= NAVIGATION ================= -->
+  <!-- PRELOADER -->
+  <div id="preloader" class="preloader">
+    <div class="om-loader">ॐ</div>
+  </div>
 
+  <!-- HEADER -->
   <header class="site-header">
-    <a href="#home" class="brand">
-      <span class="brand-mark">ॐ</span>
-      <span>
-        <strong>[Pandal Name]</strong>
-        <small>GANESH CHATURTHI</small>
+
+    <a href="./index.html" class="brand">
+      <span class="brand-symbol">ॐ</span>
+
+      <span class="brand-text">
+        <strong>GANPATI</strong>
+        <small>Digital Darshan</small>
       </span>
     </a>
 
-    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-
-    <nav class="main-nav" id="mainNav">
-      <a href="#home">Home</a>
+    <nav class="desktop-nav">
       <a href="#darshan">Darshan</a>
+      <a href="#sankalp">Sankalp</a>
       <a href="#aarti">Aarti</a>
-      <a href="#events">Events</a>
-      <a href="#gallery">Gallery</a>
     </nav>
+
+    <a href="./admin.html" class="admin-link">
+      Admin
+    </a>
+
   </header>
 
-  <!-- ================= HERO ================= -->
 
   <main>
 
-    <section class="hero" id="home">
+    <!-- HERO -->
+    <section class="hero">
 
-      <canvas id="dustCanvas"></canvas>
+      <div class="hero-background"></div>
 
-      <div class="hero-vignette"></div>
-
-      <div class="hero-image-wrap">
-        <img
-          src="./assets/ganesha.jpg"
-          alt="Ganesha"
-          class="hero-image"
-        >
+      <div class="hero-mandala">
+        ॐ
       </div>
 
-      <div class="hero-content" id="heroContent">
+      <div class="hero-art">
+
+        <div class="ganesha-aura"></div>
+
+        <div class="ganesha-placeholder">
+          <span>ॐ</span>
+          <small>श्री गणेशाय नमः</small>
+        </div>
+
+      </div>
+
+      <div class="hero-content">
 
         <p class="eyebrow">
-          [Pandal Name Placeholder]
+          WITH DEVOTION • WITH GRATITUDE
         </p>
 
         <h1>
           GANPATI<br>
-          <span> BAPPA MORYA</span>
+          BAPPA <em>MORYA</em>
         </h1>
 
         <p class="hero-description">
-          A sacred space of devotion, celebration,
-          music and togetherness.
+          May every prayer find peace, every home find happiness,
+          and every new beginning receive Bappa's blessings.
         </p>
 
-        <div class="hero-actions">
+        <div class="hero-buttons">
 
-          <a href="#darshan" class="btn btn-primary">
-            Explore Our Pandal
-          </a>
-
-          <a href="#darshan" class="btn btn-live">
-            <span class="live-dot"></span>
+          <a href="#darshan" class="btn btn-gold">
             Live Darshan
           </a>
 
-        </div>
-
-        <div class="hero-meta">
-          <span>[Date Placeholder]</span>
-          <i></i>
-          <span>[Location Placeholder]</span>
-        </div>
-
-      </div>
-
-      <div class="scroll-indicator">
-        <span>SCROLL</span>
-        <div></div>
-      </div>
-
-    </section>
-
-    <!-- ================= LIVE DARSHAN ================= -->
-
-    <section class="section darshan-section" id="darshan">
-
-      <div class="section-heading">
-        <p class="eyebrow">LIVE FROM THE PANDAL</p>
-        <h2>Live Darshan</h2>
-        <p>
-          Join us virtually and experience the divine presence
-          wherever you are.
-        </p>
-      </div>
-
-      <div class="live-player">
-
-        <div class="live-topbar">
-
-          <div class="live-status" id="liveStatus">
-            <span class="status-dot"></span>
-            <span id="liveStatusText">OFFLINE</span>
-          </div>
-
-          <div class="viewer-count">
-            <span>●</span>
-            <span id="viewerCount">[Viewers]</span>
-          </div>
-
-        </div>
-
-        <div class="video-container" id="videoContainer">
-
-          <div class="offline-screen" id="offlineScreen">
-
-            <div class="diya">
-              <svg viewBox="0 0 100 100" aria-hidden="true">
-                <path d="M22 61 Q50 76 78 61 Q74 86 50 90 Q26 86 22 61Z"/>
-                <path d="M50 61 C42 51 48 42 50 34 C54 43 61 50 50 61Z"/>
-              </svg>
-            </div>
-
-            <h3>Awaiting Darshan</h3>
-
-            <p>
-              Next stream begins at
-              <strong>[Time Placeholder]</strong>
-            </p>
-
-          </div>
-
-          <iframe
-            id="liveIframe"
-            title="Live Darshan"
-            src=""
-            allow="autoplay; fullscreen"
-            allowfullscreen
-          ></iframe>
-
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ================= AARTI ================= -->
-
-    <section class="section aarti-section" id="aarti">
-
-      <div class="section-heading">
-        <p class="eyebrow">DEVOTIONAL SOUND</p>
-        <h2>Aarti & Music</h2>
-        <p>
-          Let the chants and melodies become part of your celebration.
-        </p>
-      </div>
-
-      <div class="aarti-player">
-
-        <div class="player-main">
-
-          <div class="track-art">
-            <img
-              src="./assets/ganesha-thumb.jpg"
-              alt="Ganesha"
-              id="trackImage"
-            >
-          </div>
-
-          <div class="track-info">
-            <span id="trackCategory">TRADITIONAL AARTIS</span>
-            <h3 id="trackTitle">Sukhkarta Dukhaharta</h3>
-            <p id="trackTime">00:00 / 00:00</p>
-          </div>
-
           <button
-            class="play-button"
-            id="playButton"
-            aria-label="Play audio"
+            id="heroSankalp"
+            class="btn btn-outline"
+            type="button"
           >
-            <svg class="play-icon" viewBox="0 0 24 24">
-              <path d="M8 5L19 12L8 19Z"/>
-            </svg>
-
-            <svg class="pause-icon" viewBox="0 0 24 24">
-              <path d="M7 5H10V19H7Z"/>
-              <path d="M14 5H17V19H14Z"/>
-            </svg>
+            Make a Sankalp
           </button>
 
         </div>
 
-        <div class="progress-wrapper">
-          <div class="progress-track">
-            <div class="progress-fill" id="audioProgress"></div>
+        <!-- COUNTDOWN -->
+        <div id="countdown" class="countdown">
+
+          <div class="count-item">
+            <strong id="days">00</strong>
+            <span>Days</span>
           </div>
-        </div>
 
-        <audio id="audioPlayer" preload="metadata"></audio>
+          <div class="count-item">
+            <strong id="hours">00</strong>
+            <span>Hours</span>
+          </div>
 
-      </div>
+          <div class="count-item">
+            <strong id="minutes">00</strong>
+            <span>Minutes</span>
+          </div>
 
-      <div class="tracklists">
-
-        <div class="track-category">
-
-          <h3>TRADITIONAL AARTIS</h3>
-
-          <div id="traditionalTracks"></div>
-
-        </div>
-
-        <div class="track-category">
-
-          <h3>FESTIVAL ANTHEMS</h3>
-
-          <div id="anthemTracks"></div>
+          <div class="count-item">
+            <strong id="seconds">00</strong>
+            <span>Seconds</span>
+          </div>
 
         </div>
 
@@ -247,138 +134,270 @@
 
     </section>
 
-    <!-- ================= EVENTS ================= -->
 
-    <section class="section events-section" id="events">
+    <!-- LIVE DARSHAN -->
+    <section id="darshan" class="section">
 
       <div class="section-heading">
-        <p class="eyebrow">CELEBRATION SCHEDULE</p>
-        <h2>Event Timeline</h2>
+
+        <p class="eyebrow">
+          LIVE DARSHAN
+        </p>
+
+        <h2>
+          Be present,<br>
+          <em>wherever you are.</em>
+        </h2>
+
+        <p>
+          Join the pandal through our direct browser-to-browser
+          live Darshan connection.
+        </p>
+
       </div>
 
-      <div class="timeline">
 
-        <article class="timeline-item active">
-          <div class="timeline-node"></div>
+      <div id="darshan-container" class="darshan-container">
 
-          <div class="timeline-card">
-            <span>[Time Placeholder]</span>
-            <h3>[Event Name Placeholder]</h3>
-            <p>[Event Description Placeholder]</p>
+        <!-- ACTIVE STREAM -->
+        <div id="active-stream-ui" class="stream-ui hidden">
+
+          <div class="live-badge">
+            <span></span>
+            LIVE
           </div>
-        </article>
 
-        <article class="timeline-item">
-          <div class="timeline-node"></div>
+          <video
+            id="liveVideo"
+            autoplay
+            playsinline
+          ></video>
 
-          <div class="timeline-card">
-            <span>[Time Placeholder]</span>
-            <h3>[Event Name Placeholder]</h3>
-            <p>[Event Description Placeholder]</p>
+        </div>
+
+
+        <!-- OFFLINE -->
+        <div id="offline-stream-ui" class="offline-ui">
+
+          <div class="diya">
+
+            <svg viewBox="0 0 120 120">
+
+              <path d="M25 74c12 15 58 15 70 0-3 28-67 28-70 0Z"></path>
+
+              <path d="M60 20c-15 19 4 25 0 42 18-15 12-31 0-42Z"></path>
+
+            </svg>
+
           </div>
-        </article>
 
-        <article class="timeline-item">
-          <div class="timeline-node"></div>
+          <h3>
+            Darshan will appear here
+          </h3>
 
-          <div class="timeline-card">
-            <span>[Time Placeholder]</span>
-            <h3>[Event Name Placeholder]</h3>
-            <p>[Event Description Placeholder]</p>
-          </div>
-        </article>
+          <p>
+            The pandal stream is currently offline.
+          </p>
 
-        <article class="timeline-item">
-          <div class="timeline-node"></div>
-
-          <div class="timeline-card">
-            <span>[Time Placeholder]</span>
-            <h3>[Event Name Placeholder]</h3>
-            <p>[Event Description Placeholder]</p>
-          </div>
-        </article>
+        </div>
 
       </div>
 
     </section>
 
-    <!-- ================= GALLERY ================= -->
 
-    <section class="section gallery-section" id="gallery">
+    <!-- SANKALP -->
+    <section id="sankalp" class="section sankalp-section">
+
+      <div class="section-heading centered">
+
+        <p class="eyebrow">
+          DIGITAL SANKALP
+        </p>
+
+        <h2>
+          Offer a prayer.<br>
+          <em>Leave a little light behind.</em>
+        </h2>
+
+        <p>
+          Write your prayer and let it become part of our
+          collective digital Sankalp wall.
+        </p>
+
+      </div>
+
+
+      <form id="prayerForm" class="prayer-form">
+
+        <label for="prayerInput" class="sr-only">
+          Your prayer
+        </label>
+
+        <input
+          id="prayerInput"
+          type="text"
+          maxlength="50"
+          autocomplete="off"
+          placeholder="Write your prayer in 50 characters..."
+          required
+        >
+
+        <button
+          class="btn btn-gold"
+          type="submit"
+        >
+          Offer Prayer
+        </button>
+
+      </form>
+
+      <p
+        id="prayerStatus"
+        class="form-status"
+        aria-live="polite"
+      ></p>
+
+
+      <div
+        id="prayerWall"
+        class="prayer-wall"
+        aria-live="polite"
+      ></div>
+
+    </section>
+
+
+    <!-- AARTI -->
+    <section id="aarti" class="section">
 
       <div class="section-heading">
-        <p class="eyebrow">MOMENTS OF DEVOTION</p>
-        <h2>Gallery</h2>
-      </div>
 
-      <div class="gallery-grid">
+        <p class="eyebrow">
+          AARTI • BHAKTI • MORYA
+        </p>
 
-        <button class="gallery-item tall">
-          <img src="./assets/gallery-1.jpg" alt="Pandal">
-        </button>
-
-        <button class="gallery-item">
-          <img src="./assets/gallery-2.jpg" alt="Ganesh Celebration">
-        </button>
-
-        <button class="gallery-item wide">
-          <img src="./assets/gallery-3.jpg" alt="Celebration">
-        </button>
-
-        <button class="gallery-item">
-          <img src="./assets/gallery-4.jpg" alt="Decoration">
-        </button>
-
-        <button class="gallery-item tall">
-          <img src="./assets/gallery-5.jpg" alt="Ganpati">
-        </button>
-
-        <button class="gallery-item">
-          <img src="./assets/gallery-6.jpg" alt="Pandal Event">
-        </button>
+        <h2>
+          A soundtrack<br>
+          <em>for devotion.</em>
+        </h2>
 
       </div>
+
+
+      <div class="player-card">
+
+        <div class="player-top">
+
+          <div class="track-art">
+            ॐ
+          </div>
+
+          <div class="track-information">
+
+            <strong id="trackTitle">
+              Gajanana
+            </strong>
+
+            <span id="trackNumber">
+              1 / 9
+            </span>
+
+          </div>
+
+          <button
+            id="playPause"
+            class="play-button"
+            type="button"
+            aria-label="Play"
+          >
+            <span id="playIcon">▶</span>
+          </button>
+
+        </div>
+
+
+        <div class="progress-container">
+
+          <input
+            id="progress"
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+          >
+
+        </div>
+
+
+        <div class="audio-time">
+
+          <span id="currentTime">
+            0:00
+          </span>
+
+          <span id="duration">
+            0:00
+          </span>
+
+        </div>
+
+
+        <div
+          id="trackList"
+          class="track-list"
+        ></div>
+
+      </div>
+
+
+      <audio
+        id="aartiAudio"
+        preload="metadata"
+      ></audio>
 
     </section>
 
   </main>
 
-  <!-- ================= LIGHTBOX ================= -->
 
-  <div class="lightbox" id="lightbox">
+  <!-- PUSHPANJALI -->
+  <button
+    id="pushpanjali"
+    class="pushpanjali"
+    type="button"
+    aria-label="Offer flowers and ring temple bell"
+  >
+    <span>ॐ</span>
+  </button>
 
-    <button class="lightbox-close" id="lightboxClose">
-      ×
-    </button>
+  <canvas
+    id="petalCanvas"
+    class="petal-canvas"
+  ></canvas>
 
-    <img id="lightboxImage" src="" alt="Gallery preview">
 
-  </div>
+  <audio
+    id="bellAudio"
+    src="./assets/bell.mp3"
+    preload="auto"
+  ></audio>
 
-  <!-- ================= FOOTER ================= -->
 
-  <footer>
+  <!-- FOOTER -->
+  <footer class="site-footer">
 
-    <div class="footer-symbol">ॐ</div>
-
-    <h2>Ganpati Bappa Morya</h2>
+    <div class="footer-brand">
+      <span>ॐ</span>
+      <strong>Ganpati Bappa Morya</strong>
+    </div>
 
     <p>
-      [Pandal Name Placeholder]
+      Made with devotion.
     </p>
 
-    <div class="footer-meta">
-      <span>[Location Placeholder]</span>
-      <span>•</span>
-      <span>[Contact Placeholder]</span>
-    </div>
-
-    <div class="footer-bottom">
-      <span>© [Year Placeholder] [Pandal Name Placeholder]</span>
-      <a href="./admin.html">Admin</a>
-    </div>
-
   </footer>
+
 
   <script type="module" src="./app.js"></script>
 
